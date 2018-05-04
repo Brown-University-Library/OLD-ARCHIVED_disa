@@ -7,7 +7,9 @@ app.config.from_object(os.environ['APP_SETTINGS'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-from models import Person, Document, Record, Actor
+from models import Document, Record, Location, Entrant, Person
+from models import EnslavedDescription, OwnerDescription
+
 
 @app.route('/')
 def index():
