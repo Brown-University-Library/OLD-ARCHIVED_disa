@@ -43,7 +43,7 @@ class Document(db.Model):
     records = db.relationship('Record', backref='document', lazy=True)
 
     def __repr__(self):
-        return '<id {}>'.format(self.id)
+        return '<Document {0}>'.format(self.id)
 
 class Record(db.Model):
     __tablename__ = 'records'
@@ -63,7 +63,7 @@ class Record(db.Model):
         nullable=False)
 
     def __repr__(self):
-        return '<id {}>'.format(self.id)
+        return '<Record {0}>'.format(self.id)
 
 class Location(db.Model):
     __tablename__ = 'locations'
@@ -72,20 +72,14 @@ class Location(db.Model):
     name = db.Column(db.String())
     location_type = db.Column(db.String())
 
-    within = db.relationship(
+    place_within = db.relationship(
         'Location', secondary=location_within,
         primaryjoin=(location_within.c.contained == id),
         secondaryjoin=(location_within.c.container == id),
         backref=db.backref(
             'location_within', lazy='dynamic'), lazy='dynamic')
-    contains = db.relationship(
-        'Location', secondary=location_within,
-        primaryjoin=(location_within.c.container == id),
-        secondaryjoin=(location_within.c.contained == id),
-        backref=db.backref(
-            'location_within', lazy='dynamic'), lazy='dynamic')
 
-    scenes = db.relationship(
+    place_for = db.relationship(
         'Record', secondary=has_location,
         primaryjoin=(has_location.c.location == id),
         secondaryjoin=(has_location.c.event == id),
@@ -93,19 +87,20 @@ class Location(db.Model):
             'has_location', lazy='dynamic'), lazy='dynamic')
 
     def __repr__(self):
-        return '<id {}>'.format(self.id)
+        return '<Location {0}: {1}>'.format(self.id, self.name)
 
 class Entrant(db.Model):
     __tablename__ = 'entrants'
 
     id = db.Column(db.Integer, primary_key=True)
-    role = db.Column(db.String())
     first_name = db.Column(db.String())
     last_name = db.Column(db.String())
     record_id = db.Column(db.Integer, db.ForeignKey('records.id'),
         nullable=False)
     person_id = db.Column(db.Integer, db.ForeignKey('people.id'),
         nullable=True)
+    roles = db.relationship(
+        'EntrantRole', backref='entrant', lazy=True)
     desc_ensl = db.relationship(
         'EnslavedDescription', backref='entrant', lazy=True)
     desc_owner = db.relationship(
@@ -115,24 +110,26 @@ class Entrant(db.Model):
         primaryjoin=(owned_by.c.enslaved == id),
         secondaryjoin=(owned_by.c.owner == id),
         backref=db.backref('owned_by', lazy='dynamic'), lazy='dynamic')
-    owns = db.relationship(
-        'Entrant', secondary=owned_by,
-        primaryjoin=(owned_by.c.owner == id),
-        secondaryjoin=(owned_by.c.enslaved == id),
-        backref=db.backref('owned_by', lazy='dynamic'), lazy='dynamic')
     has_parent = db.relationship(
         'Entrant', secondary=child_of,
         primaryjoin=(child_of.c.child == id),
         secondaryjoin=(child_of.c.parent == id),
         backref=db.backref('child_of', lazy='dynamic'), lazy='dynamic')
-    parent_of = db.relationship(
-        'Entrant', secondary=child_of,
-        primaryjoin=(child_of.c.parent == id),
-        secondaryjoin=(child_of.c.child == id),
-        backref=db.backref('child_of', lazy='dynamic'), lazy='dynamic')
 
     def __repr__(self):
-        return '<id {}>'.format(self.id)
+        return '<Entrant {0}: {1} {2}>'.format(
+            self.id, self.first_name, self.last_name)
+
+    # def add_role(self, roleStr):
+
+
+class EntrantRole(db.Model):
+    __tablename__ = 'roles'
+
+    id = db.Column(db.Integer, primary_key=True)
+    entrant_id = db.Column(db.Integer, db.ForeignKey('entrants.id'),
+        nullable=False)
+    role = db.Column(db.String())
 
 class Person(db.Model):
     __tablename__ = 'people'
@@ -148,6 +145,7 @@ class EnslavedDescription(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)    
     age = db.Column(db.Integer)
+    sex = db.Column(db.String())
     race = db.Column(db.String())
     tribe = db.Column(db.String())
     origin = db.Column(db.String())

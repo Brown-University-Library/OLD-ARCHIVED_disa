@@ -8,7 +8,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 from models import Document, Record, Location, Entrant, Person
-from models import EnslavedDescription, OwnerDescription
+from models import EnslavedDescription, OwnerDescription, EntrantRole
 
 
 @app.route('/')
