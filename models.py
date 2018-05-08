@@ -3,7 +3,7 @@ from app import db
 location_within = db.Table('location_within',
     db.Column('id', db.Integer, primary_key=True),
     db.Column('contained', db.Integer, db.ForeignKey('locations.id')),
-    db.Column('container', db.String())
+    db.Column('container', db.Integer, db.ForeignKey('locations.id'))
 )
 
 has_location = db.Table('has_location',
@@ -36,9 +36,10 @@ class Document(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     doctype = db.Column(db.String())
-    date = db.Column(db.Date())
+    date = db.Column(db.DateTime())
     national_context = db.Column(db.String())
     citation = db.Column(db.String())
+    zotero_id = db.Column(db.String())
     comments = db.Column(db.String())
     records = db.relationship('Record', backref='document', lazy=True)
 
@@ -50,15 +51,13 @@ class Record(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     rectype = db.Column(db.String())
-    date = db.Column(db.Date())
+    citation = db.Column(db.String())
+    date = db.Column(db.DateTime())
     comments = db.Column(db.String())
     entrants = db.relationship('Entrant', backref='record', lazy=True)
-    locations = within = db.relationship(
+    locations = db.relationship(
         'Location', secondary=has_location,
-        primaryjoin=(has_location.c.event == id),
-        secondaryjoin=(has_location.c.location == id),
-        backref=db.backref(
-            'has_location', lazy='dynamic'), lazy='dynamic')
+        back_populates='place_for')
     document_id = db.Column(db.Integer, db.ForeignKey('documents.id'),
         nullable=False)
 
@@ -81,10 +80,7 @@ class Location(db.Model):
 
     place_for = db.relationship(
         'Record', secondary=has_location,
-        primaryjoin=(has_location.c.location == id),
-        secondaryjoin=(has_location.c.event == id),
-        backref=db.backref(
-            'has_location', lazy='dynamic'), lazy='dynamic')
+        back_populates='locations')
 
     def __repr__(self):
         return '<Location {0}: {1}>'.format(self.id, self.name)
@@ -120,7 +116,10 @@ class Entrant(db.Model):
         return '<Entrant {0}: {1} {2}>'.format(
             self.id, self.first_name, self.last_name)
 
-    # def add_role(self, roleStr):
+    def add_role(self, roleStr):
+        entrant_role = EntrantRole()
+        entrant_role.role = roleStr
+        self.roles.append(entrant_role)
 
 
 class EntrantRole(db.Model):
@@ -162,34 +161,3 @@ class OwnerDescription(db.Model):
     vocation = db.Column(db.String())
     entrant_id = db.Column(db.Integer, db.ForeignKey('entrants.id'),
         nullable=False)
-
-# location_within = db.Table('location_within',
-#     db.Column('id', db.Integer, primary_key=True),
-#     db.Column('contained', db.Integer, db.ForeignKey('location.id')),
-#     db.Column('container', db.String())
-# )
-
-# has_location = db.Table('has_location',
-#     db.Column('id', db.Integer, primary_key=True),
-#     db.Column('event', db.Integer, db.ForeignKey('record.id')),
-#     db.Column('location', db.Integer, db.ForeignKey('location.id')),
-#     db.Column('location_for', db.String())
-# )
-
-# owned_by = db.Table('owned_by',
-#     db.Column('id', db.Integer, primary_key=True),
-#     db.Column('enslaved', db.Integer, db.ForeignKey('entrants.id')),
-#     db.Column('owner', db.Integer, db.ForeignKey('entrants.id'))
-# )
-
-# child_of = db.Table('child_of',
-#     db.Column('id', db.Integer, primary_key=True),
-#     db.Column('child', db.Integer, db.ForeignKey('entrants.id')),
-#     db.Column('parent', db.Integer, db.ForeignKey('entrants.id'))
-# )
-
-# has_spouse = db.Table('has_spouse',
-#     db.Column('id', db.Integer, primary_key=True),
-#     db.Column('spouse1', db.Integer, db.ForeignKey('entrants.id')),
-#     db.Column('spouse2', db.Integer, db.ForeignKey('entrants.id'))
-# )
