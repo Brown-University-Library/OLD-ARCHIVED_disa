@@ -57,7 +57,7 @@ class Record(db.Model):
     entrants = db.relationship('Entrant', backref='record', lazy=True)
     locations = db.relationship(
         'Location', secondary=has_location,
-        back_populates='place_for')
+        back_populates='records')
     document_id = db.Column(db.Integer, db.ForeignKey('documents.id'),
         nullable=False)
 
@@ -71,19 +71,25 @@ class Location(db.Model):
     name = db.Column(db.String())
     location_type = db.Column(db.String())
 
-    place_within = db.relationship(
+    within = db.relationship(
         'Location', secondary=location_within,
         primaryjoin=(location_within.c.contained == id),
         secondaryjoin=(location_within.c.container == id),
         backref=db.backref(
             'location_within', lazy='dynamic'), lazy='dynamic')
 
-    place_for = db.relationship(
+    records = db.relationship(
         'Record', secondary=has_location,
         back_populates='locations')
 
     def __repr__(self):
         return '<Location {0}: {1}>'.format(self.id, self.name)
+
+    def place_within(self, locObj):
+        self.within.append(locObj)
+
+    def place_for(self, recObj):
+        self.records.append(recObj)
 
 class Entrant(db.Model):
     __tablename__ = 'entrants'
@@ -101,12 +107,12 @@ class Entrant(db.Model):
         'EnslavedDescription', backref='entrant', lazy=True)
     desc_owner = db.relationship(
         'OwnerDescription', backref='entrant', lazy=True)
-    has_owner = db.relationship(
+    owners = db.relationship(
         'Entrant', secondary=owned_by,
         primaryjoin=(owned_by.c.enslaved == id),
         secondaryjoin=(owned_by.c.owner == id),
         backref=db.backref('owned_by', lazy='dynamic'), lazy='dynamic')
-    has_parent = db.relationship(
+    parents = db.relationship(
         'Entrant', secondary=child_of,
         primaryjoin=(child_of.c.child == id),
         secondaryjoin=(child_of.c.parent == id),
@@ -120,6 +126,20 @@ class Entrant(db.Model):
         entrant_role = EntrantRole()
         entrant_role.role = roleStr
         self.roles.append(entrant_role)
+
+    def has_owner(self, entrObj):
+        self.owners.append(entrObj)
+
+    def has_parent(self, entrObj):
+        self.parents.append(entrObj)
+
+    def description(self, descObj):
+        if isinstance(descObj, EnslavedDescription):
+            self.desc_ensl.append(descObj)
+        elif isinstance(descObj, OwnerDescription):
+            self.desc_owner.append(descObj)
+        else:
+            return
 
 
 class EntrantRole(db.Model):
