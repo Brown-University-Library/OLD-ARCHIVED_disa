@@ -1,6 +1,7 @@
-from flask import request, jsonify
+from flask import request, jsonify, render_template
 from app import app, db
 from app.models import Document
+from app.forms import DocumentForm
 
 @app.route('/')
 def index():
@@ -9,5 +10,9 @@ def index():
 @app.route('/documents', methods=['GET'])
 def documents_index():
     all_docs = Document.query.all()
-    ids = [ doc.id for doc in all_docs ]
-    return jsonify(ids)
+    return render_template('document_index.html', documents=all_docs)
+
+@app.route('/documents/new', methods=['GET','POST'])
+def new_document():
+    form = DocumentForm()
+    return render_template('new_document.html', form=form)

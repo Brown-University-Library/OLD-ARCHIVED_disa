@@ -11,7 +11,4 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-# from models import Document, Record, Location, Entrant, Person
-# from models import EnslavedDescription, OwnerDescription, EntrantRole
-
 from app import routes, models

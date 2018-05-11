@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>New Document</h1>
+    <form action="" method="post">
+        <p>
+            <dt>{{ form.name.label }}<dt>
+                <dd>{{ form.name(size=32) }}</dd>
+            <dt>{{ form.date.label }}<dt>
+                <dd>{{ form.date(size=32) }}</dd>
+            <dt>{{ form.context.label }}<dt>
+                <dd>{{ form.context(size=32) }}</dd>
+            <dt>{{ form.citation.label }}<dt>
+                <dd>{{ form.citation(size=32) }}</dd>
+            <dt>{{ form.zotero.label }}<dt>
+                <dd>{{ form.zotero(size=32) }}</dd>
+            <dt>{{ form.comments.label }}<dt>
+                <dd>{{ form.comments(cols=50, rows=4) }}</dd>
+        </p>
+        <p>{{ form.submit() }}</p>
+    </form>
+{% endblock %}

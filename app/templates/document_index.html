@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <ul>
+        {% for doc in documents %}
+        <li><a href="{{ doc.id }}">{{ doc.name }}</a></li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('new_document') }}">New document</a>
+{% endblock %}
