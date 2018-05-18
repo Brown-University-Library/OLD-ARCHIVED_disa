@@ -3,7 +3,7 @@
 {% block content %}
     <ul>
         {% for doc in documents %}
-        <li><a href="{{ doc.id }}">{{ doc.name }}</a></li>
+        <li><a href="{{ url_for('get_document', docId=doc.id) }}">{{ doc.citation }}</a></li>
         {% endfor %}
     </ul>
     <a href="{{ url_for('new_document') }}">New document</a>
