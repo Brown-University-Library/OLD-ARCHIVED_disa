@@ -3,7 +3,3 @@
 data/
 migrations/
 __pycache__/
-bin/
-include/
-lib/
-disa.sqlite
