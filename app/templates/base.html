@@ -9,6 +9,8 @@
 
         <!-- Latest compiled JavaScript -->
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
         {% if title %}
         <title>{{ title }}</title>
         {% else %}
@@ -18,6 +20,15 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
     <body>
+        <nav class="navbar navbar-default navbar-fixed-top">
+          <div class="container-fluid">
+             <div class="navbar-header">
+              <a class="navbar-brand" href="#">Database of Indeginous Slavery in the Americas</a>
+            </div>
+            <button type="button" class="btn btn-default navbar-btn navbar-text navbar-right">Sign in</button>
+
+          </div>
+        </nav>
         {% block content %}{% endblock %}
     </body>
 </html>
