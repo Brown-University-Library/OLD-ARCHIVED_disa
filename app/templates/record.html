@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>{{ record.name }}</h2>
+<h2>Record Type:{{ record.rectype }}</h2>
+<p>Date:{{record.date}}</p>
+<p>Citation:{{record.citation}}</p>
+<p>Comments:{{record.comments}}</p>
 {% endblock %}

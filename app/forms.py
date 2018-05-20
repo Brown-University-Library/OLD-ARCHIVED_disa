@@ -20,6 +20,7 @@ class RecordForm(FlaskForm):
         ('Runaway advertisement','Runaway advertisement'),('Advertisement of Sale','Advertisement of Sale'),
         ('Baptism','Baptism'), ('Runaway capture advertisement','Runaway capture advertisement'),
         ('Smallpox inoculation notice','Smallpox inoculation notice'), ('Execution notice','Execution notice')])
+    citation = StringField('Citation information')
     date = DateField('Date of publication')
     comments = TextAreaField('Comments')
     submit = SubmitField('Create')

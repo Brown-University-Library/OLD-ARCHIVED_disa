@@ -3,7 +3,8 @@
 data/
 migrations/
 __pycache__/
-bin/
-include/
-lib/
-share/
+bin
+include
+lib
+share
+*.sqlite
