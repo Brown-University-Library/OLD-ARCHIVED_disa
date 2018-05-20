@@ -16,13 +16,10 @@ class DocumentForm(FlaskForm):
 
 class RecordForm(FlaskForm):
     # From MongoDB document.recordType field
-    rectype = SelectField('Type', choices=['Manumission',
-        'Runaway advertisement','Advertisement of Sale',
-        'Baptism', 'Runaway capture advertisement',
-        'Smallpox inoculation notice', 'Execution notice'])
-    date = StringField('Date of publication')
-    context = StringField('National context')
-    citation = StringField('Citation information')
-    zotero = StringField('Zotero ID')
+    rectype = SelectField('Type', choices=[('Manumission','Manumission'),
+        ('Runaway advertisement','Runaway advertisement'),('Advertisement of Sale','Advertisement of Sale'),
+        ('Baptism','Baptism'), ('Runaway capture advertisement','Runaway capture advertisement'),
+        ('Smallpox inoculation notice','Smallpox inoculation notice'), ('Execution notice','Execution notice')])
+    date = DateField('Date of publication')
     comments = TextAreaField('Comments')
     submit = SubmitField('Create')

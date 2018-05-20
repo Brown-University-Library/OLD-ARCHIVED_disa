@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>New Document</h1>
+    <form action="" method="post">
+        <p>
+            <dt>{{ form.rectype.label }}<dt>
+                <dd>{{ form.rectype }}</dd>
+            <dt>{{ form.date.label }}<dt>
+                <dd>{{ form.date(size=32) }}</dd>
+            <dt>{{ form.comments.label }}<dt>
+                <dd>{{ form.comments(cols=50, rows=4) }}</dd>
+        </p>
+        <p>{{ form.submit() }}</p>
+    </form>
+{% endblock %}

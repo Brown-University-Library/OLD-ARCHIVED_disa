@@ -1,11 +1,12 @@
 from flask import request, jsonify, render_template, redirect, url_for
 from app import app, db
 from app.models import Document, Record
-from app.forms import DocumentForm
+from app.forms import DocumentForm, RecordForm
 
 @app.route('/')
 def index():
-    return 'Index for {}'.format(__name__)
+    #return 'Index for {}'.format(__name__)
+    return render_template('index.html')
 
 @app.route('/documents', methods=['GET'])
 def documents_index():
@@ -31,7 +32,20 @@ def new_document():
         return redirect(url_for('get_document', docId=doc.id))
     return render_template('new_document.html', form=form)
 
-@app.route('/records/<recId>', methods=['GET'])
-def get_record(recId):
+
+@app.route('/documents/<docId>/records/new', methods=['GET','POST'])
+def new_record(docId):
+	form = RecordForm()
+	if request.method == 'POST':
+		rec = Record(rectype = form.rectype.data,
+			comments = form.comments.data, document_id = docId)
+		db.session.add(rec)
+		db.session.commit()
+
+		return redirect(url_for('get_document', docId = docId))
+	return render_template('new_record.html', form=form)
+
+@app.route('/documents/<docId>/records/<recId>', methods=['GET'])
+def get_record(docId, recId):
     rec = Record.query.filter_by(id=recId).first_or_404()
-    return render_template('record.html', record=rec)
+    return render_template('record.html', doc=docId, record=rec)

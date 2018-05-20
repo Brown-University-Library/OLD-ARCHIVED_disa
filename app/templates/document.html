@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>{{ document.citation }}</h2>
+<h2>{{ document.doctype }}</h2>
 <h3>Entries</h3>
 <ul>
 {% for record in document.records %}
-    <li><a href="{{ url_for('record.html', recId=record.id) }}">{{ record.name }}</a></li>
+    <li><a href="{{ url_for('get_record', docId = document.id, recId=record.id) }}">{{ record.rectype }}</a></li>
 {% endfor %}
 </ul>
+<a href="{{ url_for('new_record', docId = document.id)}}">New Record</a>
 {% endblock %}
