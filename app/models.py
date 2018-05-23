@@ -31,6 +31,12 @@ has_spouse = db.Table('has_spouse',
     db.Column('spouse2', db.Integer, db.ForeignKey('entrants.id'))
 )
 
+has_role = db.Table('has_role',
+    db.Column('id', db.Integer, primary_key=True),
+    db.Column('entrant', db.Integer, db.ForeignKey('entrants.id')),
+    db.Column('role', db.Integer, db.ForeignKey('roles.id'))
+)
+
 class Document(db.Model):
     __tablename__ = 'documents'
 
@@ -101,12 +107,12 @@ class Entrant(db.Model):
         nullable=False)
     person_id = db.Column(db.Integer, db.ForeignKey('people.id'),
         nullable=True)
-    roles = db.relationship(
-        'EntrantRole', backref='entrant', lazy=True)
     desc_ensl = db.relationship(
         'EnslavedDescription', backref='entrant', lazy=True)
     desc_owner = db.relationship(
         'OwnerDescription', backref='entrant', lazy=True)
+    roles = db.relationship('Role',
+        secondary='has_role', back_populates='entrants')
     owners = db.relationship(
         'Entrant', secondary=owned_by,
         primaryjoin=(owned_by.c.enslaved == id),
@@ -141,14 +147,13 @@ class Entrant(db.Model):
         else:
             return
 
-
-class EntrantRole(db.Model):
+class Role(db.Model):
     __tablename__ = 'roles'
 
     id = db.Column(db.Integer, primary_key=True)
-    entrant_id = db.Column(db.Integer, db.ForeignKey('entrants.id'),
-        nullable=False)
     role = db.Column(db.String())
+    entrants = db.relationship('Entrant',
+        secondary='has_role', back_populates='roles')
 
 class Person(db.Model):
     __tablename__ = 'people'

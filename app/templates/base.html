@@ -18,12 +18,13 @@
         {% endif %}
         <meta charset="utf-8"> 
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     </head>
     <body>
         <nav class="navbar navbar-default navbar-fixed-top">
           <div class="container-fluid">
              <div class="navbar-header">
-              <a class="navbar-brand" href="#">Database of Indeginous Slavery in the Americas</a>
+              <a class="navbar-brand" href="{{ url_for('documents_index') }}">Database of Indeginous Slavery in the Americas</a>
             </div>
             <button type="button" class="btn btn-default navbar-btn navbar-text navbar-right">Sign in</button>
 
@@ -31,4 +32,27 @@
         </nav>
         {% block content %}{% endblock %}
     </body>
+<script>
+
+    function wtformsIdIncrementer( $wtfIdStr ) {
+        var id_arr = $wtfIdStr.split('-');
+        var cnt = parseInt(id_arr[1]);
+        var new_str = id_arr[0] + '-' + (cnt + 1);
+        return new_str;
+    }
+
+    function appendNewFormField( $fieldContainer ) {
+        var last_field = $fieldContainer.children(':last');
+        var new_id = wtformsIdIncrementer(last_field.find('select').attr('id'))
+        var new_field = last_field.clone();
+        new_field.find('label').attr('for',new_id);
+        new_field.find('select').attr('id',new_id);
+        new_field.find('select').attr('name',new_id);
+        $fieldContainer.append(new_field);
+    }
+
+    $('.add-field').on('click', function() {
+        appendNewFormField($('#roles'));
+    });
+</script>
 </html>

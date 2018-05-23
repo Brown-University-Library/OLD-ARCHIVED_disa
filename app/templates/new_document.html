@@ -7,17 +7,17 @@
         </div>
         <form action="" method="post">
             <p>
-                <dt>{{ form.doctype.label }}<dt>
+                <dt>{{ form.doctype.label }}</dt>
                     <dd>{{ form.doctype }}</dd>
-                <dt>{{ form.date.label }}<dt>
+                <dt>{{ form.date.label }}</dt>
                     <dd>{{ form.date(size=32) }}</dd>
-                <dt>{{ form.context.label }}<dt>
+                <dt>{{ form.context.label }}</dt>
                     <dd>{{ form.context(size=32) }}</dd>
-                <dt>{{ form.citation.label }}<dt>
+                <dt>{{ form.citation.label }}</dt>
                     <dd>{{ form.citation(size=32) }}</dd>
-                <dt>{{ form.zotero.label }}<dt>
+                <dt>{{ form.zotero.label }}</dt>
                     <dd>{{ form.zotero(size=32) }}</dd>
-                <dt>{{ form.comments.label }}<dt>
+                <dt>{{ form.comments.label }}</dt>
                     <dd>{{ form.comments(cols=50, rows=4) }}</dd>
             </p>
             <button class="btn btn-primary">{{ form.submit() }}</button>

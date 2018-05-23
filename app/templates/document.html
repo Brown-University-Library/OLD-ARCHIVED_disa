@@ -2,14 +2,14 @@
 
 {% block content %}
 <div class="container">
-	<h2>{{ document.doctype }}</h2>
-	<h3>Records</h3>
+	<h2>{{ document.citation }}</h2>
+	<h3>Contents</h3>
 	<ul>
 	{% for record in document.records %}
 	    <li><a href="{{ url_for('get_record', docId = document.id, recId=record.id) }}">{{ record.rectype }}</a></li>
 	{% endfor %}
 	</ul>
-	<a class="btn btn-primary" href="{{ url_for('new_record', docId = document.id)}}">New Record</a>
+	<a class="btn btn-primary" href="{{ url_for('new_record', docId = document.id)}}">New Entry</a>
 
 </div>
 

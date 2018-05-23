@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+	<legend>
+		<div class='form-group row'>
+			<label class="col-sm-2 col-form-label">Record Type:</label>
+			<label class="col-sm-10">{{ record.rectype }}</label>
+		</div>
+	</legend>
+	
+	
+	<label class="col-sm-2 col-form-label">Date:</label>
+	<label class="col-sm-10">{{record.date}}</label>
+
+	<label class="col-sm-2 col-form-label">Citation:</label>
+	<label class="col-sm-10">{{record.citation}}</label>
+
+	<label class="col-sm-2 col-form-label">Comments:</label>
+	<label class="col-sm-10">{{record.comments}}</label>
+	
+	<ul>
+		{% for entrant in record.entrants %}
+		    <li><a href="{{ url_for('get_entrant', recId=record.id, entrantId = entrant.id, ) }}">{{ entrant.first_name }} {{ entrant.last_name }}</a></li>
+		    <ul>
+		    	{% for role in entrant.roles % }
+		    		<li>{{ role.role }}</li>
+		    	{% endfor %}
+		    </ul>
+		{% endfor %}
+	</ul>
+	<a class="btn btn-primary" href="{{ url_for('new_entrant', recId = record.id)}}">Add person</a>
+
+</div>
+
+{% endblock %}

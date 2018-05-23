@@ -3,18 +3,18 @@
 {% block content %}
     <div class="container">
         <div class="page-header">
-            <h3>New Document</h3>
+            <h3>Included in {{ document.citation }}</h3>
         </div>
         
         <form action="" method="post">
             <p>
-                <dt>{{ form.rectype.label }}<dt>
+                <dt>{{ form.rectype.label }}</dt>
                     <dd>{{ form.rectype }}</dd>
-                <dt>{{ form.citation.label }}<dt>
+                <dt>{{ form.citation.label }}</dt>
                     <dd>{{ form.citation(size=32) }}</dd>
-                <dt>{{ form.date.label }}<dt>
+                <dt>{{ form.date.label }}<d/t>
                     <dd>{{ form.date(size=32) }}</dd>
-                <dt>{{ form.comments.label }}<dt>
+                <dt>{{ form.comments.label }}</dt>
                     <dd>{{ form.comments(cols=50, rows=4) }}</dd>
             </p>
             <button class="btn btn-primary">{{ form.submit() }}</button>

@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, SubmitField, SelectField, DateField
+from wtforms import FieldList
 
 class DocumentForm(FlaskForm):
     # From MongoDB document.sourceType field
@@ -24,3 +25,14 @@ class RecordForm(FlaskForm):
     date = DateField('Date of publication')
     comments = TextAreaField('Comments')
     submit = SubmitField('Create')
+
+class EntrantForm(FlaskForm):
+    first_name = StringField('First name')
+    last_name = StringField('Last name')
+    # roles = FieldList(SelectField('Role', choices=[('seller', 'Seller'),
+    #     ('owner','Owner'), ('enslaved', 'Enslaved'), ('baptised', 'Baptised'),
+    #     ('inoculated', 'Inoculated'), ('escaped', 'Escaped'),
+    #     ('liberated', 'Liberated'), ('captured', 'Captured'),
+    #     ('captor','Captor')]), min_entries=2)
+    roles = FieldList(SelectField('Role', choices=[]), min_entries=2)
+    submit = SubmitField('Add')

@@ -11,13 +11,30 @@
 	
 	
 	<label class="col-sm-2 col-form-label">Date:</label>
-	<label class="col-sm-10">{{record.date}}</label>
+	<label class="col-sm-10">{{ record.date }}</label>
 
 	<label class="col-sm-2 col-form-label">Citation:</label>
-	<label class="col-sm-10">{{record.citation}}</label>
+	<label class="col-sm-10">{{ record.citation }}</label>
 
 	<label class="col-sm-2 col-form-label">Comments:</label>
-	<label class="col-sm-10">{{record.comments}}</label>
+	<label class="col-sm-10">{{ record.comments }}</label>
+
+    <p>People
+    <ul>
+        {% for entrant in record.entrants %}
+        <li><a href="{{ url_for('get_entrant', entId = entrant.id, ) }}">{{ entrant.first_name }} {{ entrant.last_name }}</a>
+            <ul display="inline">
+                {% for role in entrant.roles %}
+                    <li>{{ role.role }}</li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endfor %}
+    </ul>
+</p>
+    <a class="btn btn-primary" href="{{ url_for('new_entrant', recId = record.id)}}">Add person</a>
+
+</div>
 	
 </div>
 
