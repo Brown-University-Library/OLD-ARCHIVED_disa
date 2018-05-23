@@ -22,17 +22,20 @@
     <p>People
     <ul>
         {% for entrant in record.entrants %}
-        <li><a href="{{ url_for('get_entrant', entId = entrant.id, ) }}">{{ entrant.first_name }} {{ entrant.last_name }}</a>
-            <ul display="inline">
-                {% for role in entrant.roles %}
-                    <li>{{ role.role }}</li>
-                {% endfor %}
-            </ul>
+        <li><span><a href="{{ url_for('get_entrant', entId = entrant.id ) }}">{% if entrant.first_name %} {{ entrant.first_name }} {{ entrant.last_name }} {% else %}
+        Unknown {% endif %}</a>  {% for role in entrant.roles %} {{ role.role }} {% endfor %}</span>
         </li>
         {% endfor %}
     </ul>
 </p>
-    <a class="btn btn-primary" href="{{ url_for('new_entrant', recId = record.id)}}">Add person</a>
+    <div>
+        {% for role in unassigned_roles %}
+            <a class="btn btn-primary" href="{{ url_for('new_entrant', recId = record.id, role=role)}}">Add {{ role }}</a>
+        {% endfor %}
+        <a class="btn btn-primary" href="{{ url_for('new_entrant', recId = record.id)}}">Add other person</a>
+        
+    </div>
+    
 
 </div>
 	

@@ -1,7 +1,7 @@
 from flask import request, jsonify, render_template, redirect, url_for
 from app import app, db
 from app.models import Document, Record, Entrant, Role
-from app.forms import DocumentForm, RecordForm, EntrantForm
+from app.forms import DocumentForm, RecordForm, EnslavedForm, OwnerForm
 
 @app.route('/')
 def index():
@@ -50,45 +50,58 @@ def new_record(docId):
 @app.route('/documents/<docId>/records/<recId>', methods = ['GET'])
 def get_record(recId, docId=None):
     rec = Record.query.filter_by(id=recId).first_or_404()
-    return render_template('record.html', docId = docId, record = rec)
+    record_roles = {
+        'Manumission' : ['Owner','Emancipated'],
+        'Runaway advertisement' : ['Owner','Escaped'],
+        'Advertisement of Sale' : ['Owner','Enslaved'],
+        'Baptism' : ['Owner','Priest','Baptised'],
+        'Runaway capture advertisement' : ['Captor', 'Captured'],
+        'Smallpox inoculation notice' : ['Inoculated','Owner'],
+        'Execution notice' : ['Executed'],
+        'Probate' : ['Owner','Enslaved']
+    }
+    rel_roles = record_roles[rec.rectype]
+    existing_roles =  { role.role for entrant in rec.entrants
+        for role in entrant.roles }
+    unassigned_roles = [ role for role in rel_roles
+        if role not in existing_roles ]
+    return render_template('record.html', docId = docId, record = rec,
+        unassigned_roles = unassigned_roles)
 
 @app.route('/records/<recId>/entrants/new',
     methods = ['GET','POST'])
-@app.route('/documents/<docId>/records/<recId>/entrants/new',
-    methods = ['GET','POST'])
-def new_entrant(recId, docId=None):
-    form = EntrantForm()
-    for entry in form.roles.entries:
-        entry.choices = [ (r.id, r.role) for r in Role.query.all() ]
+# @app.route('/documents/<docId>/records/<recId>/entrants/new',
+#     methods = ['GET','POST'])
+def new_entrant(recId=None):
+    role = request.args['role']
+    mapped_roles = {
+        'Owner': 'owner',
+        'Enslaved' : 'enslaved',
+        'Escaped' : 'enslaved',
+        'Baptised' : 'enslaved',
+        'Emancipated' : 'enslaved',
+        'Captor' : 'owner',
+        'Inoculated' : 'enslaved',
+        'Executed' : 'enslaved',
+        'Priest' : 'owner'
+    }
+    role_type = mapped_roles[role]
+    if role_type == 'enslaved':
+        form = EnslavedForm()
+    else:
+        form = OwnerForm()
+    # form.role.choices = [ (r.id, r.role) for r in Role.query.all() ]
     record = Record.query.filter_by(id=recId).first_or_404()
     if request.method == 'POST':
-        role_objs = [ Role.query.filter_by(id=rid).first()
-            for rid in form.roles.data ]
+        selected_role = Role.query.filter_by(role=role).first()
         ent = Entrant(first_name = form.first_name.data,
-            last_name=form.last_name.data, roles = role_objs,
+            last_name=form.last_name.data, roles = [ selected_role ],
             record_id=record.id)
         db.session.add(ent)
         db.session.commit()
 
         return redirect(url_for('get_record', recId = recId))
-    return render_template('new_entrant.html', form = form, record = record)
-
-# @app.route('/entrants/<entId>/roles/add', methods = ['POST'])
-# def add_role(entId):
-#     form = RoleForm()
-#     record = Record.query.filter_by(id=recId).first_or_404()
-#     if request.method == 'POST':
-#         role_objs = [ Role.query.filter_by(id=rid).first()
-#             for rid in form.roles.data ]
-#         ent = Entrant(first_name = form.first_name.data,
-#             last_name=form.last_name.data, roles = role_objs,
-#             record_id=record.id)
-#         db.session.add(ent)
-#         db.session.commit()
-
-#         return redirect(url_for('get_record', recId = recId))
-#     return render_template('new_entrant.html', form = form, record = record)
-
+    return render_template('new_entrant.html', form = form, record = record, role = role)
 
 @app.route('/entrants/<entId>')
 @app.route('/documents/<docId>/records/<recId>/entrants/<entId>', methods = ['GET'])

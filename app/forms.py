@@ -20,19 +20,28 @@ class RecordForm(FlaskForm):
     rectype = SelectField('Type', choices=[('Manumission','Manumission'),
         ('Runaway advertisement','Runaway advertisement'),('Advertisement of Sale','Advertisement of Sale'),
         ('Baptism','Baptism'), ('Runaway capture advertisement','Runaway capture advertisement'),
-        ('Smallpox inoculation notice','Smallpox inoculation notice'), ('Execution notice','Execution notice')])
+        ('Smallpox inoculation notice','Smallpox inoculation notice'), ('Execution notice','Execution notice'),
+        ('Probate', 'Probate')])
     citation = StringField('Citation information')
     date = DateField('Date of publication')
     comments = TextAreaField('Comments')
     submit = SubmitField('Create')
 
-class EntrantForm(FlaskForm):
-    first_name = StringField('First name')
-    last_name = StringField('Last name')
-    # roles = FieldList(SelectField('Role', choices=[('seller', 'Seller'),
-    #     ('owner','Owner'), ('enslaved', 'Enslaved'), ('baptised', 'Baptised'),
-    #     ('inoculated', 'Inoculated'), ('escaped', 'Escaped'),
-    #     ('liberated', 'Liberated'), ('captured', 'Captured'),
-    #     ('captor','Captor')]), min_entries=2)
-    roles = FieldList(SelectField('Role', choices=[]), min_entries=2)
-    submit = SubmitField('Add')
+class EnslavedForm(FlaskForm):
+        first_name = StringField('First name')
+        last_name = StringField('Last name')
+        age = StringField('Age')
+        sex = StringField('Sex')
+        race = StringField('Race')
+        tribe = StringField('Tribe')
+        origin = StringField('Origin')
+        status = StringField('Status')
+        vocation = StringField('Vocation')
+        submit = SubmitField('Add')
+
+class OwnerForm(FlaskForm):
+        first_name = StringField('First name')
+        last_name = StringField('Last name')
+        title = StringField('Title')
+        vocation = StringField('Vocation')
+        submit = SubmitField('Add')

@@ -3,20 +3,15 @@
 {% block content %}
     <div class="container">
         <div class="page-header">
-            <h3>Person for {{ record.citation }}</h3>
+            <h3>{{ role }} for {{ record.rectype }}</h3>
         </div>
         
         <form action="" method="post">
             <div>
-                <dt>{{ form.first_name.label }}</dt>
-                    <dd>{{ form.first_name(size=32) }}</dd>
-                <dt>{{ form.last_name.label }}</dt>
-                    <dd>{{ form.last_name(size=32) }}</dd>
-            </div>
-            <div>
-                {{ form.roles.label }}
-                {{ form.roles }}
-<!--                 <button class="btn btn-secondary add-field" type="button">Add role</button> -->
+                {% for field in form  %}
+                    {% if field.widget.input_type != 'hidden' and field.widget.input_type != 'submit' %} <dt>{{ field.label }}</dt><dd>{{ field(size=32) }}</dd> {% endif %}
+                    
+                {% endfor %}
             </div>
             <button class="btn btn-primary">{{ form.submit() }}</button>
         </form>
