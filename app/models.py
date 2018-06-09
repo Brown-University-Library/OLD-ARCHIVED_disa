@@ -37,11 +37,24 @@ has_role = db.Table('has_role',
     db.Column('role', db.Integer, db.ForeignKey('roles.id'))
 )
 
+recordtype_roles = db.Table('recordtype_roles',
+    db.Column('id', db.Integer, primary_key=True),
+    db.Column('record_type', db.Integer, db.ForeignKey('record_types.id')),
+    db.Column('role', db.Integer, db.ForeignKey('roles.id'))
+)
+
+documenttype_recordtypes = db.Table('documenttype_recordtypes',
+    db.Column('id', db.Integer, primary_key=True),
+    db.Column('document_type', db.Integer, db.ForeignKey('document_types.id')),
+    db.Column('record_type', db.Integer, db.ForeignKey('record_types.id')),
+)
+
 class Document(db.Model):
     __tablename__ = 'documents'
 
     id = db.Column(db.Integer, primary_key=True)
-    doctype = db.Column(db.String())
+    document_type_id = db.Column(db.Integer, db.ForeignKey('document_types.id'),
+        nullable=False)
     date = db.Column(db.DateTime())
     national_context = db.Column(db.String())
     citation = db.Column(db.String())
@@ -52,11 +65,23 @@ class Document(db.Model):
     def __repr__(self):
         return '<Document {0}>'.format(self.id)
 
+class DocumentType(db.Model):
+    __tablename__ = 'document_types'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String())
+    record_types = db.relationship(
+        'RecordType', secondary=documenttype_recordtypes,
+        back_populates='document_types')
+    documents = db.relationship('Document',
+        backref='document_type', lazy=True)
+
 class Record(db.Model):
     __tablename__ = 'records'
 
     id = db.Column(db.Integer, primary_key=True)
-    rectype = db.Column(db.String())
+    record_type_id = db.Column(db.Integer, db.ForeignKey('record_types.id'),
+        nullable=False)
     citation = db.Column(db.String())
     date = db.Column(db.DateTime())
     comments = db.Column(db.String())
@@ -69,6 +94,20 @@ class Record(db.Model):
 
     def __repr__(self):
         return '<Record {0}>'.format(self.id)
+
+class RecordType(db.Model):
+    __tablename__ = 'record_types'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String())
+    records = db.relationship('Record',
+        backref='record_type', lazy=True)
+    roles = db.relationship(
+        'Role', secondary=recordtype_roles,
+        back_populates='record_types')
+    document_types = db.relationship(
+        'DocumentType', secondary=documenttype_recordtypes,
+        back_populates='record_types')
 
 class Location(db.Model):
     __tablename__ = 'locations'
@@ -151,9 +190,13 @@ class Role(db.Model):
     __tablename__ = 'roles'
 
     id = db.Column(db.Integer, primary_key=True)
-    role = db.Column(db.String())
+    name = db.Column(db.String())
+    description_group = db.Column(db.Integer)
     entrants = db.relationship('Entrant',
         secondary='has_role', back_populates='roles')
+    record_types = db.relationship(
+        'RecordType', secondary=recordtype_roles,
+        back_populates='roles')
 
 class Person(db.Model):
     __tablename__ = 'people'

@@ -73,23 +73,26 @@ def get_record(recId, docId=None):
 # @app.route('/documents/<docId>/records/<recId>/entrants/new',
 #     methods = ['GET','POST'])
 def new_entrant(recId=None):
-    role = request.args['role']
-    mapped_roles = {
-        'Owner': 'owner',
-        'Enslaved' : 'enslaved',
-        'Escaped' : 'enslaved',
-        'Baptised' : 'enslaved',
-        'Emancipated' : 'enslaved',
-        'Captor' : 'owner',
-        'Inoculated' : 'enslaved',
-        'Executed' : 'enslaved',
-        'Priest' : 'owner'
-    }
-    role_type = mapped_roles[role]
-    if role_type == 'enslaved':
+    role_str = request.args['role']
+    role_obj = Role.query.filter_by(role=role_str).first()
+    # mapped_roles = {
+    #     'Owner': 'owner',
+    #     'Enslaved' : 'enslaved',
+    #     'Escaped' : 'enslaved',
+    #     'Baptised' : 'enslaved',
+    #     'Emancipated' : 'enslaved',
+    #     'Captor' : 'owner',
+    #     'Inoculated' : 'enslaved',
+    #     'Executed' : 'enslaved',
+    #     'Priest' : 'owner'
+    # }
+    # role_type = mapped_roles[role]
+    if role_obj.description_group == 1:
         form = EnslavedForm()
-    else:
+    elif role_obj.description_group == 2:
         form = OwnerForm()
+    else:
+        return "<h1>Invalid</h1>"
     # form.role.choices = [ (r.id, r.role) for r in Role.query.all() ]
     record = Record.query.filter_by(id=recId).first_or_404()
     if request.method == 'POST':
@@ -100,7 +103,11 @@ def new_entrant(recId=None):
         db.session.add(ent)
         db.session.commit()
 
-        return redirect(url_for('get_record', recId = recId))
+        if form.person_match.data == True:
+            return redirect(url_for('add_entrant_to_person', entId = ent.id))
+        else:
+            person_id = create_person(ent.id)
+        return redirect(url_for('get_record', recId = recId)) 
     return render_template('new_entrant.html', form = form, record = record, role = role)
 
 @app.route('/entrants/<entId>')
@@ -108,3 +115,27 @@ def new_entrant(recId=None):
 def get_entrant(entId, recId=None, docId=None):
     ent = Entrant.query.filter_by(id=entId).first_or_404()
     return render_template('entrant.html', entrant=ent, record = recId)
+
+
+# def add_entrant_to_person(entId, personId):
+
+def new_document(data):
+    doc = Document(data)
+    db.session.add(doc)
+    db.session.commit()
+    return doc
+
+def update_document(doc):
+
+def new_record(doc, rectype):
+    rec = Record(document=doc.id)
+    
+def match_entrant_to_existing_person()
+
+def create_person_from_entrant(entrantId):
+    ent = Entrant.query.filter_by(id=entrantId).first()
+    person = Person(first_name=ent.first_name, last_name=ent.last_name)
+    person.references.append(ent)
+    db.session.add(person)
+    db.session.commit()
+    return person.id
