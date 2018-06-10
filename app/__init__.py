@@ -19,10 +19,18 @@ import click
 @click.option('--full', '-f', is_flag=True)
 @click.option('--tables','-t', multiple=True)
 def clear_data(full, tables):
-    disa_models = [ models.Document, models.Record,
-        models.Location, models.Entrant, models.Role,
-        models.Person, models.EnslavedDescription,
-        models.OwnerDescription ]
+    disa_models = [ 
+        models.Person,
+        models.EnslavedDescription,
+        models.OwnerDescription,
+        models.Entrant,
+        models.Role,
+        models.Location,
+        models.Record,
+        models.RecordType,
+        models.Document,
+        models.DocumentType
+    ]
     model_map = { 'documents' : models.Document,
         'records' : models.Record,
         'locations' : models.Location,
@@ -30,7 +38,9 @@ def clear_data(full, tables):
         'roles' : models.Role,
         'people' : models.Person,
         'description_of_enslaved' : models.EnslavedDescription,
-        'description_of_owner' : models.OwnerDescription
+        'description_of_owner' : models.OwnerDescription,
+        'record_types' : models.RecordType,
+        'document_types': models.DocumentType
     }
     if full:
         del_tables = disa_models
@@ -65,7 +75,8 @@ def load_multivalued_attributes():
         { 'name': 'runaway capture advertisement' },
         { 'name': 'smallpox inoculation notice' },
         { 'name': 'execution notice'},
-        { 'name': 'probate' }
+        { 'name': 'probate' },
+        { 'name': 'manumission'}
     ]
     document_types = [
         { 'name': 'newspaper' },
@@ -88,3 +99,38 @@ def load_multivalued_attributes():
             row = table(**data)
             db.session.add(row)
         db.session.commit()
+
+@app.cli.command()
+def load_many_to_many():
+    recordtype_roles = [
+        ('manumission', ['owner','emancipated']),
+        ('runaway advertisement', ['owner','escaped']),
+        ('advertisement of sale', ['owner','enslaved']),
+        ('baptism', ['owner','priest','baptised']),
+        ('runaway capture advertisement', ['captor', 'captured']),
+        ('smallpox inoculation notice', ['inoculated','owner']),
+        ('execution notice', ['executed']),
+        ('probate', ['owner','enslaved'])
+    ]
+
+    many_to_many = [
+        (models.RecordType, models.Role, recordtype_roles,
+            'name', 'name', 'roles')
+    ]
+
+    for many in many_to_many:
+        model1 = many[0]
+        model2 = many[1]
+        print(model1, model2)
+        for mapping in many[2]:
+            query = { many[3]: mapping[0] }
+            print(query)
+            focus = model1.query.filter_by( **query ).first()
+            print(focus)
+            opts  = model2.query.all()
+            print(opts)
+            rel = [ o for o in opts if getattr(o, many[4]) in mapping[1] ]
+            print(rel)
+            getattr(focus, many[5]).extend(rel)
+            db.session.add(focus)
+            db.session.commit()
