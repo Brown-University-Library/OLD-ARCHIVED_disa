@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, SubmitField, SelectField, DateField
+from wtforms import StringField, TextAreaField, SubmitField
+from wtforms import HiddenField, SelectField, DateField
 from wtforms import FieldList
 
 class DocumentForm(FlaskForm):
@@ -20,21 +21,17 @@ class RecordForm(FlaskForm):
     comments = TextAreaField('Comments')
     submit = SubmitField('Create')
 
-class EnslavedForm(FlaskForm):
+class EntrantForm(FlaskForm):
+    record = HiddenField('Record')
+    role = SelectField('Type')
     first_name = StringField('First name')
     last_name = StringField('Last name')
     age = StringField('Age')
     sex = StringField('Sex')
+    title = StringField('Title')
     race = StringField('Race')
     tribe = StringField('Tribe')
     origin = StringField('Origin')
     status = StringField('Status')
-    vocation = StringField('Vocation')
-    submit = SubmitField('Add')
-
-class OwnerForm(FlaskForm):
-    first_name = StringField('First name')
-    last_name = StringField('Last name')
-    title = StringField('Title')
     vocation = StringField('Vocation')
     submit = SubmitField('Add')

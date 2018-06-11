@@ -1,7 +1,7 @@
 from flask import request, jsonify, render_template, redirect, url_for
 from app import app, db
 from app.models import Document, Record, Entrant, Role, DocumentType, RecordType
-from app.forms import DocumentForm, RecordForm, EnslavedForm, OwnerForm
+from app.forms import DocumentForm, RecordForm, EntrantForm
 
 @app.route('/')
 def index():
@@ -65,34 +65,29 @@ def show_record(recId):
 
 @app.route('/entrants/new', methods = ['GET','POST'])
 def new_entrant():
-    role = Role.query.get(request.args['role'])
-    if role.description_group == 1:
-        form = EnslavedForm()
-    elif role.description_group == 2:
-        form = OwnerForm()
-    else:
-        return "<h1>Invalid</h1>"
-    record = Record.query.get(request.args['recId'])
+    form = EntrantForm()
     if request.method == 'POST':
-        selected_role = Role.query.filter_by(role=role).first()
         ent = Entrant(first_name = form.first_name.data,
-            last_name=form.last_name.data, roles = [ selected_role ],
-            record_id=record.id)
+            last_name=form.last_name.data)
+        record = Record.query.get(form.record.data)
+        ent.record = record
+        role = Role.query.get(form.role.data)
+        ent.roles.append(role)
         db.session.add(ent)
         db.session.commit()
-
-        if form.person_match.data == True:
-            return redirect(url_for('add_entrant_to_person', entId = ent.id))
-        else:
-            person_id = create_person(ent.id)
-        return redirect(url_for('show_record', recId = recId)) 
-    return render_template('entrant_new.html', form = form, record = record, role = role)
+        return redirect(url_for('show_record', recId = record.id))
+    record = Record.query.get(request.args['recId'])
+    form.record.data = record.id
+    form.role.choices = [
+        (r.id, r.name) for r in Role.query.order_by('name')]
+    if request.args.get('role', None):
+        form.role.data = request.args['role']
+    return render_template('entrant_new.html', form = form, record = record)
 
 @app.route('/entrants/<entId>')
-@app.route('/documents/<docId>/records/<recId>/entrants/<entId>', methods = ['GET'])
-def get_entrant(entId, recId=None, docId=None):
-    ent = Entrant.query.filter_by(id=entId).first_or_404()
-    return render_template('entrant.html', entrant=ent, record = recId)
+def show_entrant(entId):
+    ent = Entrant.query.get(entId)
+    return render_template('entrant_show.html', entrant=ent)
 
 
 # def add_entrant_to_person(entId, personId):

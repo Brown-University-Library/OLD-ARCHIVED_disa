@@ -6,7 +6,11 @@
 	<h3>Contents</h3>
 	<ul>
 	{% for record in document.records %}
-	    <li><a href="{{ url_for('get_record', docId = document.id, recId=record.id) }}">{{ record.rectype }}</a></li>
+	    <li>
+	    	{% if record.citation%}
+	    		<span>{{ record.citation }}: </span>
+	    	{% endif %}
+	    	<a href="{{ url_for('show_record', docId = document.id, recId=record.id) }}">{{ record.record_type.name }}</a></li>
 	{% endfor %}
 	</ul>
 	<a class="btn btn-primary" href="{{ url_for('new_record', docId = document.id)}}">New Entry</a>

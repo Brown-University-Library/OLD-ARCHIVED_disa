@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+	<legend>
+		<div class='form-group row'>
+			<label class="col-sm-2 col-form-label">Record for:</label>
+			<label class="col-sm-10">
+			{% if entrant.first_name or entrant.last_name %}
+				{% if entrant.first_name %}
+					<span>{{ entrant.first_name }}</span>
+				{% endif %}
+				{% if entrant.last_name %}
+					<span>{{ entrant.last_name }}</span>
+				{% endif %}
+			{% else %}
+				<span>Unknown</span>
+			{% endif %}
+			</label>
+			<label class="col-sm-2 col-form-label">In:</label>
+			<label class="col-sm-10">
+				<a href="{{ url_for('show_document', docId=entrant.record.document.id)}}">{{ entrant.record.document.citation}}</a>
+				<a href="{{ url_for('show_record', recId=entrant.record.id)}}">{{ entrant.record.record_type.name }}</a>
+		</div>
+	</legend>
+	
+	
+	<label class="col-sm-2 col-form-label">Roles:</label>
+	<div class="col-sm-10">
+		<ul>
+			{% for role in entrant.roles %}
+				<li>{{ role.name}}</li>
+			{% endfor %}
+			<li><a href="">Add role</a></li>
+		</ul>
+	</div>
+
+</div>
+
+{% endblock %}

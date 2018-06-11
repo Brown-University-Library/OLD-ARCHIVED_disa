@@ -3,16 +3,35 @@
 {% block content %}
     <div class="container">
         <div class="page-header">
-            <h3>{{ role }} for {{ record.rectype }}</h3>
+            <h3>Person for {{ record.record_type.name }}</h3>
         </div>
         
         <form action="" method="post">
-            <div>
-                {% for field in form  %}
-                    {% if field.widget.input_type != 'hidden' and field.widget.input_type != 'submit' %} <dt>{{ field.label }}</dt><dd>{{ field(size=32) }}</dd> {% endif %}
-                    
-                {% endfor %}
-            </div>
+            {{ form.record }}
+            <p>
+                <dt>{{ form.role.label }}</dt>
+                    <dd>{{ form.role }}</dd>
+                <dt>{{ form.first_name.label }}</dt>
+                    <dd>{{ form.first_name(size=32) }}</dd>
+                <dt>{{ form.last_name.label }}</dt>
+                    <dd>{{ form.last_name(size=32) }}</dd>
+                <dt>{{ form.age.label }}</dt>
+                    <dd>{{ form.age(size=32) }}</dd>
+                <dt>{{ form.sex.label }}</dt>
+                    <dd>{{ form.sex(size=32) }}</dd>
+                <dt>{{ form.title.label }}</dt>
+                    <dd>{{ form.title(size=32) }}</dd>
+                <dt>{{ form.race.label }}</dt>
+                    <dd>{{ form.race(size=32) }}</dd>
+                <dt>{{ form.origin.label }}</dt>
+                    <dd>{{ form.origin(size=32) }}</dd>
+                <dt>{{ form.tribe.label }}</dt>
+                    <dd>{{ form.tribe(size=32) }}</dd>
+                <dt>{{ form.status.label }}</dt>
+                    <dd>{{ form.status(size=32) }}</dd>
+                <dt>{{ form.vocation.label }}</dt>
+                    <dd>{{ form.vocation(size=32) }}</dd>
+            </p>
             <button class="btn btn-primary">{{ form.submit() }}</button>
         </form>
         

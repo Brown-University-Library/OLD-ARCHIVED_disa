@@ -146,10 +146,8 @@ class Entrant(db.Model):
         nullable=False)
     person_id = db.Column(db.Integer, db.ForeignKey('people.id'),
         nullable=True)
-    desc_ensl = db.relationship(
-        'EnslavedDescription', backref='entrant', lazy=True)
-    desc_owner = db.relationship(
-        'OwnerDescription', backref='entrant', lazy=True)
+    description = db.relationship(
+        'Description', backref='entrant', lazy=True)
     roles = db.relationship('Role',
         secondary='has_role', back_populates='entrants')
     owners = db.relationship(
@@ -178,13 +176,13 @@ class Entrant(db.Model):
     def has_parent(self, entrObj):
         self.parents.append(entrObj)
 
-    def description(self, descObj):
-        if isinstance(descObj, EnslavedDescription):
-            self.desc_ensl.append(descObj)
-        elif isinstance(descObj, OwnerDescription):
-            self.desc_owner.append(descObj)
-        else:
-            return
+    # def description(self, descObj):
+    #     if isinstance(descObj, EnslavedDescription):
+    #         self.desc_ensl.append(descObj)
+    #     elif isinstance(descObj, OwnerDescription):
+    #         self.desc_owner.append(descObj)
+    #     else:
+    #         return
 
 class Role(db.Model):
     __tablename__ = 'roles'
@@ -207,25 +205,17 @@ class Person(db.Model):
     comments = db.Column(db.String())
     references = db.relationship('Entrant', backref='person', lazy=True)
 
-class EnslavedDescription(db.Model):
-    __tablename__ = 'description_of_enslaved'
+class Description(db.Model):
+    __tablename__ = 'entrant_description'
 
     id = db.Column(db.Integer, primary_key=True)    
     age = db.Column(db.Integer)
     sex = db.Column(db.String())
+    title = db.Column(db.String())
     race = db.Column(db.String())
     tribe = db.Column(db.String())
     origin = db.Column(db.String())
     status = db.Column(db.String())
-    vocation = db.Column(db.String())
-    entrant_id = db.Column(db.Integer, db.ForeignKey('entrants.id'),
-        nullable=False)
-
-class OwnerDescription(db.Model):
-    __tablename__ = 'description_of_owner'
-
-    id = db.Column(db.Integer, primary_key=True)    
-    title = db.Column(db.String())
     vocation = db.Column(db.String())
     entrant_id = db.Column(db.Integer, db.ForeignKey('entrants.id'),
         nullable=False)

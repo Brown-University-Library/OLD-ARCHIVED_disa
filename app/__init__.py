@@ -21,8 +21,7 @@ import click
 def clear_data(full, tables):
     disa_models = [ 
         models.Person,
-        models.EnslavedDescription,
-        models.OwnerDescription,
+        models.Description,
         models.Entrant,
         models.Role,
         models.Location,
@@ -37,8 +36,7 @@ def clear_data(full, tables):
         'entrants' : models.Entrant,
         'roles' : models.Role,
         'people' : models.Person,
-        'description_of_enslaved' : models.EnslavedDescription,
-        'description_of_owner' : models.OwnerDescription,
+        'entrant_description' : models.Description,
         'record_types' : models.RecordType,
         'document_types': models.DocumentType
     }
@@ -52,6 +50,7 @@ def clear_data(full, tables):
         rows = table.query.all()
         for row in rows:
             db.session.delete(row)
+        print('Clear: {}'.format(table.__tablename__))
         db.session.commit()
 
 @app.cli.command()
@@ -93,11 +92,12 @@ def load_multivalued_attributes():
         ( models.RecordType, record_types ),
         ( models.DocumentType, document_types ),
     ]
-    for table_tup in tables:
-        table = table_tup[0]
-        for data in table_tup[1]:
+    for pair in tables:
+        table = pair[0]
+        for data in pair[1]:
             row = table(**data)
             db.session.add(row)
+            print('{}: value {}'.format(table.__tablename__, data))
         db.session.commit()
 
 @app.cli.command()
@@ -121,16 +121,14 @@ def load_many_to_many():
     for many in many_to_many:
         model1 = many[0]
         model2 = many[1]
-        print(model1, model2)
         for mapping in many[2]:
             query = { many[3]: mapping[0] }
-            print(query)
             focus = model1.query.filter_by( **query ).first()
-            print(focus)
             opts  = model2.query.all()
-            print(opts)
             rel = [ o for o in opts if getattr(o, many[4]) in mapping[1] ]
-            print(rel)
             getattr(focus, many[5]).extend(rel)
             db.session.add(focus)
+            print( "{}:{} asscoiated with {}:{}".format(
+                model1.__tablename__, mapping[0],
+                model2.__tablename__, mapping[1]) )
             db.session.commit()
