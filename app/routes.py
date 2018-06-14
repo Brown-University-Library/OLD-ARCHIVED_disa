@@ -1,7 +1,7 @@
 from flask import request, jsonify, render_template, redirect, url_for
 from app import app, db
 from app.models import Document, Record, Entrant, Role, DocumentType, RecordType
-from app.forms import DocumentForm, RecordForm, EntrantForm
+from app.forms import DocumentForm, RecordForm, EntrantForm, EntrantRelationshipForm
 
 @app.route('/')
 def index():
@@ -89,26 +89,31 @@ def show_entrant(entId):
     ent = Entrant.query.get(entId)
     return render_template('entrant_show.html', entrant=ent)
 
+@app.route('/entrants/<entId>/relationships')
+def entrant_relationships(entId):
+    ent = Entrant.query.get(entId)
+    return render_template('entrant_relationships.html', entrant = ent)
 
-# def add_entrant_to_person(entId, personId):
-
-# def new_document(data):
-#     doc = Document(data)
-#     db.session.add(doc)
-#     db.session.commit()
-#     return doc
-
-# def update_document(doc):
-
-# def new_record(doc, rectype):
-#     rec = Record(document=doc.id)
-    
-# def match_entrant_to_existing_person()
-
-# def create_person_from_entrant(entrantId):
-#     ent = Entrant.query.filter_by(id=entrantId).first()
-#     person = Person(first_name=ent.first_name, last_name=ent.last_name)
-#     person.references.append(ent)
-#     db.session.add(person)
-#     db.session.commit()
-#     return person.id
+@app.route('/entrants/<entId>/relationships/add', methods=['GET','POST'])
+def add_entrant_relationships(entId):
+    form  = EntrantRelationshipForm()
+    if request.method == 'POST':
+        ent = Entrant.query.get(form.entrant.data)
+        other = Entrant.query.get(form.other.data)
+        rel_opt = int(form.related_as.data)
+        if rel_opt == 1:
+            ent.spouses.append(other)
+        elif rel_opt == 2:
+            ent.parents.append(other)
+        elif rel_opt == 3:
+            ent.owners.append(other)
+        db.session.add(ent)
+        db.session.commit()
+        return redirect(url_for('entrant_relationships', entId = ent.id))
+    ent = Entrant.query.get(entId)
+    form.entrant.data = ent.id
+    form.other.choices = [ (e.id, e.first_name + ' ' + e.last_name)
+        for e in Entrant.query.filter_by(record_id=ent.record_id)
+        if e.id != ent.id ]
+    form.related_as.choices = [ (1, 'spouse'), (2, 'child of'), (3, 'owned by') ]
+    return render_template('entrant_relationships.html', form = form, entrant = ent)

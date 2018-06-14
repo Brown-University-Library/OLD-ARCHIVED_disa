@@ -35,3 +35,9 @@ class EntrantForm(FlaskForm):
     status = StringField('Status')
     vocation = StringField('Vocation')
     submit = SubmitField('Add')
+
+class EntrantRelationshipForm(FlaskForm):
+    entrant = HiddenField('Entrant')
+    other = SelectField('Person')
+    related_as = SelectField('Relationship')
+    submit = SubmitField('Add')
