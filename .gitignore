@@ -8,3 +8,5 @@ include
 lib
 share
 *.sqlite
+venv/*
+apache/disa_app.conf

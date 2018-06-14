@@ -10,7 +10,7 @@ has_location = db.Table('has_location',
     db.Column('id', db.Integer, primary_key=True),
     db.Column('event', db.Integer, db.ForeignKey('records.id')),
     db.Column('location', db.Integer, db.ForeignKey('locations.id')),
-    db.Column('location_for', db.String())
+    db.Column('location_for', db.String(255))
 )
 
 owned_by = db.Table('owned_by',
@@ -56,10 +56,10 @@ class Document(db.Model):
     document_type_id = db.Column(db.Integer, db.ForeignKey('document_types.id'),
         nullable=False)
     date = db.Column(db.DateTime())
-    national_context = db.Column(db.String())
-    citation = db.Column(db.String())
-    zotero_id = db.Column(db.String())
-    comments = db.Column(db.String())
+    national_context = db.Column(db.String(255))
+    citation = db.Column(db.String(255))
+    zotero_id = db.Column(db.String(255))
+    comments = db.Column(db.String(255))
     records = db.relationship('Record', backref='document', lazy=True)
 
     def __repr__(self):
@@ -69,7 +69,7 @@ class DocumentType(db.Model):
     __tablename__ = 'document_types'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String())
+    name = db.Column(db.String(255))
     record_types = db.relationship(
         'RecordType', secondary=documenttype_recordtypes,
         back_populates='document_types')
@@ -82,9 +82,9 @@ class Record(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     record_type_id = db.Column(db.Integer, db.ForeignKey('record_types.id'),
         nullable=False)
-    citation = db.Column(db.String())
+    citation = db.Column(db.String(255))
     date = db.Column(db.DateTime())
-    comments = db.Column(db.String())
+    comments = db.Column(db.String(255))
     entrants = db.relationship('Entrant', backref='record', lazy=True)
     locations = db.relationship(
         'Location', secondary=has_location,
@@ -99,7 +99,7 @@ class RecordType(db.Model):
     __tablename__ = 'record_types'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String())
+    name = db.Column(db.String(255))
     records = db.relationship('Record',
         backref='record_type', lazy=True)
     roles = db.relationship(
@@ -113,8 +113,8 @@ class Location(db.Model):
     __tablename__ = 'locations'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String())
-    location_type = db.Column(db.String())
+    name = db.Column(db.String(255))
+    location_type = db.Column(db.String(255))
 
     within = db.relationship(
         'Location', secondary=location_within,
@@ -140,8 +140,8 @@ class Entrant(db.Model):
     __tablename__ = 'entrants'
 
     id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String())
-    last_name = db.Column(db.String())
+    first_name = db.Column(db.String(255))
+    last_name = db.Column(db.String(255))
     record_id = db.Column(db.Integer, db.ForeignKey('records.id'),
         nullable=False)
     person_id = db.Column(db.Integer, db.ForeignKey('people.id'),
@@ -188,7 +188,7 @@ class Role(db.Model):
     __tablename__ = 'roles'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String())
+    name = db.Column(db.String(255))
     description_group = db.Column(db.Integer)
     entrants = db.relationship('Entrant',
         secondary='has_role', back_populates='roles')
@@ -200,9 +200,9 @@ class Person(db.Model):
     __tablename__ = 'people'
 
     id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String())
-    last_name = db.Column(db.String())
-    comments = db.Column(db.String())
+    first_name = db.Column(db.String(255))
+    last_name = db.Column(db.String(255))
+    comments = db.Column(db.String(255))
     references = db.relationship('Entrant', backref='person', lazy=True)
 
 class Description(db.Model):
@@ -210,12 +210,12 @@ class Description(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)    
     age = db.Column(db.Integer)
-    sex = db.Column(db.String())
-    title = db.Column(db.String())
-    race = db.Column(db.String())
-    tribe = db.Column(db.String())
-    origin = db.Column(db.String())
-    status = db.Column(db.String())
-    vocation = db.Column(db.String())
+    sex = db.Column(db.String(255))
+    title = db.Column(db.String(255))
+    race = db.Column(db.String(255))
+    tribe = db.Column(db.String(255))
+    origin = db.Column(db.String(255))
+    status = db.Column(db.String(255))
+    vocation = db.Column(db.String(255))
     entrant_id = db.Column(db.Integer, db.ForeignKey('entrants.id'),
         nullable=False)
