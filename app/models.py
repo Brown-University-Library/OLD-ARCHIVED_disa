@@ -160,29 +160,15 @@ class Entrant(db.Model):
         primaryjoin=(child_of.c.child == id),
         secondaryjoin=(child_of.c.parent == id),
         backref=db.backref('child_of', lazy='dynamic'), lazy='dynamic')
+    spouses = db.relationship(
+        'Entrant', secondary=has_spouse,
+        primaryjoin=(has_spouse.c.spouse1 == id),
+        secondaryjoin=(has_spouse.c.spouse2 == id),
+        backref=db.backref('has_spouse', lazy='dynamic'), lazy='dynamic')
 
     def __repr__(self):
         return '<Entrant {0}: {1} {2}>'.format(
             self.id, self.first_name, self.last_name)
-
-    def add_role(self, roleStr):
-        entrant_role = EntrantRole()
-        entrant_role.role = roleStr
-        self.roles.append(entrant_role)
-
-    def has_owner(self, entrObj):
-        self.owners.append(entrObj)
-
-    def has_parent(self, entrObj):
-        self.parents.append(entrObj)
-
-    # def description(self, descObj):
-    #     if isinstance(descObj, EnslavedDescription):
-    #         self.desc_ensl.append(descObj)
-    #     elif isinstance(descObj, OwnerDescription):
-    #         self.desc_owner.append(descObj)
-    #     else:
-    #         return
 
 class Role(db.Model):
     __tablename__ = 'roles'
