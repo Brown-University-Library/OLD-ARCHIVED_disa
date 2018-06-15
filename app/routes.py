@@ -36,7 +36,7 @@ def new_document():
         (t.id, t.name) for t in DocumentType.query.order_by('name')]
     return render_template('document_new.html', form=form)
 
-@app.route('/records/new', methods = ['GET','POST'])
+# @app.route('/records/new', methods = ['GET','POST'])
 def new_record():
     form = RecordForm()
     doc = Document.query.get(request.args['docId'])
@@ -52,7 +52,7 @@ def new_record():
         (t.id, t.name) for t in RecordType.query.order_by('name')]
     return render_template('record_new.html', form = form, document = doc)
 
-@app.route('/records/<recId>', methods = ['GET'])
+# @app.route('/records/<recId>', methods = ['GET'])
 def show_record(recId):
     rec = Record.query.get(recId)
     rel_roles = rec.record_type.roles
@@ -117,3 +117,30 @@ def add_entrant_relationships(entId):
         if e.id != ent.id ]
     form.related_as.choices = [ (1, 'spouse'), (2, 'child of'), (3, 'owned by') ]
     return render_template('entrant_relationships.html', form = form, entrant = ent)
+
+
+@app.route('/records', methods = ['GET','POST'])
+@app.route('/records/<recId>', methods = ['GET','POST'])
+def edit_record(recId=None):
+    if recId == None:
+        form = RecordForm()
+        doc = Document.query.get(request.args['docId'])
+        if request.method == 'POST':
+            rectype = RecordType.query.get(form.rectype.data)
+            rec = Record(record_type = rectype, citation = form.citation.data,
+                date=form.date.data, comments = form.comments.data, 
+                document = doc)
+            db.session.add(rec)
+            db.session.commit()
+            return redirect(url_for('edit_record', recId = rec.id))
+        form.rectype.choices = [
+            (t.id, t.name) for t in RecordType.query.order_by('name')]
+        return render_template('record_details.html', form = form, document = doc)
+    rec = Record.query.get(recId)
+    rel_roles = rec.record_type.roles
+    existing_roles =  { role for entrant in rec.entrants
+        for role in entrant.roles }
+    unassigned_roles = [ role for role in rel_roles
+        if role not in existing_roles ]
+    return render_template('record_details.html', record = rec,
+        unassigned_roles = unassigned_roles)
