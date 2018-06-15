@@ -4,6 +4,8 @@ from flask_migrate import Migrate
 from config import Config
 
 import os
+import json
+import datetime
 
 app = Flask(__name__)
 app.config.from_object(os.environ['APP_SETTINGS'])
@@ -132,3 +134,41 @@ def load_many_to_many():
                 model1.__tablename__, mapping[0],
                 model2.__tablename__, mapping[1]) )
             db.session.commit()
+
+
+
+@app.cli.command()
+# @click.option('--full', '-f', is_flag=True)
+def migrate_mongo_data(dataFile):
+    with open(dataFile, 'r') as f:
+        data = json.load(f)
+
+    for mongo_dict in data:
+        doc_data = mongo_dict.get('document', {})
+        doc = process_document(doc_data)
+        rec = Record()
+
+def process_date(dateData):
+    day = int(dateData.get('day', '1'))
+    month = int(dateData.get('month', '1'))
+    year = int(dateData.get('year','2018'))
+    return datetime.datetime(day=day, month=month, year=year)
+
+def process_document_type(doctype):
+    pass
+
+def process_record_type(rectype):
+    pass
+
+def process_document(docData):
+    existing = models.Document.query.filter_by(citation=docData['citation']).first()
+    if existing:
+        return existing
+    doc = models.Document()
+    doc.citation = docData.get('citation','Unlabelled Document')
+    doc.national_context = docData.get('nationalContext')
+    doc.document_type = process_document_type(docData.get('source','unspecified'))
+    doc.date = process_date(docData.get('date'), {})
+    db.session.add(doc)
+    db.session.commit()
+    return doc
