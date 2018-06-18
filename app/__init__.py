@@ -153,25 +153,28 @@ def migrate_mongo_data(datafile):
     with open(datafile, 'r') as f:
         data = json.load(f)
 
+    doc_types = models.DocumentType.query.all()
+    rec_types = models.RecordType.query.all()
+    roles = models.Role.query.all()
     counter = 0
     for mongo_dict in data:
         print(counter)
-        doc = process_document(mongo_dict['document'])
+        doc = process_document(mongo_dict['document'], doc_types)
         db.session.add(doc)
         db.session.commit()
 
-        rec = process_record(mongo_dict)
+        rec = process_record(mongo_dict, rec_types)
         rec.document = doc
         db.session.add(rec)
         db.session.commit()
 
-        entrants = process_person(mongo_dict['person'])
-        owner = process_owner(mongo_dict['owner'])
+        entrants = process_person(mongo_dict['person'], roles)
+        owner = process_owner(mongo_dict['owner'], roles)
         entrants.extend(owner)
         for e in entrants:
             e.record = rec
             db.session.add(e)
-        db.session.commit()
+        db.session.commit()        
         # entrants[0].owners.extend(owner)
         # db.session.add(entrants[0])
         # db.session.commit()
@@ -201,8 +204,7 @@ def process_other_person(personData):
         last_name=personData['lastName'])
     return  [ entrant ]
 
-def process_owner(personData):
-    # role = models.Role.query.filter_by(name='owner').first()
+def process_owner(personData, roles):
     empty_data = {
         'name': {
             'firstName': '',
@@ -218,10 +220,11 @@ def process_owner(personData):
     desc = models.Description(vocation=personData['vocation'],
         title=personData['name']['title'])
     desc.entrant = entrant
-    # entrant.roles.append(role)
+    type_obj = [ t for t in roles if t.name == 'owner' ]
+    entrant.roles.append(type_obj[0])
     return [ entrant ]
 
-def process_parent(personData):
+def process_parent(personData, roles):
     empty_data = {
         'name': {
             'firstName': '',
@@ -247,7 +250,7 @@ def process_parent(personData):
         status=personData['status'])
     desc.entrant = entrant
     out = [ entrant ]
-    owner = process_owner(personData['owner'])
+    owner = process_owner(personData['owner'], roles)
     out.extend(owner)
     return out
 
@@ -270,7 +273,7 @@ def process_children(childDataList):
         entrants.extend( process_child(child) )
     return entrants
 
-def process_enslavement_type(typeStr):
+def process_enslavement_type(typeStr, roles):
     type_map = {
         '': 'enslaved',
         '(maybe) ': 'enslaved',
@@ -287,33 +290,32 @@ def process_enslavement_type(typeStr):
         'Slave': 'enslaved',
         'Woman servant': 'maidservant'
     }
-    type_obj = models.Role.query.filter_by(
-        name=type_map[typeStr]).first()
-    return type_obj
+    type_obj = [ t for t in roles if t.name == type_map[typeStr] ]
+    return type_obj[0]
 
-def process_person(personData):
+def process_person(personData, roles):
     try:
         name = personData['names'][0]
     except IndexError:
         name = { 'firstName': '', 'lastName': '' }
     entrant = models.Entrant(
         first_name=name['firstName'], last_name=name['lastName'])
-    role = process_enslavement_type(personData['typeKindOfEnslavement'])
+    role = process_enslavement_type(personData['typeKindOfEnslavement'], roles)
     entrant.roles.append(role) 
     desc = models.Description(race=personData['race'], origin=personData['origin'],
         tribe=personData['tribe'], sex=personData['sex'], age=personData.get('age',0),
         vocation=personData['vocation'])
     desc.entrant = entrant
     child_entrants = process_children(personData['children'])
-    mom_entrants = process_parent(personData['mother'])
-    dad_entrants = process_parent(personData['father'])
+    mom_entrants = process_parent(personData['mother'], roles)
+    dad_entrants = process_parent(personData['father'], roles)
     out = [ entrant ]
     out.extend(child_entrants)
     out.extend(mom_entrants)
     out.extend(dad_entrants)
     return out
 
-def process_document_type(typeStr):
+def process_document_type(typeStr, docTypes):
     type_map = {
         '': 'unspecified',
         'Archie': 'archive',
@@ -340,22 +342,23 @@ def process_document_type(typeStr):
         'Will': 'will',
         'Will Written': 'will'
     }
-    type_obj = models.DocumentType.query.filter_by(
-        name=type_map[typeStr]).first()
-    return type_obj
+    # type_obj = models.DocumentType.query.filter_by(
+    #     name=type_map[typeStr]).first()
+    type_obj = [ t for t in docTypes if t.name == type_map[typeStr] ]
+    return type_obj[0]
 
-def process_document(docData):
+def process_document(docData, docTypes):
     existing = models.Document.query.filter_by(citation=docData['citation']).first()
     if existing:
         return existing
     doc = models.Document()
     doc.citation = docData['citation']
     doc.national_context = docData['nationalContext']
-    doc.document_type = process_document_type(docData['sourceType'])
+    doc.document_type = process_document_type(docData['sourceType'], docTypes)
     doc.date = process_date(docData['date'])
     return doc
 
-def process_record_type(typeStr):
+def process_record_type(typeStr, recTypes):
     type_map = {'': 'unspecified',
         'Advertisement of Sale': 'advertisement of sale',
         'Advertisement of sale': 'advertisement of sale',
@@ -385,11 +388,10 @@ def process_record_type(typeStr):
         'Runaway capture advertisement': 'runaway capture advertisement',
         'Smallpox inoculation notice': 'smallpox inoculation notice'
     }
-    type_obj = models.RecordType.query.filter_by(
-        name=type_map[typeStr]).first()
-    return type_obj
+    type_obj = [ t for t in recTypes if t.name == type_map[typeStr] ]
+    return type_obj[0]
 
-def process_record(data):
+def process_record(data, recTypes):
     rec = models.Record()
-    rec.record_type = process_record_type(data['document']['recordType'])
+    rec.record_type = process_record_type(data['document']['recordType'], recTypes)
     return rec
