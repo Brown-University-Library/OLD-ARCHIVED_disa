@@ -8,7 +8,7 @@ import json
 import datetime
 
 app = Flask(__name__)
-app.config.from_object(os.environ['APP_SETTINGS'])
+app.config.from_object(Config)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -145,14 +145,84 @@ def migrate_mongo_data(dataFile):
 
     for mongo_dict in data:
         doc_data = mongo_dict.get('document', {})
-        doc = process_document(doc_data)
-        rec = Record()
+        doc = process_document(mongo_dict['document'])
+        rec = process_record(mongo_dict)
+        entrants = process_person(mongo_dict['person'])
+        rec.document = doc
+        db.session.add(doc)
+        db.session.add(rec)
+        for e in entrants:
+            e.record = rec
+            db.session.add(e)
+        db.session.commit()
 
 def process_date(dateData):
-    day = int(dateData.get('day', '1'))
-    month = int(dateData.get('month', '1'))
-    year = int(dateData.get('year','2018'))
+    if dateData == {} or dateData == {'month': ''}:
+        dateData = { 'day':0, 'month':0, 'year':0 }
+    day = int( dateData.get('day') )
+    month = int( dateData.get('month') )
+    year = int( dateData.get('year') )
     return datetime.datetime(day=day, month=month, year=year)
+
+def process_other_person(personData):
+    if personData != {}:
+        entrant = models.Entrant(first_name=personData['firstName'],
+            last_name=personData['lastName'])
+        return  [ entrant ]
+    else:
+        return []
+
+def process_owner(personData):
+    if personData != {}:
+        entrant = models.Entrant(first_name=personData['firstName'],
+            last_name=personData['lastName'])
+        desc = models.Description(vocation=personData['vocation'],
+            title=personData['title'])
+        desc.entrant = entrant
+        return [ entrant ]
+    else:
+        return []
+
+def process_parent(parentData)
+    if personData != {}:
+        entrant = models.Entrant(first_name=personData['name']['firstName'],
+            last_name=personData['name']['lastName'])
+        desc = models.Description(race=personData['race'], origin=personData['origin'],
+            status=personData['status'])
+        desc.entrant = entrant
+        owner = process_owner(personData['owner'])
+        if owner:
+            return [ entrant, owner ]
+        return [ entrant ]
+    else:
+        return []
+
+def process_children(childDataList):
+    entrants = []
+        for child in childDataList:
+            entrants.extend( process_other_person(child) )
+    return entrants
+
+def process_person(personData):
+    try:
+        name = personData['names'][0]
+    except IndexError:
+        name = { 'firstName': '', 'lastName': '' }
+    entrant = models.Entrant(**name)
+    role = process_enslavement_type(personData['typeKindOfEnslavement'])
+        entrant.roles.append(role) 
+    desc = models.Description(race=personData['race'], origin=personData['origin'],
+        tribe=personData['tribe'], sex=personData['sex'], age=personData['age'],
+        tribe=personData['vocation'])
+    desc.entrant = entrant
+    child_entrants = process_children(personData['children'])
+    mom_entrants = process_parent(personData['mother'])
+    dad_entrants = process_parent(personData['father'])
+    out = [ entrant ]
+    out.extend(child_entrants)
+    out.extend(mom_entrants)
+    out.extend(dad_entrants)
+    return out
 
 def process_document_type(doctype):
     pass
@@ -169,6 +239,4 @@ def process_document(docData):
     doc.national_context = docData.get('nationalContext')
     doc.document_type = process_document_type(docData.get('source','unspecified'))
     doc.date = process_date(docData.get('date'), {})
-    db.session.add(doc)
-    db.session.commit()
     return doc
