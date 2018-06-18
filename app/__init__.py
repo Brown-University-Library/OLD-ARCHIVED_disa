@@ -8,7 +8,7 @@ import json
 import datetime
 
 app = Flask(__name__)
-app.config.from_object(Config)
+app.config.from_object(os.environ['APP_SETTINGS'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -67,7 +67,13 @@ def load_multivalued_attributes():
         { 'name': 'captured', 'description_group': 1},
         { 'name': 'baptised', 'description_group': 1},
         { 'name': 'emancipated', 'description_group': 1},
-        { 'name': 'executed', 'description_group': 1}
+        { 'name': 'executed', 'description_group': 1},
+        { 'name': 'maidservant', 'description_group': 1},
+        { 'name': 'manservant', 'description_group': 1},
+        { 'name': 'indentured servant', 'description_group': 1},
+        { 'name': 'pieza', 'description_group': 1},
+        { 'name': 'manslave', 'description_group': 1},
+        { 'name': 'servant', 'description_group': 1}
     ]
     record_types = [ 
         { 'name': 'runaway advertisement' },
@@ -77,17 +83,21 @@ def load_multivalued_attributes():
         { 'name': 'smallpox inoculation notice' },
         { 'name': 'execution notice'},
         { 'name': 'probate' },
-        { 'name': 'manumission'}
+        { 'name': 'manumission'},
+        { 'name': 'registry'},
+        { 'name': 'news story'},
+        { 'name': 'unspecified' }
     ]
     document_types = [
         { 'name': 'newspaper' },
         { 'name': 'letter' },
-        { 'name': 'registry' },
+        { 'name': 'archive' },
         { 'name': 'inventory' },
         { 'name': 'census' },
-        { 'name': 'court document' },
-        { 'name': 'probate account' },
-        { 'name': 'will' }
+        { 'name': 'court documents' },
+        { 'name': 'book' },
+        { 'name': 'will' },
+        { 'name': 'unspecified' }
     ]
     tables = [
         ( models.Role, roles ),
@@ -138,82 +148,154 @@ def load_many_to_many():
 
 
 @app.cli.command()
-# @click.option('--full', '-f', is_flag=True)
-def migrate_mongo_data(dataFile):
-    with open(dataFile, 'r') as f:
+@click.argument('datafile')
+def migrate_mongo_data(datafile):
+    with open(datafile, 'r') as f:
         data = json.load(f)
 
+    counter = 0
     for mongo_dict in data:
-        doc_data = mongo_dict.get('document', {})
+        print(counter)
         doc = process_document(mongo_dict['document'])
-        rec = process_record(mongo_dict)
-        entrants = process_person(mongo_dict['person'])
-        rec.document = doc
         db.session.add(doc)
+        db.session.commit()
+
+        rec = process_record(mongo_dict)
+        rec.document = doc
         db.session.add(rec)
+        db.session.commit()
+
+        entrants = process_person(mongo_dict['person'])
         for e in entrants:
             e.record = rec
             db.session.add(e)
         db.session.commit()
+        counter += 1
 
 def process_date(dateData):
     if dateData == {} or dateData == {'month': ''}:
-        dateData = { 'day':0, 'month':0, 'year':0 }
-    day = int( dateData.get('day') )
-    month = int( dateData.get('month') )
-    year = int( dateData.get('year') )
+        dateData = { 'day':1, 'month':1, 'year':1 }
+    try:
+        day = int( dateData.get('day',1) or 1)
+        month = int( dateData.get('month',1) or 1)
+        year = int( dateData.get('year',1) or 1)
+    except:
+        day = 1
+        month = 1
+        year = 1
     return datetime.datetime(day=day, month=month, year=year)
 
 def process_other_person(personData):
-    if personData != {}:
-        entrant = models.Entrant(first_name=personData['firstName'],
-            last_name=personData['lastName'])
-        return  [ entrant ]
-    else:
+    empty_data = {
+        'firstName': '',
+        'lastName': ''
+    }
+    if personData == {} or personData == empty_data:
         return []
+    entrant = models.Entrant(first_name=personData['firstName'],
+        last_name=personData['lastName'])
+    return  [ entrant ]
 
 def process_owner(personData):
-    if personData != {}:
-        entrant = models.Entrant(first_name=personData['firstName'],
-            last_name=personData['lastName'])
-        desc = models.Description(vocation=personData['vocation'],
-            title=personData['title'])
-        desc.entrant = entrant
-        return [ entrant ]
-    else:
+    empty_data = {
+        'name': {
+            'firstName': '',
+            'lastName': '',
+            'title': ''
+        },
+        'vocation': ''
+    }
+    if personData == {} or personData == empty_data:
         return []
+    entrant = models.Entrant(first_name=personData['name']['firstName'],
+        last_name=personData['name']['lastName'])
+    desc = models.Description(vocation=personData['vocation'],
+        title=personData['name']['title'])
+    desc.entrant = entrant
+    return [ entrant ]
 
-def process_parent(parentData)
-    if personData != {}:
-        entrant = models.Entrant(first_name=personData['name']['firstName'],
-            last_name=personData['name']['lastName'])
-        desc = models.Description(race=personData['race'], origin=personData['origin'],
-            status=personData['status'])
-        desc.entrant = entrant
-        owner = process_owner(personData['owner'])
-        if owner:
-            return [ entrant, owner ]
-        return [ entrant ]
-    else:
+def process_parent(personData):
+    empty_data = {
+        'name': {
+            'firstName': '',
+            'lastName': ''
+        },
+        'origin': '',
+        'owner': {
+            'name': {
+                'firstName': '',
+                'lastName': '',
+                'title': ''
+            },
+            'vocation': ''
+        },
+        'race': '',
+        'status': ''
+   }
+    if personData == {} or personData == empty_data:
         return []
+    entrant = models.Entrant(first_name=personData['name']['firstName'],
+        last_name=personData['name']['lastName'])
+    desc = models.Description(race=personData['race'], origin=personData['origin'],
+        status=personData['status'])
+    desc.entrant = entrant
+    out = [ entrant ]
+    owner = process_owner(personData['owner'])
+    out.extend(owner)
+    return out
+
+def process_child(personData):
+    empty_data = {
+        'name' : {
+            'firstName': '',
+            'lastName': ''
+        }
+    }
+    if personData == {} or personData == empty_data:
+        return []
+    entrant = models.Entrant(first_name=personData['name']['firstName'],
+        last_name=personData['name']['lastName'])
+    return  [ entrant ]
 
 def process_children(childDataList):
     entrants = []
-        for child in childDataList:
-            entrants.extend( process_other_person(child) )
+    for child in childDataList:
+        entrants.extend( process_child(child) )
     return entrants
+
+def process_enslavement_type(typeStr):
+    type_map = {
+        '': 'enslaved',
+        '(maybe) ': 'enslaved',
+        '(probably) ': 'enslaved',
+        'Indenture': 'indentured servant',
+        'Indentured servant': 'indentured servant',
+        'Maid Servant': 'maidservant',
+        'Maid servant': 'maidservant',
+        'Man servant': 'manservant',
+        'Man slave': 'manslave',
+        'Manslave': 'manslave',
+        'Pieza': 'pieza',
+        'Servant': 'servant',
+        'Slave': 'enslaved',
+        'Woman servant': 'maidservant'
+    }
+    type_obj = models.Role.query.filter_by(
+        name=type_map[typeStr]).first()
+    return type_obj
 
 def process_person(personData):
     try:
         name = personData['names'][0]
     except IndexError:
         name = { 'firstName': '', 'lastName': '' }
-    entrant = models.Entrant(**name)
+    entrant = models.Entrant(
+        first_name=name['firstName'], last_name=name['lastName'])
     role = process_enslavement_type(personData['typeKindOfEnslavement'])
-        entrant.roles.append(role) 
+    entrant.roles.append(role) 
     desc = models.Description(race=personData['race'], origin=personData['origin'],
-        tribe=personData['tribe'], sex=personData['sex'], age=personData['age'],
-        tribe=personData['vocation'])
+        tribe=personData['tribe'], sex=personData['sex'], age=personData.get('age',0),
+        vocation=personData['vocation'])
     desc.entrant = entrant
     child_entrants = process_children(personData['children'])
     mom_entrants = process_parent(personData['mother'])
@@ -224,19 +306,83 @@ def process_person(personData):
     out.extend(dad_entrants)
     return out
 
-def process_document_type(doctype):
-    pass
-
-def process_record_type(rectype):
-    pass
+def process_document_type(typeStr):
+    type_map = {
+        '': 'unspecified',
+        'Archie': 'archive',
+        'Archival': 'archive',
+        'Archival ': 'archive',
+        'Archive': 'archive',
+        'Archive ': 'archive',
+        'Book': 'book',
+        'Census': 'census',
+        'Court Documents': 'court documents',
+        'Indenture': 'court documents',
+        'Inventory': 'inventory',
+        'Letter': 'letter',
+        'Mosquito Coast ': 'archive',
+        'Newsletter': 'newspaper',
+        'Newspaper': 'newspaper',
+        'Newspaper ': 'newspaper',
+        'Printed primary source': 'newspaper',
+        'Probate Account': 'court documents',
+        'Probate note': 'court documents',
+        'Registry': 'archive',
+        'Runaway Advertisement': 'newspaper',
+        'Runaway advertisement': 'newspaper',
+        'Will': 'will',
+        'Will Written': 'will'
+    }
+    type_obj = models.DocumentType.query.filter_by(
+        name=type_map[typeStr]).first()
+    return type_obj
 
 def process_document(docData):
     existing = models.Document.query.filter_by(citation=docData['citation']).first()
     if existing:
         return existing
     doc = models.Document()
-    doc.citation = docData.get('citation','Unlabelled Document')
-    doc.national_context = docData.get('nationalContext')
-    doc.document_type = process_document_type(docData.get('source','unspecified'))
-    doc.date = process_date(docData.get('date'), {})
+    doc.citation = docData['citation']
+    doc.national_context = docData['nationalContext']
+    doc.document_type = process_document_type(docData['sourceType'])
+    doc.date = process_date(docData['date'])
     return doc
+
+def process_record_type(typeStr):
+    type_map = {'': 'unspecified',
+        'Advertisement of Sale': 'advertisement of sale',
+        'Advertisement of sale': 'advertisement of sale',
+        'Archival': 'unspecified',
+        'Archive': 'unspecified',
+        'Book': 'unspecified',
+        'Court Document': 'unspecified',
+        'Execution notice': 'execution notice',
+        'Honduras': 'unspecified',
+        'Inventory': 'unspecified',
+        'LIst': 'unspecified',
+        'Letter': 'unspecified',
+        'List': 'unspecified',
+        'Listing': 'unspecified',
+        'Manumission': 'manumission',
+        'Manumission ': 'manumission',
+        'News story': 'news story',
+        'Newspaper': 'news story',
+        'Probate': 'probate',
+        'Registry': 'registry',
+        'Registry ': 'registry',
+        'Runaway Advertisement': 'runaway advertisement',
+        'Runaway Advertisement ': 'runaway advertisement',
+        'Runaway Advertisements': 'runaway advertisement',
+        'Runaway Capture Advertisement': 'runaway capture advertisement',
+        'Runaway advertisement': 'runaway advertisement',
+        'Runaway capture advertisement': 'runaway capture advertisement',
+        'Smallpox inoculation notice': 'smallpox inoculation notice'
+    }
+    type_obj = models.RecordType.query.filter_by(
+        name=type_map[typeStr]).first()
+    return type_obj
+
+def process_record(data):
+    rec = models.Record()
+    rec.record_type = process_record_type(data['document']['recordType'])
+    return rec

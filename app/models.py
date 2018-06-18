@@ -8,7 +8,7 @@ location_within = db.Table('location_within',
 
 has_location = db.Table('has_location',
     db.Column('id', db.Integer, primary_key=True),
-    db.Column('event', db.Integer, db.ForeignKey('records.id')),
+    db.Column('record', db.Integer, db.ForeignKey('records.id')),
     db.Column('location', db.Integer, db.ForeignKey('locations.id')),
     db.Column('location_for', db.String(255))
 )
@@ -57,7 +57,7 @@ class Document(db.Model):
         nullable=False)
     date = db.Column(db.DateTime())
     national_context = db.Column(db.String(255))
-    citation = db.Column(db.String(255))
+    citation = db.Column(db.String(500))
     zotero_id = db.Column(db.String(255))
     comments = db.Column(db.String(255))
     records = db.relationship('Record', backref='document', lazy=True)
@@ -195,7 +195,7 @@ class Description(db.Model):
     __tablename__ = 'entrant_description'
 
     id = db.Column(db.Integer, primary_key=True)    
-    age = db.Column(db.Integer)
+    age = db.Column(db.String(255))
     sex = db.Column(db.String(255))
     title = db.Column(db.String(255))
     race = db.Column(db.String(255))
