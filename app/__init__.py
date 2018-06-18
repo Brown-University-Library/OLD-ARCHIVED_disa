@@ -166,10 +166,15 @@ def migrate_mongo_data(datafile):
         db.session.commit()
 
         entrants = process_person(mongo_dict['person'])
+        owner = process_owner(mongo_dict['owner'])
+        entrants.extend(owner)
         for e in entrants:
             e.record = rec
             db.session.add(e)
         db.session.commit()
+        # entrants[0].owners.extend(owner)
+        # db.session.add(entrants[0])
+        # db.session.commit()
         counter += 1
 
 def process_date(dateData):
@@ -197,6 +202,7 @@ def process_other_person(personData):
     return  [ entrant ]
 
 def process_owner(personData):
+    # role = models.Role.query.filter_by(name='owner').first()
     empty_data = {
         'name': {
             'firstName': '',
@@ -212,6 +218,7 @@ def process_owner(personData):
     desc = models.Description(vocation=personData['vocation'],
         title=personData['name']['title'])
     desc.entrant = entrant
+    # entrant.roles.append(role)
     return [ entrant ]
 
 def process_parent(personData):
