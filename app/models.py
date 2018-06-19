@@ -201,7 +201,6 @@ class Description(db.Model):
     race = db.Column(db.String(255))
     tribe = db.Column(db.String(255))
     origin = db.Column(db.String(255))
-    status = db.Column(db.String(255))
     vocation = db.Column(db.String(255))
     entrant_id = db.Column(db.Integer, db.ForeignKey('entrants.id'),
         nullable=False)
