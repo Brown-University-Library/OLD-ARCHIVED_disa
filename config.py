@@ -5,6 +5,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.envrc'))
 
 class Config(object):
+    APP_DIR = basedir
     DEBUG = False
     TESTING = False
     CSRF_ENABLED = True
