@@ -2,18 +2,32 @@
 
 {% block content %}
 <div class="container">
-	<h2>Collection: {{ document.citation }}</h2>
-	<h3>Contents</h3>
-	<ul>
+	<h2>Document: {{ document.citation }}</h2>
+	<h2>Events</h2>
 	{% for record in document.records %}
-	    <li>
-	    	{% if record.citation%}
-	    		<span>{{ record.citation }}: </span>
-	    	{% endif %}
-	    	<a href="{{ url_for('show_record', docId = document.id, recId=record.id) }}">{{ record.record_type.name }}</a></li>
+	<p>
+		<table>
+			<tr>
+				<td><h3>Event {{ record.id }}</h3></td>
+				<td>{{ record.record_type.name }}</td>
+				<td><a href="{{ url_for('show_record', docId = document.id, recId=record.id) }}">Review</a></td>
+			</tr>
+		</table>
+		<table style="margin-left: 20px">
+			{% for entrant in record.entrants %}
+			<tr>
+				<td><b>{% if entrant.first_name %} {{ entrant.first_name }} {{ entrant.last_name }} {% else %}
+	        Unknown {% endif %}</b></td>
+				{% for role in entrant.roles %}
+				<td>{{ role.name }}</td>
+				{% endfor %}
+				<td><a href="{{ url_for('show_entrant', entId = entrant.id ) }}">Review</a></td>			
+			</tr>
+			{% endfor %}
+		</table>
+	</p>
 	{% endfor %}
-	</ul>
-	<a class="btn btn-primary" href="{{ url_for('new_record', docId = document.id)}}">New Entry</a>
+	<a class="btn btn-primary" href="{{ url_for('new_record', docId = document.id)}}">Add event</a>
 
 </div>
 
