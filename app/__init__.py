@@ -11,8 +11,9 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 from app import routes, models
-from app.etl import teardown, setup, mongo
 
+# CLI
+from app.etl import teardown, setup, mongo
 import click
 
 @app.cli.command()
@@ -37,3 +38,18 @@ def rebuild():
     setup.load_many_to_many()
     mongo.load_data(os.path.join(
         app.config['APP_DIR'], 'data/entries.json') )
+
+# END CLI
+
+# TEMPLATES
+@app.template_filter('century')
+def get_century_from_year(yearInt):
+	return yearInt // 100
+
+@app.template_filter('decade')
+def get_decade_from_year(yearInt):
+	return yearInt % 100 // 10
+
+@app.template_filter('year')
+def get_year_from_datetime(yearInt):
+	return yearInt % 10
