@@ -6,6 +6,26 @@ from app.forms import EditDocumentForm
 
 import datetime
 
+def prep_document_form(doc, form):
+    form.document_type.choices = [
+        (t.id, t.name) for t in DocumentType.query.order_by('name')]
+    months = [ datetime.date(year=1900,month=m,day=1) for m in range(1,13) ]
+    form.month.choices = [ ( m.month, m.strftime("%B") ) for m in months ]
+    form.century.choices = [ (c, c) for c in range(14,21) ]
+    form.decade.choices = [ (d, d) for d in range(10)]
+    form.year.choices = [ (y, y) for y in range(10)]
+    
+    form.citation.data = doc.citation
+    form.zotero_id.data = doc.zotero_id
+    form.acknowledgements.data = doc.comments
+    form.document_type.data = str(doc.document_type.id)
+    form.day.data = doc.date.day
+    form.month.data = str(doc.date.month)
+    form.century.data = str(doc.date.year // 100)
+    form.decade.data = str(doc.date.year % 100 // 10)
+    form.year.data = str(doc.date.year % 10)
+    return form
+
 @app.route('/')
 def index():
     #return 'Index for {}'.format(__name__)
@@ -17,27 +37,25 @@ def index_documents():
     all_docs = Document.query.all()
     return render_template('document_index.html', documents=all_docs)
 
-@app.route('/documents/<docId>', methods=['GET'])
+@app.route('/documents/<docId>', methods=['GET','POST'])
 def show_document(docId):
     doc = Document.query.get(docId)
     form = EditDocumentForm()
-    form.document_type.choices = [
-        (t.id, t.name) for t in DocumentType.query.order_by('name')]
-    months = [ datetime.date(year=1900,month=m,day=1) for m in range(1,13) ]
-    form.month.choices = [ ( m.month, m.strftime("%B") ) for m in months ]
-    form.century.choices = [ (c, c) for c in range(14,21) ]
-    form.decade.choices = [ (d, d) for d in range(10)]
-    form.year.choices = [ (y, y) for y in range(10)]
-    
-    form.citation.data = doc.citation
-    form.zotero_id.data = doc.zotero_id
-    form.acknowledgements.data = ''
-    form.document_type.data = str(doc.document_type.id)
-    form.day.data = doc.date.day
-    form.month.data = str(doc.date.month)
-    form.century.data = str(doc.date.year // 100)
-    form.decade.data = str(doc.date.year % 100 // 10)
-    form.year.data = str(doc.date.year % 10)
+    if request.method == 'POST':
+        doc.citation = form.citation.data
+        doc.zotero_id = form.zotero_id.data
+        doc.document_type = DocumentType.query.get(form.document_type.data)
+        doc.date = datetime.datetime.strptime("{}-{}-{}{}{}".format(
+            form.day.data, form.month.data,
+            form.century.data, form.decade.data, form.year.data),
+            "%d-%m-%Y" )
+        doc.comments = form.acknowledgements.data
+        db.session.add(doc)
+        db.session.commit()
+        form = prep_document_form(doc, form)
+        return render_template('document_show.html', document=doc, form=form)
+        
+    form = prep_document_form(doc, form)
     if request.args.get('edit', False):
         return render_template(
             'document_show.html', document=doc, form=form, edit=True)
