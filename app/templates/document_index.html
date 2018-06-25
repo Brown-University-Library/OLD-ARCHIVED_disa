@@ -7,7 +7,7 @@
 		</div>
 		<ul>
         {% for doc in documents %}
-        <li><a href="{{ url_for('show_document', docId=doc.id) }}">{{ doc.citation }}</a></li>
+        <li><a href="{{ url_for('show_document', docId=doc.id) }}">{{ doc.citation }}</a><span class="badge">{{ doc.records|length }}</span></li>
         {% endfor %}
     </ul>
     <a class="btn btn-primary" href="{{ url_for('new_document') }}">New Collection</a>

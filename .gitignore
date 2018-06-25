@@ -10,3 +10,4 @@ share
 *.sqlite
 venv/*
 apache/disa_app.conf
+*.pyc
