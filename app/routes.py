@@ -2,6 +2,9 @@ from flask import request, jsonify, render_template, redirect, url_for
 from app import app, db
 from app.models import Document, Record, Entrant, Role, DocumentType, RecordType
 from app.forms import DocumentForm, RecordForm, EntrantForm, EntrantRelationshipForm
+from app.forms import EditDocumentForm
+
+import datetime
 
 @app.route('/')
 def index():
@@ -17,7 +20,30 @@ def index_documents():
 @app.route('/documents/<docId>', methods=['GET'])
 def show_document(docId):
     doc = Document.query.get(docId)
-    return render_template('document_show.html', document=doc)
+    form = EditDocumentForm()
+    form.document_type.choices = [
+        (t.id, t.name) for t in DocumentType.query.order_by('name')]
+    months = [ datetime.date(year=1900,month=m,day=1) for m in range(1,13) ]
+    form.month.choices = [ ( m.month, m.strftime("%B") ) for m in months ]
+    form.century.choices = [ (c, c) for c in range(14,21) ]
+    form.decade.choices = [ (d, d) for d in range(10)]
+    form.year.choices = [ (y, y) for y in range(10)]
+    
+    form.citation.data = doc.citation
+    form.zotero_id.data = doc.zotero_id
+    form.acknowledgements.data = ''
+    form.document_type.data = str(doc.document_type.id)
+    form.day.data = doc.date.day
+    form.month.data = str(doc.date.month)
+    form.century.data = str(doc.date.year // 100)
+    form.decade.data = str(doc.date.year % 100 // 10)
+    form.year.data = str(doc.date.year % 10)
+    if request.args.get('edit', False):
+        return render_template(
+            'document_show.html', document=doc, form=form, edit=True)
+    for field in form:
+        field.render_kw = {'disabled':'true'}
+    return render_template('document_show.html', document=doc, form=form)
 
 @app.route('/documents/new', methods=['GET','POST'])
 def new_document():

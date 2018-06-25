@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, SubmitField
 from wtforms import HiddenField, SelectField, DateField
-from wtforms import FieldList
+from wtforms import FieldList, IntegerField
 
 class DocumentForm(FlaskForm):
     # From MongoDB document.sourceType field
@@ -12,6 +12,19 @@ class DocumentForm(FlaskForm):
     zotero = StringField('Zotero ID')
     comments = TextAreaField('Comments')
     submit = SubmitField('Create')
+
+class EditDocumentForm(FlaskForm):
+    # From MongoDB document.sourceType field
+    document_type = SelectField('Document Type')
+    citation = TextAreaField('Citation')
+    day = IntegerField('Day')
+    month = SelectField('Month')
+    century = SelectField()
+    decade = SelectField()
+    year = SelectField()
+    zotero_id = StringField('Zotero ID')
+    acknowledgements = TextAreaField('Acknowledgements')
+    submit = SubmitField('Save')
 
 class RecordForm(FlaskForm):
     # From MongoDB document.recordType field
