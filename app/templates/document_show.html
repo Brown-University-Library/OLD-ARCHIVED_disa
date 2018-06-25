@@ -2,108 +2,118 @@
 
 {% block content %}
 <div class="container">
-	<h2>{{ document.citation }}</h2>
-	<div id="pubinfo" style="width: calc(100% - 30px); margin-left: 30px;">
-		<form action="{{ url_for('show_document', docId = document.id) }}" method="post">
-			<p>
-				<!-- <label for="zotero_id" class="row-item">Zotero Id</label>
-				<input id="zotero_id "type="text" value="{{ document.zotero_id }}" disabled><br> -->
-				{{ form.zotero_id.label }}
-				{{ form.zotero_id }}
-			</p>
-			<p>
-<!-- 				<label for="document_type" class="row-item">Document Type</label>
-				<select id="document_type" disabled>
-					<option value="{{ document.document_type.id }}">{{ document.document_type.name }}</option>		
-				</select> -->
-				{{ form.document_type.label }}
-				{{ form.document_type }}
-			</p>
-	<!-- 		<p>
-				<label>Location</label><br>
-				<input type="text" placeholder="Havana" class="row-item">
-				<span class="row-item">in</span>
-				<span class="row-item">
-					<select>
-						<option>Spanish</option>
-					</select>
-					<select>
-						<option>Cuba</option>
-					</select>
-				</span>
-			</p> -->
-			<div style="display: flex; align-items: center;">
-				<div class="row-item">
-<!-- 					<label>Month</label><br>
-					<select disabled>
-						<option value="{{ document.date.month }}">{{ document.date.strftime("%B") }}</option>
-					</select>	 -->
-					{{ form.month.label }}
-					{{ form.month }}
-				</div>
-				<div class="row-item">				
-<!-- 					<label>Day</label><br>
-					<input type="number" value="{{ document.date.day }}" disabled> -->
-					{{ form.day.label }}
-					{{ form.day }}
-				</div>
-				<div class="row-item">	
-					<label>Year</label><br>
-<!-- 					<select disabled="">
-						<option value="{{ document.date.year|century }}">{{ document.date.year|century }}</option>			
-					</select>
-					<select disabled>
-						<option value="{{ document.date.year|decade }}">{{ document.date.year|decade }}</option>>
-					</select>
-					<select disabled>
-						<option value="{{ document.date.year|year }}">{{ document.date.year|year }}</option>>
-					</select>	 -->
-					{{ form.century }}
-					{{ form.decade }}
-					{{ form.year }}
-				</div>				
-			</div>
-			<p>
-<!-- 				<label>Citation</label><br>
-				<textarea disabled>{{ document.citation }}</textarea> -->
-				{{ form.citation.label }}
-				{{ form.citation }}
-			</p>
-			<p>
-<!-- 				<label>Acknowledgements</label><br>
-				<textarea disabled></textarea> -->
-				{{ form.acknowledgements.label }}
-				{{ form.acknowledgements }}
-			</p>
-			<button class="btn btn-primary">{{ form.submit() }}</button>
-		</form>
-		<a class="btn btn-primary" href="{{ url_for('show_document', docId = document.id, edit=True)}}">Edit document</a>
-	</div>
-	<h2>Records</h2>
-	{% for record in document.records %}
-	<p>
-		<table>
-			<tr>
-				<td><h3>Record {{ record.id }}</h3></td>
-				<td>{{ record.record_type.name }}</td>
-				<td><a href="{{ url_for('show_record', docId = document.id, recId=record.id) }}">Review</a></td>
-			</tr>
-		</table>
-		<table style="margin-left: 20px">
-			{% for entrant in record.entrants %}
-			<tr>
-				<td><b>{% if entrant.first_name %} {{ entrant.first_name }} {{ entrant.last_name }} {% else %}
-	        Unknown {% endif %}</b></td>
-				{% for role in entrant.roles %}
-				<td>{{ role.name }}</td>
-				{% endfor %}
-				<td><a href="{{ url_for('show_entrant', entId = entrant.id ) }}">Review</a></td>			
-			</tr>
-			{% endfor %}
-		</table>
-	</p>
-	{% endfor %}
-	<a class="btn btn-primary" href="{{ url_for('new_record', docId = document.id)}}">Add event</a>
+    <h2>{{ document.citation }}</h2>
+    <div id="pubinfo" style="width: calc(100% - 30px); margin-left: 30px;">
+        <form action="{{ url_for('show_document', docId = document.id) }}" method="post">
+            <p>
+                {{ form.zotero_id.label }}
+                {% if edit %}
+                    {{ form.zotero_id }}
+                {% else %}
+                    {{form.zotero_id(disabled=True)}}
+                {% endif %}
+            </p>
+            <p>
+                {{ form.document_type.label }}
+                {% if edit %}
+                    {{ form.document_type }}
+                {% else %}
+                    {{form.document_type(disabled=True)}}
+                {% endif %}
+            </p>
+    <!--        <p>
+                <label>Location</label><br>
+                <input type="text" placeholder="Havana" class="row-item">
+                <span class="row-item">in</span>
+                <span class="row-item">
+                    <select>
+                        <option>Spanish</option>
+                    </select>
+                    <select>
+                        <option>Cuba</option>
+                    </select>
+                </span>
+            </p> -->
+            <div style="display: flex; align-items: center;">
+                <div class="row-item">
+                    {{ form.month.label }}<br/>
+                    {% if edit %}
+                        {{ form.month }}
+                    {% else %}
+                        {{form.month(disabled=True)}}
+                    {% endif %}
+                </div>
+                <div class="row-item">
+                    {{ form.day.label }}<br/>
+                    {% if edit %}
+                        {{ form.day }}
+                    {% else %}
+                        {{form.day(disabled=True)}}
+                    {% endif %}
+                </div>
+                <div class="row-item">  
+                    <label>Year</label><br/>
+                    {% if edit %}
+                        {{ form.century }}
+                        {{ form.decade }}
+                        {{ form.year }}
+                    {% else %}
+                        {{ form.century(disabled=True) }}
+                        {{ form.decade(disabled=True) }}
+                        {{ form.year(disabled=True) }}
+                    {% endif %}
+                </div>
+            </div>
+            <p>
+                {{ form.citation.label }}
+                {% if edit %}
+                    {{ form.citation }}
+                {% else %}
+                    {{form.citation(disabled=True)}}
+                {% endif %}
+            </p>
+            <p>
+                {{ form.acknowledgements.label }}
+                {% if edit %}
+                    {{ form.acknowledgements }}
+                {% else %}
+                    {{ form.acknowledgements(disabled=True) }}
+                {% endif %}
+            </p>
+            {% if edit %}
+                <a class="btn btn-danger" href="{{ url_for('show_document', docId = document.id) }}">Cancel</a>
+                <button class="btn btn-primary">{{ form.submit() }}</button>
+            {% endif %}
+        </form>
+        {% if not edit %}
+            <a class="btn btn-primary" href="{{ url_for('show_document', docId = document.id, edit=True)}}">Edit document</a>
+        {% endif %}
+    </div>
+    <h2>Records</h2>
+    {% for record in document.records %}
+    <p>
+        <table>
+            <tr>
+                <td><h3>Record {{ record.id }}</h3></td>
+                <td>{{ record.record_type.name }}</td>
+                <td><a href="{{ url_for('show_record', docId = document.id, recId=record.id) }}">Review</a></td>
+            </tr>
+        </table>
+        <table style="margin-left: 20px">
+            {% for entrant in record.entrants %}
+            <tr>
+                <td><b>{% if entrant.first_name %} {{ entrant.first_name }} {{ entrant.last_name }} {% else %}
+            Unknown {% endif %}</b></td>
+                {% for role in entrant.roles %}
+                <td>{{ role.name }}</td>
+                {% endfor %}
+                <td><a href="{{ url_for('show_entrant', entId = entrant.id ) }}">Review</a></td>            
+            </tr>
+            {% endfor %}
+        </table>
+    </p>
+    {% endfor %}
+    <a class="btn btn-primary" href="{{ url_for('new_record', docId = document.id)}}">Add event</a>
 
 </div>
 

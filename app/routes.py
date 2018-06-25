@@ -41,8 +41,6 @@ def show_document(docId):
     if request.args.get('edit', False):
         return render_template(
             'document_show.html', document=doc, form=form, edit=True)
-    for field in form:
-        field.render_kw = {'disabled':'true'}
     return render_template('document_show.html', document=doc, form=form)
 
 @app.route('/documents/new', methods=['GET','POST'])
