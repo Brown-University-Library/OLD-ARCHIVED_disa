@@ -2,11 +2,17 @@ from flask import request, jsonify, render_template, redirect, url_for
 from app import app, db
 from app.models import Document, Record, Entrant, Role, DocumentType, RecordType
 from app.forms import DocumentForm, RecordForm, EntrantForm, EntrantRelationshipForm
-from app.forms import EditDocumentForm
 
 import datetime
 
-def prep_document_form(doc, form):
+def parse_date_data(form):
+    dt = datetime.datetime.strptime("{}-{}-{}{}{}".format(
+        form.day.data or '1', form.month.data or '1',
+        form.century.data or '20', form.decade.data or '0',
+        form.year.data or '0'), "%d-%m-%Y" )
+    return dt
+
+def prep_document_form(form, doc=None):
     form.document_type.choices = [
         (t.id, t.name) for t in DocumentType.query.order_by('name')]
     months = [ datetime.date(year=1900,month=m,day=1) for m in range(1,13) ]
@@ -14,10 +20,12 @@ def prep_document_form(doc, form):
     form.century.choices = [ (c, c) for c in range(14,21) ]
     form.decade.choices = [ (d, d) for d in range(10)]
     form.year.choices = [ (y, y) for y in range(10)]
-    
+    if not doc:
+        return form   
+
     form.citation.data = doc.citation
     form.zotero_id.data = doc.zotero_id
-    form.acknowledgements.data = doc.comments
+    form.acknowledgements.data = doc.acknowledgements
     form.document_type.data = str(doc.document_type.id)
     form.day.data = doc.date.day
     form.month.data = str(doc.date.month)
@@ -40,22 +48,19 @@ def index_documents():
 @app.route('/documents/<docId>', methods=['GET','POST'])
 def show_document(docId):
     doc = Document.query.get(docId)
-    form = EditDocumentForm()
+    form = DocumentForm()
     if request.method == 'POST':
         doc.citation = form.citation.data
         doc.zotero_id = form.zotero_id.data
         doc.document_type = DocumentType.query.get(form.document_type.data)
-        doc.date = datetime.datetime.strptime("{}-{}-{}{}{}".format(
-            form.day.data, form.month.data,
-            form.century.data, form.decade.data, form.year.data),
-            "%d-%m-%Y" )
-        doc.comments = form.acknowledgements.data
+        doc.date = parse_date_data(form)
+        doc.acknowledgements = form.acknowledgements.data
         db.session.add(doc)
         db.session.commit()
-        form = prep_document_form(doc, form)
+        form = prep_document_form(form, doc)
         return render_template('document_show.html', document=doc, form=form)
         
-    form = prep_document_form(doc, form)
+    form = prep_document_form(form, doc)
     if request.args.get('edit', False):
         return render_template(
             'document_show.html', document=doc, form=form, edit=True)
@@ -66,16 +71,17 @@ def new_document():
     form = DocumentForm()
     # if form.validate_on_submit():
     if request.method == 'POST':
-        doctype = DocumentType.query.get(form.doctype.data)
-        doc = Document(document_type=doctype,
-            date=form.date.data, national_context=form.context.data,
-            citation=form.citation.data, zotero_id=form.zotero.data,
-            comments=form.comments.data)
+        doc = Document(citation=form.citation.data,
+            # national_context=form.national_context.data,
+            acknowledgements=form.acknowledgements.data,
+            zotero_id=form.zotero_id.data)
+        doc.document_type = DocumentType.query.get(form.document_type.data)
+        doc.date = parse_date_data(form)
         db.session.add(doc)
         db.session.commit()
         return redirect(url_for('show_document', docId=doc.id))
-    form.doctype.choices = [
-        (t.id, t.name) for t in DocumentType.query.order_by('name')]
+
+    form = prep_document_form(form)
     return render_template('document_new.html', form=form)
 
 @app.route('/records/new', methods = ['GET','POST'])

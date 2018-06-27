@@ -3,17 +3,17 @@ from wtforms import StringField, TextAreaField, SubmitField
 from wtforms import HiddenField, SelectField, DateField
 from wtforms import FieldList, IntegerField
 
-class DocumentForm(FlaskForm):
-    # From MongoDB document.sourceType field
-    doctype = SelectField('Type')
-    citation = StringField('Citation information')
-    date = DateField('Date of publication')
-    context = StringField('National context')
-    zotero = StringField('Zotero ID')
-    comments = TextAreaField('Comments')
-    submit = SubmitField('Create')
+# class DocumentForm(FlaskForm):
+#     # From MongoDB document.sourceType field
+#     doctype = SelectField('Type')
+#     citation = StringField('Citation information')
+#     date = DateField('Date of publication')
+#     context = StringField('National context')
+#     zotero = StringField('Zotero ID')
+#     comments = TextAreaField('Comments')
+#     submit = SubmitField('Create')
 
-class EditDocumentForm(FlaskForm):
+class DocumentForm(FlaskForm):
     # From MongoDB document.sourceType field
     document_type = SelectField('Document Type')
     citation = TextAreaField('Citation')

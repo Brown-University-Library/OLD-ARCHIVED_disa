@@ -59,7 +59,7 @@ class Document(db.Model):
     national_context = db.Column(db.String(255))
     citation = db.Column(db.String(500))
     zotero_id = db.Column(db.String(255))
-    comments = db.Column(db.String(255))
+    acknowledgements = db.Column(db.String(255))
     records = db.relationship('Record', backref='document', lazy=True)
 
     def __repr__(self):

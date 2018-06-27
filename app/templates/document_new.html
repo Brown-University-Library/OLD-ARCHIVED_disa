@@ -2,26 +2,58 @@
 
 {% block content %}
     <div class="container">
-        <div class="page-header">
-            <h3>New Collection</h3>  
-        </div>
-        <form action="" method="post">
+    <h2>Add source</h2>
+    <div id="pubinfo" style="width: calc(100% - 30px); margin-left: 30px;">
+        <form action="{{ url_for('new_document') }}" method="post">
             <p>
-                <dt>{{ form.doctype.label }}</dt>
-                    <dd>{{ form.doctype }}</dd>
-                <dt>{{ form.date.label }}</dt>
-                    <dd>{{ form.date(size=32) }}</dd>
-                <dt>{{ form.context.label }}</dt>
-                    <dd>{{ form.context(size=32) }}</dd>
-                <dt>{{ form.citation.label }}</dt>
-                    <dd>{{ form.citation(size=32) }}</dd>
-                <dt>{{ form.zotero.label }}</dt>
-                    <dd>{{ form.zotero(size=32) }}</dd>
-                <dt>{{ form.comments.label }}</dt>
-                    <dd>{{ form.comments(cols=50, rows=4) }}</dd>
+                {{ form.zotero_id.label }}
+                {{ form.zotero_id }}
             </p>
+            <p>
+                {{ form.document_type.label }}
+                {{ form.document_type }}
+            </p>
+    <!--        <p>
+                <label>Location</label><br>
+                <input type="text" placeholder="Havana" class="row-item">
+                <span class="row-item">in</span>
+                <span class="row-item">
+                    <select>
+                        <option>Spanish</option>
+                    </select>
+                    <select>
+                        <option>Cuba</option>
+                    </select>
+                </span>
+            </p> -->
+            <div style="display: flex; align-items: center;">
+                <div class="row-item">
+                    {{ form.month.label }}<br/>
+                    {{ form.month }}
+                </div>
+                <div class="row-item">
+                    {{ form.day.label }}<br/>
+                    {{ form.day }}
+                </div>
+                <div class="row-item">  
+                    <label>Year</label><br/>
+                    {{ form.century }}
+                    {{ form.decade }}
+                    {{ form.year }}
+                </div>
+            </div>
+            <p>
+                {{ form.citation.label }}
+                {{ form.citation }}
+            </p>
+            <p>
+                {{ form.acknowledgements.label }}
+                {{ form.acknowledgements }}
+            </p>
+            <a class="btn btn-danger" href="{{ url_for('index_documents') }}">Cancel</a>
             <button class="btn btn-primary">{{ form.submit() }}</button>
         </form>
     </div>
+</div>
    
 {% endblock %}
