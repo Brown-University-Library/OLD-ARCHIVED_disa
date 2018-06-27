@@ -60,11 +60,11 @@ def show_document(docId):
         form = prep_document_form(form, doc)
         return render_template('document_show.html', document=doc, form=form)
         
-    form = prep_document_form(form, doc)
     if request.args.get('edit', False):
+        form = prep_document_form(form, doc)
         return render_template(
             'document_show.html', document=doc, form=form, edit=True)
-    return render_template('document_show.html', document=doc, form=form)
+    return render_template('document_show.html', document=doc)
 
 @app.route('/documents/new', methods=['GET','POST'])
 def new_document():

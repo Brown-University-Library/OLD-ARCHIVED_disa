@@ -4,22 +4,15 @@
 <div class="container">
     <h2>{{ document.citation }}</h2>
     <div id="pubinfo" style="width: calc(100% - 30px); margin-left: 30px;">
+        {% if edit %}
         <form action="{{ url_for('show_document', docId = document.id) }}" method="post">
             <p>
                 {{ form.zotero_id.label }}
-                {% if edit %}
-                    {{ form.zotero_id }}
-                {% else %}
-                    {{form.zotero_id(disabled=True)}}
-                {% endif %}
+                {{ form.zotero_id }}
             </p>
             <p>
                 {{ form.document_type.label }}
-                {% if edit %}
-                    {{ form.document_type }}
-                {% else %}
-                    {{form.document_type(disabled=True)}}
-                {% endif %}
+                {{ form.document_type }}
             </p>
     <!--        <p>
                 <label>Location</label><br>
@@ -37,56 +30,38 @@
             <div style="display: flex; align-items: center;">
                 <div class="row-item">
                     {{ form.month.label }}<br/>
-                    {% if edit %}
-                        {{ form.month }}
-                    {% else %}
-                        {{form.month(disabled=True)}}
-                    {% endif %}
+                    {{ form.month }}
                 </div>
                 <div class="row-item">
                     {{ form.day.label }}<br/>
-                    {% if edit %}
-                        {{ form.day }}
-                    {% else %}
-                        {{form.day(disabled=True)}}
-                    {% endif %}
+                    {{ form.day }}
                 </div>
                 <div class="row-item">  
                     <label>Year</label><br/>
-                    {% if edit %}
-                        {{ form.century }}
-                        {{ form.decade }}
-                        {{ form.year }}
-                    {% else %}
-                        {{ form.century(disabled=True) }}
-                        {{ form.decade(disabled=True) }}
-                        {{ form.year(disabled=True) }}
-                    {% endif %}
+                    {{ form.century }}
+                    {{ form.decade }}
+                    {{ form.year }}
                 </div>
             </div>
             <p>
                 {{ form.citation.label }}
-                {% if edit %}
-                    {{ form.citation }}
-                {% else %}
-                    {{form.citation(disabled=True)}}
-                {% endif %}
+                {{ form.citation }}
             </p>
             <p>
                 {{ form.acknowledgements.label }}
-                {% if edit %}
-                    {{ form.acknowledgements }}
-                {% else %}
-                    {{ form.acknowledgements(disabled=True) }}
-                {% endif %}
+                {{ form.acknowledgements }}
             </p>
-            {% if edit %}
-                <a class="btn btn-danger" href="{{ url_for('show_document', docId = document.id) }}">Cancel</a>
-                <button class="btn btn-primary">{{ form.submit() }}</button>
-            {% endif %}
+            <a class="btn btn-danger" href="{{ url_for('show_document', docId = document.id) }}">Cancel</a>
+            <button class="btn btn-primary">{{ form.submit() }}</button>
         </form>
-        {% if not edit %}
-            <a class="btn btn-primary" href="{{ url_for('show_document', docId = document.id, edit=True)}}">Edit document</a>
+        {% else %}
+            <form action="" method="">
+                <p>
+                    <label for="zotero_id">Zotero ID</label>
+                    <input style="border:1px solid #cccccc;" disabled id="zotero_id" name="zotero_id" type="text" value="{{ document.zotero_id }}">
+                </p>
+            </form>
+            <a class="btn btn-primary" href="{{ url_for('show_document', docId = document.id, edit=True)}}">Edit source</a>
         {% endif %}
     </div>
     <h2>Records</h2>

@@ -147,7 +147,10 @@
     });
 
     $('.hider').on('click', function() {
-        
+        $('.hideable').attr('hidden','true');
+    });
+    $('.unhider').on('click', function() {
+        $('.hideable').removeAttr('hidden');
     });
 </script>
 </html>

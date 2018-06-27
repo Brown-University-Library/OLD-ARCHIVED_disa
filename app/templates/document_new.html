@@ -6,12 +6,12 @@
     <div id="pubinfo" style="width: calc(100% - 30px); margin-left: 30px;">
         <form action="{{ url_for('new_document') }}" method="post">
             <p>
+                <input type="radio" name="entry-type" class="hider">
                 {{ form.zotero_id.label }}
                 {{ form.zotero_id }}
-            </p>
-            <p>
-                {{ form.document_type.label }}
-                {{ form.document_type }}
+                <br/>
+                <input type="radio" name="entry-type" class="unhider">
+                <label for="manual-entry">Manual entry</label>
             </p>
     <!--        <p>
                 <label>Location</label><br>
@@ -26,30 +26,36 @@
                     </select>
                 </span>
             </p> -->
-            <div style="display: flex; align-items: center;">
-                <div class="row-item">
-                    {{ form.month.label }}<br/>
-                    {{ form.month }}
+            <div  class="hideable" hidden="true">
+                <p>
+                    {{ form.document_type.label }}
+                    {{ form.document_type }}
+                </p>
+                <div style="align-items: center;">
+                    <div class="row-item">
+                        {{ form.month.label }}<br/>
+                        {{ form.month }}
+                    </div>
+                    <div class="row-item">
+                        {{ form.day.label }}<br/>
+                        {{ form.day }}
+                    </div>
+                    <div class="row-item">  
+                        <label>Year</label><br/>
+                        {{ form.century }}
+                        {{ form.decade }}
+                        {{ form.year }}
+                    </div>
                 </div>
-                <div class="row-item">
-                    {{ form.day.label }}<br/>
-                    {{ form.day }}
-                </div>
-                <div class="row-item">  
-                    <label>Year</label><br/>
-                    {{ form.century }}
-                    {{ form.decade }}
-                    {{ form.year }}
-                </div>
+                <p>
+                    {{ form.citation.label }}
+                    {{ form.citation }}
+                </p>
+                <p>
+                    {{ form.acknowledgements.label }}
+                    {{ form.acknowledgements }}
+                </p>
             </div>
-            <p>
-                {{ form.citation.label }}
-                {{ form.citation }}
-            </p>
-            <p>
-                {{ form.acknowledgements.label }}
-                {{ form.acknowledgements }}
-            </p>
             <a class="btn btn-danger" href="{{ url_for('index_documents') }}">Cancel</a>
             <button class="btn btn-primary">{{ form.submit() }}</button>
         </form>
