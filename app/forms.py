@@ -3,20 +3,11 @@ from wtforms import StringField, TextAreaField, SubmitField
 from wtforms import HiddenField, SelectField, DateField
 from wtforms import FieldList, IntegerField
 
-# class DocumentForm(FlaskForm):
-#     # From MongoDB document.sourceType field
-#     doctype = SelectField('Type')
-#     citation = StringField('Citation information')
-#     date = DateField('Date of publication')
-#     context = StringField('National context')
-#     zotero = StringField('Zotero ID')
-#     comments = TextAreaField('Comments')
-#     submit = SubmitField('Create')
-
 class DocumentForm(FlaskForm):
     # From MongoDB document.sourceType field
     document_type = SelectField('Document Type')
     citation = TextAreaField('Citation')
+#   context = StringField('National context')
     day = IntegerField('Day')
     month = SelectField('Month')
     century = SelectField()
@@ -28,9 +19,13 @@ class DocumentForm(FlaskForm):
 
 class RecordForm(FlaskForm):
     # From MongoDB document.recordType field
-    rectype = SelectField('Type')
+    record_type = SelectField('Type')
+    day = IntegerField('Day')
+    month = SelectField('Month')
+    century = SelectField()
+    decade = SelectField()
+    year = SelectField()
     citation = StringField('Citation information')
-    date = DateField('Date of publication')
     comments = TextAreaField('Comments')
     submit = SubmitField('Create')
 

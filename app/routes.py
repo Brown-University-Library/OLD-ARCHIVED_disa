@@ -12,6 +12,27 @@ def parse_date_data(form):
         form.year.data or '0'), "%d-%m-%Y" )
     return dt
 
+def prep_record_form(form, rec=None):
+    form.record_type.choices = [
+        (t.id, t.name) for t in RecordType.query.order_by('name')]
+    months = [ datetime.date(year=1900,month=m,day=1) for m in range(1,13) ]
+    form.month.choices = [ ( m.month, m.strftime("%B") ) for m in months ]
+    form.century.choices = [ (c, c) for c in range(14,21) ]
+    form.decade.choices = [ (d, d) for d in range(10)]
+    form.year.choices = [ (y, y) for y in range(10)]
+    if not rec:
+        return form   
+
+    form.citation.data = rec.citation
+    form.comments.data = rec.comments
+    form.record_type.data = str(rec.record_type.id)
+    form.day.data = getattr(rec.date, 'day', '')
+    form.month.data = str(getattr(rec.date, 'month', 1) )
+    form.century.data = str( getattr(rec.date, 'year', 14) // 100 ), 
+    form.decade.data = str( getattr(rec.date, 'year',0) % 100 // 10)
+    form.year.data = str( getattr(rec.date, 'year',0) % 10)
+    return form
+
 def prep_document_form(form, doc=None):
     form.document_type.choices = [
         (t.id, t.name) for t in DocumentType.query.order_by('name')]
@@ -89,20 +110,33 @@ def new_record():
     form = RecordForm()
     doc = Document.query.get(request.args['docId'])
     if request.method == 'POST':
-        rectype = RecordType.query.get(form.rectype.data)
+        rectype = RecordType.query.get(form.record_type.data)
         rec = Record(record_type = rectype, citation = form.citation.data,
             date=form.date.data, comments = form.comments.data, 
             document = doc)
+        rec.date = parse_date_data(form)
         db.session.add(rec)
         db.session.commit()
         return redirect(url_for('show_record', recId = rec.id))
-    form.rectype.choices = [
-        (t.id, t.name) for t in RecordType.query.order_by('name')]
+    form = prep_record_form(form)
     return render_template('record_new.html', form = form, document = doc)
 
-@app.route('/records/<recId>', methods = ['GET'])
+@app.route('/records/<recId>', methods = ['GET','POST'])
 def show_record(recId):
     rec = Record.query.get(recId)
+    form = RecordForm()
+    if request.args.get('edit', False):
+        form = prep_record_form(form, rec)
+        return render_template(
+            'record_show.html', record=rec, form=form, edit=True)
+    if request.method == 'POST':
+        rec.citation = form.citation.data
+        rec.record_type = RecordType.query.get(form.record_type.data)
+        rec.date = parse_date_data(form)
+        rec.comments = form.comments.data
+        db.session.add(rec)
+        db.session.commit()
+        
     rel_roles = rec.record_type.roles
     existing_roles =  { role for entrant in rec.entrants
         for role in entrant.roles }

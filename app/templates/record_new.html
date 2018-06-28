@@ -2,21 +2,39 @@
 
 {% block content %}
     <div class="container">
-        <div class="page-header">
-            <h3>Entry in {{ document.citation }}</h3>
-        </div>
+        <div id="pubinfo" style="width: calc(100% - 30px); margin-left: 30px;">
+        <h3>Add to {{ document.citation }}</h3>
         
         <form action="" method="post">
-            <p>
-                <dt>{{ form.rectype.label }}</dt>
-                    <dd>{{ form.rectype }}</dd>
-                <dt>{{ form.citation.label }}</dt>
-                    <dd>{{ form.citation(size=32) }}</dd>
-                <dt>{{ form.date.label }}<d/t>
-                    <dd>{{ form.date(size=32) }}</dd>
-                <dt>{{ form.comments.label }}</dt>
-                    <dd>{{ form.comments(cols=50, rows=4) }}</dd>
-            </p>
+                <p>
+                    {{ form.record_type.label }}
+                    {{ form.record_type }}
+                </p>
+                <div style="display: flex; align-items: center;">
+                    <div class="row-item">
+                        {{ form.month.label }}<br/>
+                        {{ form.month }}
+                    </div>
+                    <div class="row-item">
+                        {{ form.day.label }}<br/>
+                        {{ form.day }}
+                    </div>
+                    <div class="row-item">  
+                        <label>Year</label><br/>
+                        {{ form.century }}
+                        {{ form.decade }}
+                        {{ form.year }}
+                    </div>
+                </div>
+                <p>
+                    {{ form.citation.label }}
+                    {{ form.citation }}
+                </p>
+                <p>
+                    {{ form.comments.label }}
+                    {{ form.comments }}
+                </p>
+            <a class="btn btn-danger" href="{{ url_for('show_document', docId=document.id) }}">Cancel</a>
             <button class="btn btn-primary">{{ form.submit() }}</button>
         </form>
         

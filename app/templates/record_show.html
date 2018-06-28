@@ -2,44 +2,76 @@
 
 {% block content %}
 <div class="container">
-	<legend>
-		<div class='form-group row'>
-			<label class="col-sm-3 col-form-label">Record Type:</label>
-			<label class="col-sm-9">{{ record.record_type.name }}</label>
-			<label class="col-sm-3 col-form-label">Appears in:</label>
-			<label class="col-sm-9"><a href="{{ url_for('show_document', docId=record.document.id )}}">{{ record.document.citation }}</a></label>
-		</div>
-	</legend>
-	<div class='row'>
-		<label class="col-sm-2 col-form-label">Date:</label>
-		<label class="col-sm-10">{{ record.date }}</label>
-	</div>
-	<div class='row'>
-		<label class="col-sm-2 col-form-label">Citation:</label>
-		<label class="col-sm-10">{{ record.citation }}</label>
-	</div>
-	<div class='row'>
-		<label class="col-sm-2 col-form-label">Comments:</label>
-		<label class="col-sm-10">{{ record.comments }}</label>
-	</div>
-	<div>
-    <h3>People</h3>
-	    <ul>
+	<h2>{{ record.record_type.name }}</h2>
+	<h3><a href="{{ url_for('show_document', docId=record.document.id )}}">{{ record.document.citation }}</a></h3>
+    <div id="pubinfo" style="width: calc(100% - 30px); margin-left: 30px;">
+        {% if edit %}
+        <form action="{{ url_for('show_record', recId = record.id) }}" method="post">
+            <p>
+                {{ form.record_type.label }}
+                {{ form.record_type }}
+            </p>
+    <!--        <p>
+                <label>Location</label><br>
+                <input type="text" placeholder="Havana" class="row-item">
+                <span class="row-item">in</span>
+                <span class="row-item">
+                    <select>
+                        <option>Spanish</option>
+                    </select>
+                    <select>
+                        <option>Cuba</option>
+                    </select>
+                </span>
+            </p> -->
+            <div style="display: flex; align-items: center;">
+                <div class="row-item">
+                    {{ form.month.label }}<br/>
+                    {{ form.month }}
+                </div>
+                <div class="row-item">
+                    {{ form.day.label }}<br/>
+                    {{ form.day }}
+                </div>
+                <div class="row-item">  
+                    <label>Year</label><br/>
+                    {{ form.century }}
+                    {{ form.decade }}
+                    {{ form.year }}
+                </div>
+            </div>
+            <p>
+                {{ form.citation.label }}
+                {{ form.citation }}
+            </p>
+            <p>
+                {{ form.comments.label }}
+                {{ form.comments }}
+            </p>
+            <a class="btn btn-danger" href="{{ url_for('show_record', recId = record.id) }}">Cancel</a>
+            <button class="btn btn-primary">{{ form.submit() }}</button>
+        </form>
+        {% else %}
+        <a class="btn btn-primary" href="{{ url_for('show_record', recId = record.id, edit=True)}}">Edit</a>
+        {% endif %}
+    <h3>Persons</h3>
+    {% if edit %}
+	    <p>{{ record.entrants|length }}</p>
+	{% else %}
+		<ul>
 	        {% for entrant in record.entrants %}
 	        <li><span><a href="{{ url_for('show_entrant', entId = entrant.id ) }}">{% if entrant.first_name %} {{ entrant.first_name }} {{ entrant.last_name }} {% else %}
 	        Unknown {% endif %}</a>  {% for role in entrant.roles %} {{ role.role }} {% endfor %}</span>
 	        </li>
 	        {% endfor %}
 	    </ul>
-	</div>
-    <div>
-        {% for role in unassigned_roles %}
-            <a class="btn btn-primary" href="{{ url_for('new_entrant', recId = record.id, role=role.id)}}">Add {{ role.name }}</a>
-        {% endfor %}
-        <a class="btn btn-primary" href="{{ url_for('new_entrant', recId = record.id)}}">Add other person</a>
-        
-    </div>
-    
+	    <div>
+	        {% for role in unassigned_roles %}
+	            <a class="btn btn-primary" href="{{ url_for('new_entrant', recId = record.id, role=role.id)}}">Add {{ role.name }}</a>
+	        {% endfor %}
+	        <a class="btn btn-primary" href="{{ url_for('new_entrant', recId = record.id)}}">Add other person</a>
+    	</div>
+	{% endif %}    
 
 </div>
 
