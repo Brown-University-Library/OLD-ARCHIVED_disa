@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, SubmitField
 from wtforms import HiddenField, SelectField, DateField
-from wtforms import FieldList, IntegerField
+from wtforms import FieldList, IntegerField, RadioField
 
 class DocumentForm(FlaskForm):
     # From MongoDB document.sourceType field
@@ -32,17 +32,18 @@ class RecordForm(FlaskForm):
 class EntrantForm(FlaskForm):
     record = HiddenField('Record')
     role = SelectField('Type')
-    first_name = StringField('First name')
-    last_name = StringField('Last name')
+    first_name = StringField('First')
+    last_name = StringField('Last')
     age = StringField('Age')
-    sex = StringField('Sex')
+    gender = RadioField('Gender', choices=[
+        ('1','Male'),('2','Female'),('3','Other/Unknown')],default='3')
     title = StringField('Title')
     race = StringField('Race')
     tribe = StringField('Tribe')
     origin = StringField('Origin')
     status = StringField('Status')
     vocation = StringField('Vocation')
-    submit = SubmitField('Add')
+    submit = SubmitField('Save')
 
 class EntrantRelationshipForm(FlaskForm):
     entrant = HiddenField('Entrant')
