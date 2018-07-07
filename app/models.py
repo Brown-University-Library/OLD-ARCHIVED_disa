@@ -1,34 +1,11 @@
 from app import db
 
-location_within = db.Table('location_within',
-    db.Column('id', db.Integer, primary_key=True),
-    db.Column('contained', db.Integer, db.ForeignKey('locations.id')),
-    db.Column('container', db.Integer, db.ForeignKey('locations.id'))
-)
 
 has_location = db.Table('has_location',
     db.Column('id', db.Integer, primary_key=True),
     db.Column('record', db.Integer, db.ForeignKey('records.id')),
     db.Column('location', db.Integer, db.ForeignKey('locations.id')),
     db.Column('location_for', db.String(255))
-)
-
-owned_by = db.Table('owned_by',
-    db.Column('id', db.Integer, primary_key=True),
-    db.Column('enslaved', db.Integer, db.ForeignKey('entrants.id')),
-    db.Column('owner', db.Integer, db.ForeignKey('entrants.id'))
-)
-
-child_of = db.Table('child_of',
-    db.Column('id', db.Integer, primary_key=True),
-    db.Column('child', db.Integer, db.ForeignKey('entrants.id')),
-    db.Column('parent', db.Integer, db.ForeignKey('entrants.id'))
-)
-
-has_spouse = db.Table('has_spouse',
-    db.Column('id', db.Integer, primary_key=True),
-    db.Column('spouse1', db.Integer, db.ForeignKey('entrants.id')),
-    db.Column('spouse2', db.Integer, db.ForeignKey('entrants.id'))
 )
 
 has_role = db.Table('has_role',
@@ -115,26 +92,15 @@ class Location(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
     location_type = db.Column(db.String(255))
-
-    within = db.relationship(
-        'Location', secondary=location_within,
-        primaryjoin=(location_within.c.contained == id),
-        secondaryjoin=(location_within.c.container == id),
-        backref=db.backref(
-            'location_within', lazy='dynamic'), lazy='dynamic')
-
+    super_location_id = db.Column(db.Integer, db.ForeignKey('locations.id'),
+        nullable=True)
+    location_within = db.relationship('Location')
     records = db.relationship(
         'Record', secondary=has_location,
         back_populates='locations')
 
     def __repr__(self):
         return '<Location {0}: {1}>'.format(self.id, self.name)
-
-    def place_within(self, locObj):
-        self.within.append(locObj)
-
-    def place_for(self, recObj):
-        self.records.append(recObj)
 
 class Entrant(db.Model):
     __tablename__ = 'entrants'
@@ -150,46 +116,10 @@ class Entrant(db.Model):
         'Description', backref='entrant', lazy=True)
     roles = db.relationship('Role',
         secondary='has_role', back_populates='entrants')
-    owners = db.relationship(
-        'Entrant', secondary=owned_by,
-        primaryjoin=(owned_by.c.enslaved == id),
-        secondaryjoin=(owned_by.c.owner == id),
-        backref=db.backref('owned_by', lazy='dynamic'), lazy='dynamic')
-    parents = db.relationship(
-        'Entrant', secondary=child_of,
-        primaryjoin=(child_of.c.child == id),
-        secondaryjoin=(child_of.c.parent == id),
-        backref=db.backref('child_of', lazy='dynamic'), lazy='dynamic')
-    spouses = db.relationship(
-        'Entrant', secondary=has_spouse,
-        primaryjoin=(has_spouse.c.spouse1 == id),
-        secondaryjoin=(has_spouse.c.spouse2 == id),
-        backref=db.backref('has_spouse', lazy='dynamic'), lazy='dynamic')
 
     def __repr__(self):
         return '<Entrant {0}: {1} {2}>'.format(
             self.id, self.first_name, self.last_name)
-
-class Role(db.Model):
-    __tablename__ = 'roles'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255))
-    description_group = db.Column(db.Integer)
-    entrants = db.relationship('Entrant',
-        secondary='has_role', back_populates='roles')
-    record_types = db.relationship(
-        'RecordType', secondary=recordtype_roles,
-        back_populates='roles')
-
-class Person(db.Model):
-    __tablename__ = 'people'
-
-    id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(255))
-    last_name = db.Column(db.String(255))
-    comments = db.Column(db.String(255))
-    references = db.relationship('Entrant', backref='person', lazy=True)
 
 class Description(db.Model):
     __tablename__ = 'entrant_description'
@@ -204,3 +134,56 @@ class Description(db.Model):
     vocation = db.Column(db.String(255))
     entrant_id = db.Column(db.Integer, db.ForeignKey('entrants.id'),
         nullable=False)
+
+class Role(db.Model):
+    __tablename__ = 'roles'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    entrants = db.relationship('Entrant',
+        secondary='has_role', back_populates='roles')
+    record_types = db.relationship(
+        'RecordType', secondary=recordtype_roles,
+        back_populates='roles')
+
+class EntrantRelationship(db.Model):
+    __tablename__ = 'entrant_relationships'
+
+    id = db.Column(db.Integer, primary_key=True)
+    subject_id = db.Column(db.Integer, db.ForeignKey('entrants.id'))
+    object_id = db.Column(db.Integer, db.ForeignKey('entrants.id'))
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    sbj = db.relationship(Entrant,
+        primaryjoin=(subject_id == Entrant.id),
+        backref='as_subject')
+    obj = db.relationship(Entrant,
+        primaryjoin=(object_id == Entrant.id),
+        backref='as_object')
+    related_as = db.relationship(Role,
+        primaryjoin=(role_id == Role.id),
+        backref='describes')
+
+class RoleRelationship(db.Model):
+    __tablename__ = 'role_relationships'
+
+    id = db.Column(db.Integer, primary_key=True)
+    role1 = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    role2 = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    relationship_type = db.Column(db.Integer,
+        db.ForeignKey('role_relationship_types.id'))
+    alternate_text = db.Column(db.String(255))
+
+class RoleRelationshipTypes(db.Model):
+    __tablename__ = 'role_relationship_types'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+
+class Person(db.Model):
+    __tablename__ = 'people'
+
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(255))
+    last_name = db.Column(db.String(255))
+    comments = db.Column(db.String(255))
+    references = db.relationship('Entrant', backref='person', lazy=True)
