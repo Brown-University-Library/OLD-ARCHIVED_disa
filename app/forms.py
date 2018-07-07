@@ -41,7 +41,7 @@ class EntrantForm(FlaskForm):
     race = StringField('Race')
     tribe = StringField('Tribe')
     origin = StringField('Origin')
-    status = StringField('Status')
+    status = SelectField('Status')
     vocation = StringField('Vocation')
     submit = SubmitField('Save')
 

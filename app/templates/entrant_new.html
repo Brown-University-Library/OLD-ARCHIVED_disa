@@ -38,17 +38,17 @@
             <br>
             <h3>What role does this person play in the context of the document?</h3>
             {{ form.role }}
-            <br>    
-            
-            <h3>{{ form.gender.label }}</h3>
-            {% for radio in form.gender %}
-                {{ radio }}
-                {{ radio.label }}<br/>
-            {% endfor %}
-            <br/>
+            <br>
             
             <expansion-header>Identity</expansion-header>
             <collapsing-text>
+                <p>
+                {{ form.gender.label }}
+                {% for radio in form.gender %}
+                    {{ radio }}
+                    {{ radio.label }}<br/>
+                {% endfor %}
+                </p>
                 <p>             
                     {{ form.age.label }}<br/>
                     {{ form.age }}
@@ -70,370 +70,8 @@
             </collapsing-text>
 
             <br>            
-<!--             <expansion-header>Dates</expansion-header>
-            <collapsing-text>
-                <h3>Date of Death</h3>
-                <div style="display: flex; align-items: center;">
-                    <div class="row-item">
-                        <label>Month</label><br>
-                        <select>
-                            <option>...</option>
-                            <option>January</option>
-                            <option>February</option>
-                            <option>March</option>
-                            <option>April</option>
-                            <option>May</option>
-                            <option>June</option>
-                            <option selected="selected">July</option>
-                            <option>August</option>
-                            <option>September</option>
-                            <option>October</option>
-                            <option>November</option>
-                            <option>December</option>
-                        </select>               
-                    </div>
-                    <div class="row-item">              
-                        <label>Day<label><br>
-                        <input type="number" value="4">
-                    </div>
-                    <div class="row-item">  
-                        <label>Year</label><br>
-                        <select>
-                            <option>...</option>
-                            <option>15</option>
-                            <option>16</option>
-                            <option selected="selected">17</option>
-                            <option>18</option>         
-                        </select>
-                        <select>
-                            <option>...</option>
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
-                            <option>4</option>
-                            <option>5</option>
-                            <option>6</option>
-                            <option selected="selected">7</option>
-                            <option>8</option>
-                            <option>9</option>
-                        </select>
-                        <select>
-                            <option>...</option>
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
-                            <option>4</option>
-                            <option>5</option>
-                            <option selected="selected">6</option>
-                            <option>7</option>
-                            <option>8</option>
-                            <option>9</option>
-                        </select>   
-                    </div>              
-                </div>
-                <br>
-                <h3>Date of Emancipation</h3>
-                <div style="display: flex; align-items: center;">
-                    <div class="row-item">
-                        <label>Month</label><br>
-                        <select>
-                            <option>...</option>
-                            <option>January</option>
-                            <option>February</option>
-                            <option>March</option>
-                            <option>April</option>
-                            <option>May</option>
-                            <option>June</option>
-                            <option selected="selected">July</option>
-                            <option>August</option>
-                            <option>September</option>
-                            <option>October</option>
-                            <option>November</option>
-                            <option>December</option>
-                        </select>               
-                    </div>
-                    <div class="row-item">              
-                        <label>Day<label><br>
-                        <input type="number" value="4">
-                    </div>
-                    <div class="row-item">  
-                        <label>Year</label><br>
-                        <select>
-                            <option>...</option>
-                            <option>15</option>
-                            <option>16</option>
-                            <option selected="selected">17</option>
-                            <option>18</option>         
-                        </select>
-                        <select>
-                            <option>...</option>
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
-                            <option>4</option>
-                            <option>5</option>
-                            <option>6</option>
-                            <option selected="selected">7</option>
-                            <option>8</option>
-                            <option>9</option>
-                        </select>
-                        <select>
-                            <option>...</option>
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
-                            <option>4</option>
-                            <option>5</option>
-                            <option selected="selected">6</option>
-                            <option>7</option>
-                            <option>8</option>
-                            <option>9</option>
-                        </select>   
-                    </div>              
-                </div>
-                <br>
-                <h3>Date of Marriage</h3>
-                <div style="display: flex; align-items: center;">
-                    <div class="row-item">
-                        <label>Month</label><br>
-                        <select>
-                            <option>...</option>
-                            <option>January</option>
-                            <option>February</option>
-                            <option>March</option>
-                            <option>April</option>
-                            <option>May</option>
-                            <option>June</option>
-                            <option selected="selected">July</option>
-                            <option>August</option>
-                            <option>September</option>
-                            <option>October</option>
-                            <option>November</option>
-                            <option>December</option>
-                        </select>               
-                    </div>
-                    <div class="row-item">              
-                        <label>Day<label><br>
-                        <input type="number" value="4">
-                    </div>
-                    <div class="row-item">  
-                        <label>Year</label><br>
-                        <select>
-                            <option>...</option>
-                            <option>15</option>
-                            <option>16</option>
-                            <option selected="selected">17</option>
-                            <option>18</option>         
-                        </select>
-                        <select>
-                            <option>...</option>
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
-                            <option>4</option>
-                            <option>5</option>
-                            <option>6</option>
-                            <option selected="selected">7</option>
-                            <option>8</option>
-                            <option>9</option>
-                        </select>
-                        <select>
-                            <option>...</option>
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
-                            <option>4</option>
-                            <option>5</option>
-                            <option selected="selected">6</option>
-                            <option>7</option>
-                            <option>8</option>
-                            <option>9</option>
-                        </select>   
-                    </div>              
-                </div>              
-                <br>                
-                <div style="display: flex; align-items: center;">
-                    <div class="row-item">
-                        <label>Month</label><br>
-                        <select>
-                            <option>...</option>
-                            <option>January</option>
-                            <option>February</option>
-                            <option>March</option>
-                            <option>April</option>
-                            <option>May</option>
-                            <option>June</option>
-                            <option selected="selected">July</option>
-                            <option>August</option>
-                            <option>September</option>
-                            <option>October</option>
-                            <option>November</option>
-                            <option>December</option>
-                        </select>               
-                    </div>
-                    <div class="row-item">              
-                        <label>Day<label><br>
-                        <input type="number" value="4">
-                    </div>
-                    <div class="row-item">  
-                        <label>Year</label><br>
-                        <select>
-                            <option>...</option>
-                            <option>15</option>
-                            <option>16</option>
-                            <option selected="selected">17</option>
-                            <option>18</option>         
-                        </select>
-                        <select>
-                            <option>...</option>
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
-                            <option>4</option>
-                            <option>5</option>
-                            <option>6</option>
-                            <option selected="selected">7</option>
-                            <option>8</option>
-                            <option>9</option>
-                        </select>
-                        <select>
-                            <option>...</option>
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
-                            <option>4</option>
-                            <option>5</option>
-                            <option selected="selected">6</option>
-                            <option>7</option>
-                            <option>8</option>
-                            <option>9</option>
-                        </select>   
-                    </div>              
-                </div>
 
-                <h3>Date of Runaway</h3>
-                <div style="display: flex; align-items: center;">
-                    <div class="row-item">
-                        <label>Month</label><br>
-                        <select>
-                            <option>...</option>
-                            <option>January</option>
-                            <option>February</option>
-                            <option>March</option>
-                            <option>April</option>
-                            <option>May</option>
-                            <option>June</option>
-                            <option selected="selected">July</option>
-                            <option>August</option>
-                            <option>September</option>
-                            <option>October</option>
-                            <option>November</option>
-                            <option>December</option>
-                        </select>               
-                    </div>
-                    <div class="row-item">              
-                        <label>Day<label><br>
-                        <input type="number" value="4">
-                    </div>
-                    <div class="row-item">  
-                        <label>Year</label><br>
-                        <select>
-                            <option>...</option>
-                            <option>15</option>
-                            <option>16</option>
-                            <option selected="selected">17</option>
-                            <option>18</option>         
-                        </select>
-                        <select>
-                            <option>...</option>
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
-                            <option>4</option>
-                            <option>5</option>
-                            <option>6</option>
-                            <option selected="selected">7</option>
-                            <option>8</option>
-                            <option>9</option>
-                        </select>
-                        <select>
-                            <option>...</option>
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
-                            <option>4</option>
-                            <option>5</option>
-                            <option selected="selected">6</option>
-                            <option>7</option>
-                            <option>8</option>
-                            <option>9</option>
-                        </select>   
-                    </div>              
-                </div>          
-                <br>                
-                <h3>Date of Sale</h3>
-                <div style="display: flex; align-items: center;">
-                    <div class="row-item">
-                        <label>Month</label><br>
-                        <select>
-                            <option>...</option>
-                            <option>January</option>
-                            <option>February</option>
-                            <option>March</option>
-                            <option>April</option>
-                            <option>May</option>
-                            <option>June</option>
-                            <option selected="selected">July</option>
-                            <option>August</option>
-                            <option>September</option>
-                            <option>October</option>
-                            <option>November</option>
-                            <option>December</option>
-                        </select>               
-                    </div>
-                    <div class="row-item">              
-                        <label>Day<label><br>
-                        <input type="number" value="4">
-                    </div>
-                    <div class="row-item">  
-                        <label>Year</label><br>
-                        <select>
-                            <option>...</option>
-                            <option>15</option>
-                            <option>16</option>
-                            <option selected="selected">17</option>
-                            <option>18</option>         
-                        </select>
-                        <select>
-                            <option>...</option>
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
-                            <option>4</option>
-                            <option>5</option>
-                            <option>6</option>
-                            <option selected="selected">7</option>
-                            <option>8</option>
-                            <option>9</option>
-                        </select>
-                        <select>
-                            <option>...</option>
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
-                            <option>4</option>
-                            <option>5</option>
-                            <option selected="selected">6</option>
-                            <option>7</option>
-                            <option>8</option>
-                            <option>9</option>
-                        </select>   
-                    </div>              
-                </div>
-                            
-            </collapsing-text>
-            <br> -->
-<!--             <expansion-header>Position</expansion-header>
+            <expansion-header>Position</expansion-header>
             <collapsing-text>
                 <p>
                     <label>Status</label><br>
@@ -446,38 +84,12 @@
                 </p>
                 
                 <p>
-                    <label>Vocation</label><br>
-                    <select>
-                        <option>Pastor</option>
-                        <option>Farmer</option>
-                        <option>Lawyer</option>
-                        <option>Merchant</option>
-                        <option>Baker</option>
-                        <option>Maltser</option>
-                        <option>Ship Captain</option>
-                        <option>Shopkeeper</option>
-                        <option>Leatherer</option>
-                        <option>Sadler</option>
-                        <option>Mariner</option>
-                        <option>Cordwainer</option>
-                        <option>Butcher</option>
-                        <option>Baker</option>
-                        <option>Candlestick-maker</option>
-                        <option>Other</option>                  
-                    </select>
-                    <input type="text">
+                    {{ form.vocation.label }}
+                    {{ form.vocation }}
                 </p>
                 <p>
-                    <label>Title</label><br>
-                    <select>
-                        <option>Mr.</option>
-                        <option>Capt.</option>
-                        <option>Esq</option>
-                        <option>Don</option>
-                        <option>Mistress</option>
-                        <option>Fray</option>           
-                    </select>
-                    <input type="text">
+                    {{ form.title.label }}
+                    {{ form.title }}
                 </p>        
                 <p>
                     <label>Kind of Enslavement</label><br>
@@ -490,7 +102,7 @@
                     <input type="text">
                 </p>
             </collapsing-text>
-            <br> -->
+            <br>
             
 <!--             <div class="annotation">
             The fields which start out expanded will be determined based on the type of record.

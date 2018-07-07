@@ -2,22 +2,22 @@ from app import db, models
 
 def load_multivalued_attributes():
     roles = [
-        { 'name': 'enslaved', 'description_group': 1},
-        { 'name': 'owner', 'description_group': 2},
-        { 'name': 'priest', 'description_group': 2},
-        { 'name': 'inoculated', 'description_group': 1},
-        { 'name': 'escaped', 'description_group': 1},
-        { 'name': 'captor', 'description_group': 2},
-        { 'name': 'captured', 'description_group': 1},
-        { 'name': 'baptised', 'description_group': 1},
-        { 'name': 'emancipated', 'description_group': 1},
-        { 'name': 'executed', 'description_group': 1},
-        { 'name': 'maidservant', 'description_group': 1},
-        { 'name': 'manservant', 'description_group': 1},
-        { 'name': 'indentured servant', 'description_group': 1},
-        { 'name': 'pieza', 'description_group': 1},
-        { 'name': 'manslave', 'description_group': 1},
-        { 'name': 'servant', 'description_group': 1}
+        { 'name': 'enslaved' },
+        { 'name': 'owner' },
+        { 'name': 'priest' },
+        { 'name': 'inoculated' },
+        { 'name': 'escaped' },
+        { 'name': 'captor' },
+        { 'name': 'captured' },
+        { 'name': 'baptised' },
+        { 'name': 'emancipated' },
+        { 'name': 'executed' },
+        { 'name': 'maidservant' },
+        { 'name': 'manservant' },
+        { 'name': 'indentured servant' },
+        { 'name': 'pieza' },
+        { 'name': 'manslave' },
+        { 'name': 'servant' }
     ]
     record_types = [ 
         { 'name': 'runaway advertisement' },
@@ -87,3 +87,11 @@ def load_many_to_many():
                 model1.__tablename__, mapping[0],
                 model2.__tablename__, mapping[1]) )
             db.session.commit()
+
+def load_self_references():
+    tables = [ (models.Role, 'roles') ]
+
+    role_references = [
+        ('captor', 'captured')
+    ]
+    references = {}
