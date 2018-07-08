@@ -9,6 +9,10 @@ def load_data(datafile):
     doc_types = models.DocumentType.query.all()
     rec_types = models.RecordType.query.all()
     roles = models.Role.query.all()
+    parent_role = filter_collection('parent', roles)
+    child_role = filter_collection('child', roles)
+    owner_role = filter_collection('owner', roles)
+    enslaved_role = filter_collection('enslaved', roles)
     
     counter = 0
     for mongo_dict in data:
@@ -31,60 +35,78 @@ def load_data(datafile):
             mongo_dict['person']['typeKindOfEnslavement'], roles)
         person.roles.append(role)
         entrants = [ person ]
+        relationships = []
         
         mother = process_parent(mongo_dict['person']['mother'])
         if mother:
             role = process_enslavement_type(
                 mongo_dict['person']['mother']['status'], roles)
             mother.roles.append(role)
-            person.parents.append(mother)
+            ers = process_entrant_relationship(
+                mother, person, parent_role, child_role)
             entrants.append(mother)
+            relationships.extend(ers)
 
         father = process_parent(mongo_dict['person']['father'])
         if father:
             role = process_enslavement_type(
                 mongo_dict['person']['father']['status'], roles)
             father.roles.append(role)
-            person.parents.append(father)
+            ers = process_entrant_relationship(
+                father, person, parent_role, child_role)
             entrants.append(father)
+            relationships.extend(ers)
         
         children = [ process_child(child)
             for child in mongo_dict['person']['children'] ]
         for child in children:
-            child.parents.append(person)
+            ers = process_entrant_relationship(
+                person, child, parent_role, child_role)
+            relationships.extend(ers)
         entrants.extend(children)
         
-        owner_role = filter_collection('owner', roles)
         owner = process_owner(mongo_dict['owner'])
         if owner:
             owner.roles.append(owner_role)
-            person.owners.append(owner)
+            ers = process_entrant_relationship(
+                owner, person, owner_role, enslaved_role)
             entrants.append(owner)
+            relationships.extend(ers)
         mother_owner = process_owner(mongo_dict['person']['mother']['owner'])
         if mother_owner:
             mother_owner.roles.append(owner_role)
-            mother.owners.append(mother_owner)
+            ers = process_entrant_relationship(
+                mother_owner, mother, owner_role, enslaved_role)
             entrants.append(mother_owner)
+            relationships.extend(ers)
         father_owner = process_owner(mongo_dict['person']['father']['owner'])
         if father_owner:
             father_owner.roles.append(owner_role)
-            father.owners.append(father_owner)
+            ers = process_entrant_relationship(
+                father_owner, father, owner_role, enslaved_role)
             entrants.append(father_owner)
+            relationships.extend(ers)
         
         for e in entrants:
             e.record = rec
             db.session.add(e)
         db.session.commit()
+
+        for r in relationships:
+            db.session.add(r)
+        db.session.commit()
         counter += 1
 
 def process_document(docData):
-    existing = models.Document.query.filter_by(citation=docData['citation']).first()
+    citation = docData['citation']
+    date = process_date(docData['date'])
+    existing = models.Document.query.filter_by(citation=citation, date=date).first()
     if existing:
         return existing
     doc = models.Document()
-    doc.citation = docData['citation']
+    doc.citation = citation
     doc.national_context = docData['nationalContext']
-    doc.date = process_date(docData['date'])
+    doc.date = date
     return doc
 
 def process_date(dateData):
@@ -271,3 +293,14 @@ def process_enslavement_type(typeData, roles):
         'Woman servant': 'maidservant'
     }
     return filter_collection(typeData, roles, type_map)
+
+def process_entrant_relationship(e1, e2, e1Role, e2Role):
+    er1 = models.EntrantRelationship()
+    er1.sbj = e1
+    er1.obj = e2
+    er1.related_as = e1Role
+    er2 = models.EntrantRelationship()
+    er2.sbj = e2
+    er2.obj = e1
+    er2.related_as = e2Role
+    return [ er1, er2 ]

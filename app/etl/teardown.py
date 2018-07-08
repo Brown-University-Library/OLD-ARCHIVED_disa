@@ -1,8 +1,9 @@
 from app import db, models
 
 def clear_data(tables=[]):
-    disa_models = [ 
+    disa_models = [
         models.Person,
+        models.EntrantRelationship,
         models.Description,
         models.Entrant,
         models.Role,

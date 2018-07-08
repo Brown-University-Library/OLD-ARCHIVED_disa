@@ -17,7 +17,10 @@ def load_multivalued_attributes():
         { 'name': 'indentured servant' },
         { 'name': 'pieza' },
         { 'name': 'manslave' },
-        { 'name': 'servant' }
+        { 'name': 'servant' },
+        { 'name': 'parent' },
+        { 'name': 'spouse' },
+        { 'name': 'child' }
     ]
     record_types = [ 
         { 'name': 'runaway advertisement' },
