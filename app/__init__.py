@@ -37,7 +37,7 @@ def rebuild():
     setup.load_multivalued_attributes()
     setup.load_many_to_many()
     mongo.load_data(os.path.join(
-        app.config['APP_DIR'], 'data/entries.json') )
+        app.config['APP_DIR'], 'data/latest-entries.json') )
 
 # END CLI
 

@@ -30,6 +30,17 @@ def load_data(datafile):
         db.session.add(rec)
         db.session.commit()
 
+        locs = process_location(mongo_dict['document'])
+        for loc in locs:
+            loc.records.append(rec)
+            db.session.add(loc)
+        db.session.commit()
+        if len(locs) > 1:
+            locs = associate_locations(locs)
+            for loc in locs:
+                db.session.add(loc)
+            db.session.commit()
+
         person = process_person(mongo_dict['person'])
         role = process_enslavement_type(
             mongo_dict['person']['typeKindOfEnslavement'], roles)
@@ -105,7 +116,7 @@ def process_document(docData):
         return existing
     doc = models.Document()
     doc.citation = citation
-    doc.national_context = docData['nationalContext']
+    doc.national_context = process_national_context(docData)
     doc.date = date
     return doc
 
@@ -231,6 +242,7 @@ def process_document_type(typeData, docTypes):
         'Newsletter': 'newspaper',
         'Newspaper': 'newspaper',
         'Newspaper ': 'newspaper',
+        'Newspaper; DISA00081' : 'newspaper',
         'Printed primary source': 'newspaper',
         'Probate Account': 'court documents',
         'Probate note': 'court documents',
@@ -249,6 +261,7 @@ def process_record_type(typeData, recTypes):
         'Archival': 'unspecified',
         'Archive': 'unspecified',
         'Book': 'unspecified',
+        'British Honduras' : 'registry',
         'Court Document': 'unspecified',
         'Execution notice': 'execution notice',
         'Honduras': 'unspecified',
@@ -270,6 +283,7 @@ def process_record_type(typeData, recTypes):
         'Runaway Capture Advertisement': 'runaway capture advertisement',
         'Runaway advertisement': 'runaway advertisement',
         'Runaway capture advertisement': 'runaway capture advertisement',
+        'Slave Advertisment' : 'advertisement of sale',
         'Smallpox inoculation notice': 'smallpox inoculation notice'
     }
     return filter_collection(typeData, recTypes, type_map)
@@ -280,6 +294,7 @@ def process_enslavement_type(typeData, roles):
         '(maybe) ': 'enslaved',
         '(probably) ': 'enslaved',
         'Indenture': 'indentured servant',
+        'Indenture, court-ordered' : 'indentured servant',
         'Indentured servant': 'indentured servant',
         'Maid Servant': 'maidservant',
         'Maid servant': 'maidservant',
@@ -304,3 +319,42 @@ def process_entrant_relationship(e1, e2, e1Role, e2Role):
     er2.obj = e1
     er2.related_as = e2Role
     return [ er1, er2 ]
+
+def process_national_context(docData):
+    ctx_map = {
+        '': 'unspecified',
+        'American': 'American',
+        'British': 'British',
+        'British ': 'British',
+        'British Coast': 'British',
+        'French': 'French',
+        'Honduras': 'British',
+        'Spanish': 'Spanish',
+        'USA': 'American',
+        'United States': 'American'
+    }
+    return ctx_map[docData['nationalContext']]
+
+def process_location(docData):
+    locations = []
+    location_keys = [ 'colonyState', 'stringLocation', 'locale']
+    for loc_key in location_keys:
+        loc_name = docData.get(loc_key, None)
+        if loc_name:
+            location = models.Location.query.filter_by(name=loc_name).first()
+            if location in locations:
+                super_id = location.id
+                location = models.Location.query.filter_by(
+                    name=loc_name, super_location_id=super_id).first()
+            if not location:
+                location = models.Location(name=loc_name)
+            locations.append(location)
+    return locations
+
+def associate_locations(locations):
+    # if locations[1] == locations[0]:
+    #     locations[1] = models.Location(name=locations[0].name) 
+    locations[1].location_within = locations[0]
+    if len(locations) == 3:
+        locations[2].location_within = locations[1]
+    return locations

@@ -5,7 +5,6 @@ has_location = db.Table('has_location',
     db.Column('id', db.Integer, primary_key=True),
     db.Column('record', db.Integer, db.ForeignKey('records.id')),
     db.Column('location', db.Integer, db.ForeignKey('locations.id')),
-    db.Column('location_for', db.String(255))
 )
 
 has_role = db.Table('has_role',
@@ -94,7 +93,7 @@ class Location(db.Model):
     location_type = db.Column(db.String(255))
     super_location_id = db.Column(db.Integer, db.ForeignKey('locations.id'),
         nullable=True)
-    location_within = db.relationship('Location')
+    location_within = db.relationship('Location', remote_side=[id])
     records = db.relationship(
         'Record', secondary=has_location,
         back_populates='locations')
