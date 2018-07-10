@@ -336,11 +336,19 @@ def process_national_context(docData):
     return ctx_map[docData['nationalContext']]
 
 def process_location(docData):
+    loc_map  = {
+        'Massachussetts' : 'Massachusetts',
+        'Massuchesetts' : 'Massachusetts',
+        'Boson' : 'Boston'
+    }
     locations = []
     location_keys = [ 'colonyState', 'stringLocation', 'locale']
     for loc_key in location_keys:
         loc_name = docData.get(loc_key, None)
         if loc_name:
+            loc_name = loc_name.strip()
+            if loc_name in loc_map:
+                loc_name = loc_map[loc_name]
             location = models.Location.query.filter_by(name=loc_name).first()
             if location in locations:
                 super_id = location.id
