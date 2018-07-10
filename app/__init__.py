@@ -13,7 +13,7 @@ migrate = Migrate(app, db)
 from app import routes, models
 
 # CLI
-from app.etl import teardown, setup, mongo
+from app.etl import teardown, setup, mongo, users
 import click
 
 @app.cli.command()
@@ -34,6 +34,7 @@ def mongo_migration(datafile):
 @app.cli.command()
 def rebuild():
     teardown.clear_data()
+    users.load_existing_users()
     setup.load_multivalued_attributes()
     setup.load_many_to_many()
     mongo.load_data(os.path.join(

@@ -11,7 +11,8 @@ def clear_data(tables=[]):
         models.Record,
         models.RecordType,
         models.Document,
-        models.DocumentType
+        models.DocumentType,
+        models.User
     ]
     model_map = { 'documents' : models.Document,
         'records' : models.Record,

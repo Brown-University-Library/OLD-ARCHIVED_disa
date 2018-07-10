@@ -1,3 +1,4 @@
+from werkzeug import security
 from app import db
 
 
@@ -186,3 +187,32 @@ class Person(db.Model):
     last_name = db.Column(db.String(255))
     comments = db.Column(db.String(255))
     references = db.relationship('Entrant', backref='person', lazy=True)
+
+class User(db.Model):
+    __tablename__ = 'users'
+
+    id = db.Column(db.Integer, primary_key=True)
+    role = db.Column(db.String(64))
+    name = db.Column(db.String(64))
+    email = db.Column(db.String(120))
+    password_hash = db.Column(db.String(128))
+
+    def set_password(self, password):
+        self.password_hash = security.generate_password_hash(password)
+
+    def check_password(self, password):
+        return security.check_password_hash(self.password_hash, password)
+
+class RecordEdit(db.Model):
+    __tablename__ = 'record_edits'
+
+    id = db.Column(db.Integer, primary_key=True)
+    record_id = db.Column(db.Integer, db.ForeignKey('records.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    datetime = db.Column(db.DateTime())
+    edited = db.relationship(Record,
+        primaryjoin=(record_id == Record.id),
+        backref='edits')
+    edited_by = db.relationship(User,
+        primaryjoin=(user_id == User.id),
+        backref='edits')

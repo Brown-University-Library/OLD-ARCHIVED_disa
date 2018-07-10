@@ -9,6 +9,8 @@ def load_data(datafile):
     doc_types = models.DocumentType.query.all()
     rec_types = models.RecordType.query.all()
     roles = models.Role.query.all()
+    users = models.User.query.all()
+
     parent_role = filter_collection('parent', roles)
     child_role = filter_collection('child', roles)
     owner_role = filter_collection('owner', roles)
@@ -28,6 +30,15 @@ def load_data(datafile):
             mongo_dict['document']['recordType'], rec_types)
         rec.document = doc
         db.session.add(rec)
+        db.session.commit()
+
+        admin = process_administrative_metadata(
+            mongo_dict['meta'], users)
+        for amn in admin:
+            edit = models.RecordEdit(datetime=amn[1])
+            edit.edited_by = amn[0]
+            edit.edited = rec
+            db.session.add(edit)
         db.session.commit()
 
         locs = process_location(mongo_dict['document'])
@@ -360,9 +371,31 @@ def process_location(docData):
     return locations
 
 def associate_locations(locations):
-    # if locations[1] == locations[0]:
-    #     locations[1] = models.Location(name=locations[0].name) 
     locations[1].location_within = locations[0]
     if len(locations) == 3:
         locations[2].location_within = locations[1]
     return locations
+
+def process_administrative_metadata(metaData, users):
+    user_map = {
+        '103795391716629952261': 'gwenyth_winship@brown.edu',
+        '106123372953260397156': 'juan_bettancourt-garcia@brown.edu',
+        '106895219236186746888': 'linfordfisher@gmail.com',
+        '109503335312366098524': 'anne_grasberger@brown.edu',
+        '112148132795694739523': 'marley-vincent_lindsey@brown.edu',
+        '112487255676465508755': 'rose_lang-maso@brown.edu',
+        '113112063790792171857': 'samuel_skinner@brown.edu',
+        '117289295548725522159': 'jane.l.landers@vanderbilt.edu'
+    }
+
+    created_id = metaData['creator']
+    editor_id = metaData['updatedBy']
+    creator = filter_collection(created_id, users, user_map)
+    editor = filter_collection(editor_id, users, user_map)
+    dt = datetime.datetime.strptime(
+        metaData['lastModified'], '%Y-%m-%dT%H:%M:%S.%fZ')
+    users = [ (creator, dt) ]
+    if creator != editor:
+        dl = datetime.timedelta(days=1)
+        users.append( (editor, dt + dl) )
+    return users
