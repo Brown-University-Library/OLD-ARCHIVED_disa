@@ -112,7 +112,7 @@ class Entrant(db.Model):
     roles = db.relationship('Role',
         secondary='has_role', back_populates='entrants')
     description = db.relationship('Description',
-        backref='entrant', uselist=False)
+        backref='entrant', uselist=False, cascade='delete')
 
     def __repr__(self):
         return '<Entrant {0}: {1} {2}>'.format(
