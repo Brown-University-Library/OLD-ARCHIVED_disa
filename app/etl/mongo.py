@@ -44,14 +44,15 @@ def load_data(datafile):
 
         locs = process_location(mongo_dict['document'])
         for loc in locs:
-            loc.records.append(rec)
             db.session.add(loc)
         db.session.commit()
-        if len(locs) > 1:
-            locs = associate_locations(locs)
-            for loc in locs:
-                db.session.add(loc)
-            db.session.commit()
+        for loc in locs:
+            rec_loc = models.RecordLocation()
+            rec_loc.record = rec
+            rec_loc.location = loc
+            rec_loc.location_rank = locs.index(loc)
+            db.session.add(rec_loc)
+        db.session.commit()
 
         person = process_person(mongo_dict['person'])
         role = process_enslavement_type(
@@ -363,28 +364,47 @@ def process_national_context(docData):
     }
     return ctx_map[docData['nationalContext']]
 
-def process_location(docData):
+def prep_location_text(loc):
     loc_map  = {
-        'Massachussetts' : 'Massachusetts',
-        'Massuchesetts' : 'Massachusetts',
-        'Boson' : 'Boston'
+        'Massachussetts': 'Massachusetts',
+        'Massuchesetts': 'Massachusetts',
+        'Boson': 'Boston',
+        'British': 'Britain',
+        'American': 'United States',
+        'British Coast': 'Britain',
+        'French': 'France',
+        'Spanish': 'Spain',
+        'USA': 'United States',
+        'Mosquito': 'Mosquito Coast',
+        'Mosquito Shore': 'Mosquito Coast',
+        'MD': 'Maryland',
+        'Narraganset' : 'Narragansett'
     }
-    locations = []
-    location_keys = [ 'colonyState', 'stringLocation', 'locale']
+    no_parens = loc.strip(')').split('(')
+    no_commas = []
+    for p in no_parens:
+        no_commas.extend( p.split(',') )
+    cleaned = [ c.strip() for c in no_commas ]
+    flipped = cleaned[::-1]
+    mapped = [ loc_map.get(f) or f for f in flipped ]
+    return mapped
+
+def process_location(docData):
+    location_names = []
+    location_keys = [ 'nationalContext', 'colonyState', 'stringLocation', 'locale']
     for loc_key in location_keys:
-        loc_name = docData.get(loc_key, None)
-        if loc_name:
-            loc_name = loc_name.strip()
-            if loc_name in loc_map:
-                loc_name = loc_map[loc_name]
-            location = models.Location.query.filter_by(name=loc_name).first()
-            if location in locations:
-                super_id = location.id
-                location = models.Location.query.filter_by(
-                    name=loc_name, super_location_id=super_id).first()
-            if not location:
-                location = models.Location(name=loc_name)
-            locations.append(location)
+        loc_text = docData.get(loc_key, None)
+        if loc_text:
+            prepped = prep_location_text(loc_text)
+            for p in prepped:
+                if p not in location_names:
+                    location_names.append(p)
+    locations = []
+    for loc in location_names:
+        location = models.Location.query.filter_by(name=loc).first()
+        if not location:
+            location = models.Location(name=loc)
+        locations.append(location)
     return locations
 
 def associate_locations(locations):

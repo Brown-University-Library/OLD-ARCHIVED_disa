@@ -2,12 +2,6 @@ from werkzeug import security
 from app import db
 
 
-has_location = db.Table('has_location',
-    db.Column('id', db.Integer, primary_key=True),
-    db.Column('record', db.Integer, db.ForeignKey('records.id')),
-    db.Column('location', db.Integer, db.ForeignKey('locations.id')),
-)
-
 has_role = db.Table('has_role',
     db.Column('id', db.Integer, primary_key=True),
     db.Column('entrant', db.Integer, db.ForeignKey('entrants.id')),
@@ -63,9 +57,6 @@ class Record(db.Model):
     date = db.Column(db.DateTime())
     comments = db.Column(db.String(255))
     entrants = db.relationship('Entrant', backref='record', lazy=True)
-    locations = db.relationship(
-        'Location', secondary=has_location,
-        back_populates='records')
     document_id = db.Column(db.Integer, db.ForeignKey('documents.id'),
         nullable=False)
 
@@ -91,16 +82,23 @@ class Location(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
-    location_type = db.Column(db.String(255))
-    super_location_id = db.Column(db.Integer, db.ForeignKey('locations.id'),
-        nullable=True)
-    location_within = db.relationship('Location', remote_side=[id])
-    records = db.relationship(
-        'Record', secondary=has_location,
-        back_populates='locations')
 
     def __repr__(self):
         return '<Location {0}: {1}>'.format(self.id, self.name)
+
+class RecordLocation(db.Model):
+    __tablename__ = 'has_location'
+
+    id = db.Column(db.Integer, primary_key=True)
+    record_id = db.Column(db.Integer, db.ForeignKey('records.id'))
+    location_id = db.Column(db.Integer, db.ForeignKey('locations.id'))
+    location_rank = db.Column(db.Integer)
+    record = db.relationship(Record,
+        primaryjoin=(record_id == Record.id),
+        backref='locations')
+    location = db.relationship(Location,
+        primaryjoin=(location_id == Location.id),
+        backref='records')
 
 class Entrant(db.Model):
     __tablename__ = 'entrants'
