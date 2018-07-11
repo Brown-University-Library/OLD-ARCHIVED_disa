@@ -407,12 +407,6 @@ def process_location(docData):
         locations.append(location)
     return locations
 
-def associate_locations(locations):
-    locations[1].location_within = locations[0]
-    if len(locations) == 3:
-        locations[2].location_within = locations[1]
-    return locations
-
 def process_administrative_metadata(metaData, users):
     user_map = {
         '103795391716629952261': 'gwenyth_winship@brown.edu',
