@@ -27,7 +27,6 @@ class Document(db.Model):
     document_type_id = db.Column(db.Integer, db.ForeignKey('document_types.id'),
         nullable=False)
     date = db.Column(db.DateTime())
-    national_context = db.Column(db.String(255))
     citation = db.Column(db.String(500))
     zotero_id = db.Column(db.String(255))
     acknowledgements = db.Column(db.String(255))
@@ -110,10 +109,10 @@ class Entrant(db.Model):
         nullable=False)
     person_id = db.Column(db.Integer, db.ForeignKey('people.id'),
         nullable=True)
-    description = db.relationship(
-        'Description', backref='entrant', lazy=True)
     roles = db.relationship('Role',
         secondary='has_role', back_populates='entrants')
+    description = db.relationship('Description',
+        backref='entrant', uselist=False)
 
     def __repr__(self):
         return '<Entrant {0}: {1} {2}>'.format(
