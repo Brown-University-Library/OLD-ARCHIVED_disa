@@ -26,6 +26,7 @@ def load_data(datafile):
         db.session.commit()
 
         rec = models.Record()
+        rec.date = process_record_date(mongo_dict)
         rec.record_type = process_record_type(
             mongo_dict['document']['recordType'], rec_types)
         rec.document = doc
@@ -132,7 +133,8 @@ def process_document(docData):
     return doc
 
 def process_date(dateData):
-    if dateData == {} or dateData == {'month': ''}:
+    if dateData == {} or dateData == {'month': ''} \
+        or dateData == {'year': '', 'month': '', 'day':''} :
         dateData = { 'day':1, 'month':1, 'year':1 }
     try:
         day = int( dateData.get('day',1) or 1)
@@ -143,6 +145,21 @@ def process_date(dateData):
         month = 1
         year = 1
     return datetime.datetime(day=day, month=month, year=year)
+
+def process_record_date(entryData):
+    doc_date = process_date(entryData['document']['date'])
+    record_date_fields = [ 'dateOfEmancipation',
+        'dateOfMarriage', 'dateOfRunaway', 'dateOfDeath' ]
+    record_dates = [ process_date( entryData.get(df, {}) ) 
+        for df in record_date_fields ]
+    clean_dates = [ d for d in record_dates
+        if d != datetime.datetime(day=1, month=1, year=1) ]
+    if len(clean_dates) > 1:
+        raise
+    elif clean_dates == []:
+        return doc_date
+    else:
+        return clean_dates[0]
 
 def process_person(personData):
     try:
