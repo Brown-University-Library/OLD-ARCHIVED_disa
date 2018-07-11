@@ -4,6 +4,8 @@ def clear_data(tables=[]):
     disa_models = [
         models.Person,
         models.EntrantRelationship,
+        models.RecordLocation,
+        models.RecordEdit,
         models.Description,
         models.Entrant,
         models.Role,
