@@ -34,8 +34,6 @@ def clear_data(tables=[]):
         print('Please provide tables to clear')
         return
     for table in del_tables:
-        rows = table.query.all()
-        for row in rows:
-            db.session.delete(row)
-        print('Clear: {}'.format(table.__tablename__))
+        rows = table.query.delete()
+        print('Cleared {} rows: {}'.format(rows, table.__tablename__))
         db.session.commit()

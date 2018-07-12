@@ -112,7 +112,7 @@ class Entrant(db.Model):
     roles = db.relationship('Role',
         secondary='has_role', back_populates='entrants')
     description = db.relationship('Description',
-        backref='entrant', uselist=False, cascade='delete')
+        back_populates='entrant', uselist=False, passive_deletes=True)
 
     def __repr__(self):
         return '<Entrant {0}: {1} {2}>'.format(
@@ -129,8 +129,9 @@ class Description(db.Model):
     tribe = db.Column(db.String(255))
     origin = db.Column(db.String(255))
     vocation = db.Column(db.String(255))
-    entrant_id = db.Column(db.Integer, db.ForeignKey('entrants.id'),
+    entrant_id = db.Column(db.Integer, db.ForeignKey('entrants.id', ondelete='CASCADE'),
         nullable=False)
+    entrant = db.relationship('Entrant', back_populates='description')
 
 class Role(db.Model):
     __tablename__ = 'roles'

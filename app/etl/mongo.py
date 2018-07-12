@@ -176,7 +176,7 @@ def process_person(personData):
     desc = models.Description(race=personData['race'], origin=personData['origin'],
         tribe=personData['tribe'], sex=personData['sex'], age=personData.get('age',0),
         vocation=personData['vocation'])
-    desc.entrant = entrant
+    entrant.description = desc
     return entrant
 
 def process_parent(personData):
@@ -203,7 +203,7 @@ def process_parent(personData):
         last_name=personData['name']['lastName'])
     desc = models.Description(race=personData['race'],
         origin=personData['origin'])
-    desc.entrant = entrant
+    entrant.description = desc
     return entrant
 
 def process_child(personData):
@@ -245,7 +245,7 @@ def process_owner(personData):
         last_name=personData['name']['lastName'])
     desc = models.Description(vocation=personData['vocation'],
         title=personData['name']['title'])
-    desc.entrant = entrant
+    entrant.description = desc
     return entrant
 
 def filter_collection(fltr, coll, mapped={}):
