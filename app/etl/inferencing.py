@@ -25,8 +25,9 @@ def converge_record_names(record):
         to_converge[ formatted_name ].append(e)
     for c in to_converge:
         if len(to_converge[c]) > 1:
-            print('Converging {} for record {}'.format(c, record.id))
-            converge_entrants(to_converge[c])
+            if c != '' and c != 'John Brashaw':
+                print('Converging {} for record {}'.format(c, record.id))
+                converge_entrants(to_converge[c])
 
 def add_manumisson(record):
     pass
