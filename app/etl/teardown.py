@@ -7,12 +7,12 @@ def clear_data(tables=[]):
         models.documenttype_recordtypes
     ]
     disa_models = [
-        models.Person,
         models.EntrantRelationship,
         models.RecordLocation,
         models.RecordEdit,
         models.Description,
         models.Entrant,
+        models.Person,
         models.Role,
         models.Location,
         models.Record,

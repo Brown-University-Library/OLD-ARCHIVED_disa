@@ -123,6 +123,13 @@ def load_data(datafile):
         for r in relationships:
             db.session.add(r)
         db.session.commit()
+
+        for e in entrants:
+            prsn = models.Person(
+                first_name=e.first_name, last_name=e.last_name)
+            prsn.references.append(e)
+            db.session.add(prsn)
+        db.session.commit()
         counter += 1
 
 def process_document(docData):

@@ -4,7 +4,7 @@ from collections import defaultdict
 def extract_information():
     records = models.Record.query.all()
     for rec in records:
-        converge_record_names(rec)        
+        converge_record_names(rec)
 
 def converge_entrants(entrantList):
     preserve = entrantList[0]
@@ -15,6 +15,8 @@ def converge_entrants(entrantList):
     db.session.add(preserve)
     db.session.commit()
     for rmv in entrantList[1:]:
+        prs = rmv.person
+        db.session.delete(prs)
         db.session.delete(rmv)
     db.session.commit()
 
