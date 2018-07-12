@@ -33,7 +33,7 @@ def mongo_migration(datafile):
 
 @app.cli.command()
 def rebuild():
-    # teardown.clear_data()
+    teardown.clear_data()
     users.load_existing_users()
     setup.load_multivalued_attributes()
     setup.load_many_to_many()

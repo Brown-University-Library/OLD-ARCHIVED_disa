@@ -1,6 +1,11 @@
 from app import db, models
 
 def clear_data(tables=[]):
+    many_to_many = [
+        models.has_role,
+        models.recordtype_roles,
+        models.documenttype_recordtypes
+    ]
     disa_models = [
         models.Person,
         models.EntrantRelationship,
@@ -33,6 +38,8 @@ def clear_data(tables=[]):
     if not del_tables:
         print('Please provide tables to clear')
         return
+    for table in many_to_many:
+        db.engine.execute(table.delete())
     for table in del_tables:
         rows = table.query.delete()
         print('Cleared {} rows: {}'.format(rows, table.__tablename__))
