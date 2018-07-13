@@ -55,11 +55,12 @@ def prep_document_form(form, doc=None):
     form.year.data = str(doc.date.year % 10)
     return form
 
-@app.route('/')
-def index():
-    #return 'Index for {}'.format(__name__)
+def filter_browse(opts):
+    pass
 
-    return render_template('index.html')
+@app.route('/')
+def browse():
+    return render_template('browse.html')
 
 @app.route('/documents', methods=['GET'])
 def index_documents():
