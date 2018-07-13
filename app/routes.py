@@ -1,5 +1,5 @@
 from flask import request, jsonify, render_template, redirect, url_for
-from app import app, db
+from app import app, db, models
 from app.models import Document, Record, Entrant, Role, DocumentType, RecordType
 from app.forms import DocumentForm, RecordForm, EntrantForm, EntrantRelationshipForm
 
@@ -56,11 +56,38 @@ def prep_document_form(form, doc=None):
     form.year.data = str(doc.date.year % 10)
     return form
 
-@app.route('/browsedata')
+def stub_json(entrant):
+    jdata = {}
+    jdata['_id'] = entrant.id
+    jdata['person'] = {
+        'names': [
+            {
+                'firstName': entrant.first_name,
+                'lastName': entrant.last_name
+            }
+        ],
+        'typeKindOfEnslavement': entrant.roles[0].name
+    }
+    jdata['document'] = { 'date': entrant.record.date }
+    description = getattr(entrant,'description')
+    if description:
+        jdata['person']['tribe'] = description.tribe
+        jdata['person']['sex'] = description.sex
+        jdata['person']['origin'] = description.origin
+        jdata['person']['vocation'] = description.vocation
+    jdata['additionalInformation'] = ''
+    jdata['researcherNotes'] = ''
+    jdata['dateOfRunaway'] =''
+    jdata['dateOfMarriage'] =''
+    jdata['dateOfDeath'] =''
+    jdata['dateOfEmancipation'] =''
+    jdata['dateOfSale'] = ''
+    return jdata
+
+@app.route('/disa/browsedata')
 def get_browse_data(opts=None):
-    with open('data/entries.json') as f:
-        data = json.load(f)
-        print(data[0])
+    entrants = models.Entrant.query.all()
+    data = [ stub_json(e) for e in entrants ]
     return jsonify(data)
 
 @app.route('/')
