@@ -3,7 +3,7 @@ from app import app, db, models
 from app.models import Document, Record, Entrant, Role, DocumentType, RecordType
 from app.forms import DocumentForm, RecordForm, EntrantForm, EntrantRelationshipForm
 
-import json
+import collections
 import datetime
 
 def parse_date_data(form):
@@ -56,6 +56,27 @@ def prep_document_form(form, doc=None):
     form.year.data = str(doc.date.year % 10)
     return form
 
+def make_person_dict(p):
+    data = {
+        'first_name': p.first_name,
+        'last_name': p.last_name,
+        'reference_details': collections.defaultdict(list)
+    }
+    for entrant in p.references:
+        rec = entrant.record 
+        ref_data = {}
+        ref_data['roles'] = [ role.name for role in entrant.roles ]
+        ref_data['date'] = {
+            'year': rec.date.year,
+            'month': rec.date.month,
+            'day': rec.date.day
+        }
+        doc = rec.document.citation
+        data['reference_details'][doc].append(ref_data)
+    data['references'] = sorted(data['reference_details'].keys())
+    data['reference_details'] = dict(data['reference_details'])
+    return (p, data)
+
 def stub_json(entrant):
     jdata = {}
     jdata['_id'] = entrant.id
@@ -68,12 +89,16 @@ def stub_json(entrant):
         ],
         'typeKindOfEnslavement': entrant.roles[0].name
     }
-    jdata['document'] = { 'date':
-        {
+    jdata['document'] = {
+        'date': {
             'year': entrant.record.date.year,
             'month': entrant.record.date.month,
             'day': entrant.record.date.day,
-        }
+        },
+        'citation': entrant.record.document.citation,
+        'stringLocation': '',
+        'nationalContext': '',
+        'colonyState': ''   
     }
     description = getattr(entrant,'description')
     if description:
@@ -92,8 +117,13 @@ def stub_json(entrant):
 
 @app.route('/browsedata')
 def get_browse_data(opts=None):
-    entrants = models.Entrant.query.all()
-    data = [ stub_json(e) for e in entrants ]
+    persons = models.Person.query.all()
+    person_data = [ make_person_dict(p) for p in persons ]
+    to_merge = [ (p[1], stub_json(p[0].references[0])) for p in person_data ]
+    data = []
+    for d in to_merge:
+        d[1]['agg'] = d[0]
+        data.append(d[1])
     return jsonify(data)
 
 @app.route('/')
