@@ -5,10 +5,10 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<link rel="shortcut icon" type="image/ico" href="favicon.ico" />
 	<link rel="stylesheet" 
-	      href="slickgrid/css/smoothness/jquery-ui-1.11.3.custom.css" 
+	      href="{{ url_for('static', filename='lib/slickgrid/css/smoothness/jquery-ui-1.11.3.custom.css') }}" 
 	      type="text/css"/>
-	<link rel="stylesheet" href="slickgrid/slick.grid.css" type="text/css"/>
-	<link rel="stylesheet" href="index.css" type="text/css"/>
+	<link rel="stylesheet" href="{{ url_for('static', filename='lib/slickgrid/slick.grid.css') }}" type="text/css"/>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/browse.css') }}" type="text/css"/>
 </head>
 <body>
 	<header>
@@ -20,14 +20,14 @@
 	<footer>
 		
 	</footer>
-	<script src="slickgrid/lib/firebugx.js"></script>
-	<script src="slickgrid/lib/jquery-1.11.2.min.js"></script>
-	<script src="slickgrid/lib/jquery-ui-1.11.3.min.js"></script>
-	<script src="slickgrid/lib/jquery.event.drag-2.3.0.js"></script>
-	<script src="slickgrid/slick.core.js"></script>
-	<script src="slickgrid/slick.dataview.js"></script>
-	<script src="slickgrid/slick.grid.js"></script>
-	<script src="granulated-sugar.js"></script>
-	<script src="index.js"></script>
+	<script src="{{ url_for('static', filename='lib/slickgrid/lib/firebugx.js') }}"></script>
+	<script src="{{ url_for('static', filename='lib/slickgrid/lib/jquery-1.11.2.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='lib/slickgrid/lib/jquery-ui-1.11.3.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='lib/slickgrid/lib/jquery.event.drag-2.3.0.js') }}"></script>
+	<script src="{{ url_for('static', filename='lib/slickgrid/slick.core.js') }}"></script>
+	<script src="{{ url_for('static', filename='lib/slickgrid/slick.dataview.js') }}"></script>
+	<script src="{{ url_for('static', filename='lib/slickgrid/slick.grid.js') }}"></script>
+	<script src="{{ url_for('static', filename='lib/granulated-sugar.js') }}"></script>
+	<script src="{{ url_for('static', filename='lib/browse/browse.js') }}"></script>
 </body>
 </html>
