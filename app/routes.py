@@ -68,7 +68,13 @@ def stub_json(entrant):
         ],
         'typeKindOfEnslavement': entrant.roles[0].name
     }
-    jdata['document'] = { 'date': entrant.record.date }
+    jdata['document'] = { 'date':
+        {
+            'year': entrant.record.date.year,
+            'month': entrant.record.date.month,
+            'day': entrant.record.date.day,
+        }
+    }
     description = getattr(entrant,'description')
     if description:
         jdata['person']['tribe'] = description.tribe
@@ -84,7 +90,7 @@ def stub_json(entrant):
     jdata['dateOfSale'] = ''
     return jdata
 
-@app.route('/disa/browsedata')
+@app.route('/browsedata')
 def get_browse_data(opts=None):
     entrants = models.Entrant.query.all()
     data = [ stub_json(e) for e in entrants ]
