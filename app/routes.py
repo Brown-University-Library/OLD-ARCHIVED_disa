@@ -3,6 +3,7 @@ from app import app, db
 from app.models import Document, Record, Entrant, Role, DocumentType, RecordType
 from app.forms import DocumentForm, RecordForm, EntrantForm, EntrantRelationshipForm
 
+import json
 import datetime
 
 def parse_date_data(form):
@@ -55,8 +56,12 @@ def prep_document_form(form, doc=None):
     form.year.data = str(doc.date.year % 10)
     return form
 
-def filter_browse(opts):
-    pass
+@app.route('/browsedata')
+def get_browse_data(opts=None):
+    with open('data/entries.json') as f:
+        data = json.load(f)
+        print(data[0])
+    return jsonify(data)
 
 @app.route('/')
 def browse():
