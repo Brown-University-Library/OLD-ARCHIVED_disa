@@ -64,8 +64,19 @@ def make_person_dict(p):
     }
     for entrant in p.references:
         rec = entrant.record 
-        ref_data = {}
-        ref_data['roles'] = [ role.name for role in entrant.roles ]
+        ref_data = { 'roles': [] }
+        if len(entrant.as_subject) > 0:
+            ers = entrant.as_subject
+            for er in ers:
+                role = er.related_as.name
+                obj = er.obj
+                if obj is None:
+                    print(er.id)
+                    continue
+                other = "{} {}".format(obj.first_name, obj.last_name).strip()
+                ref_data['roles'].append('{}: {}'.format(role, other))
+        else:
+            ref_data['roles'] = [ role.name for role in entrant.roles ]
         ref_data['date'] = {
             'year': rec.date.year,
             'month': rec.date.month,
@@ -119,7 +130,10 @@ def stub_json(entrant):
 def get_browse_data(opts=None):
     persons = models.Person.query.all()
     person_data = [ make_person_dict(p) for p in persons ]
-    to_merge = [ (p[1], stub_json(p[0].references[0])) for p in person_data ]
+    to_merge = [] 
+    for p in person_data:
+        for e in p[0].references:
+            to_merge.append( (p[1], stub_json(e)) )
     data = []
     for d in to_merge:
         d[1]['agg'] = d[0]
