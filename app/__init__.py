@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
 import os
+import json
 
 app = Flask(__name__)
 app.config.from_object(os.environ['APP_SETTINGS'])
@@ -14,6 +15,7 @@ from app import routes, models
 
 # CLI
 from app.etl import teardown, setup, mongo, users, inferencing
+from app.etl import denormalize
 import click
 
 @app.cli.command()
@@ -40,6 +42,12 @@ def rebuild():
     mongo.load_data(os.path.join(
         app.config['APP_DIR'], 'data/latest-entries.json') )
     inferencing.extract_information()
+
+@app.cli.command()
+def browse_data():
+    with open('data/denormalized.json','w') as f:
+        data = denormalize.json_for_browse()
+        json.dump(data, f, indent=4)
 
 # END CLI
 
