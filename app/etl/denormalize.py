@@ -16,6 +16,13 @@ def process_reference(entrant):
         },
         'locations': [ l[1] for l in sorted(locs, reverse=True) ]
     }
+    if entrant.description:
+        ref_data['description'] = {
+            'tribe': entrant.description.tribe,
+            'sex': entrant.description.sex,
+            'origin': entrant.description.origin,
+            'vocation': entrant.description.vocation
+        }
     for role in entrant.roles:
         ref_data['roles'][role.name] = []
     ers = entrant.as_subject
@@ -66,5 +73,8 @@ def json_for_browse():
             new_ref_data = process_reference(ref)
             data['documents'][citation] = merge_ref_data(
                 existing_ref_data, new_ref_data)
+            for d in data['documents'][citation]:
+                if d.get('description'):
+                    data['description'] = d['description']
         out.append(data)
     return out
