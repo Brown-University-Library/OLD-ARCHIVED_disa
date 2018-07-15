@@ -179,7 +179,7 @@ def process_person(personData):
     except IndexError:
         name = { 'firstName': '', 'lastName': '' }
     entrant = models.Entrant(
-        first_name=name['firstName'], last_name=name['lastName'])
+        first_name=name['firstName'].strip(), last_name=name['lastName'].strip())
     desc = models.Description(race=personData['race'], origin=personData['origin'],
         tribe=personData['tribe'], sex=personData['sex'], age=personData.get('age',0),
         vocation=personData['vocation'])
@@ -206,8 +206,8 @@ def process_parent(personData):
    }
     if personData == {} or personData == empty_data:
         return None
-    entrant = models.Entrant(first_name=personData['name']['firstName'],
-        last_name=personData['name']['lastName'])
+    entrant = models.Entrant(first_name=personData['name']['firstName'].strip(),
+        last_name=personData['name']['lastName'].strip())
     desc = models.Description(race=personData['race'],
         origin=personData['origin'])
     entrant.description = desc
@@ -222,8 +222,8 @@ def process_child(personData):
     }
     if personData == {} or personData == empty_data:
         return None
-    entrant = models.Entrant(first_name=personData['name']['firstName'],
-        last_name=personData['name']['lastName'])
+    entrant = models.Entrant(first_name=personData['name']['firstName'].strip(),
+        last_name=personData['name']['lastName'].strip())
     return entrant
 
 def process_other_person(personData):
@@ -233,8 +233,8 @@ def process_other_person(personData):
     }
     if personData == {} or personData == empty_data:
         return None
-    entrant = models.Entrant(first_name=personData['firstName'],
-        last_name=personData['lastName'])
+    entrant = models.Entrant(first_name=personData['firstName'].strip(),
+        last_name=personData['lastName'].strip())
     return entrant
 
 def process_owner(personData):
@@ -248,8 +248,8 @@ def process_owner(personData):
     }
     if personData == {} or personData == empty_data:
         return None
-    entrant = models.Entrant(first_name=personData['name']['firstName'],
-        last_name=personData['name']['lastName'])
+    entrant = models.Entrant(first_name=personData['name']['firstName'].strip(),
+        last_name=personData['name']['lastName'].strip())
     desc = models.Description(vocation=personData['vocation'],
         title=personData['name']['title'])
     entrant.description = desc

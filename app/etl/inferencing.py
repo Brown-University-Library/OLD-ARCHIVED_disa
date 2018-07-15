@@ -30,7 +30,7 @@ def converge_document_people(doc):
             to_converge[ formatted_name ].append(person)
     for c in to_converge:
         if len(to_converge[c]) > 1:
-            if c != '' and c != 'John Brashaw':
+            if c != '' and c != 'John Brashaw' and c != 'Catalina':
                 print('Converging {} for document {}'.format(c, doc.id))
                 converge_persons(to_converge[c])
 
@@ -56,7 +56,7 @@ def converge_record_names(record):
         to_converge[ formatted_name ].append(e)
     for c in to_converge:
         if len(to_converge[c]) > 1:
-            if c != '' and c != 'John Brashaw':
+            if c != '' and c != 'John Brashaw' and c != 'Catalina':
                 print('Converging {} for record {}'.format(c, record.id))
                 converge_entrants(to_converge[c])
 
