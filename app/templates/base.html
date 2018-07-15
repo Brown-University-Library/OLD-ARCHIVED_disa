@@ -9,7 +9,6 @@
 
         <!-- Latest compiled JavaScript -->
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
         <style>
     .form-page {
@@ -108,23 +107,25 @@
         <meta charset="utf-8"> 
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        {% block header %}{% endblock %}
     </head>
     <body>
         <nav class="navbar navbar-default navbar-fixed-top">
             <div class="container-fluid">
-                <div class="navbar-header">
-                    <a class="navbar-brand" href="{{ url_for('browse') }}">Database of Indigenous Slavery in the Americas</a>
-                </div>
-                <div>
+            <div class="navbar-header">
+                <a class="navbar-brand" href="{{ url_for('browse') }}">Database of Indigenous Slavery in the Americas</a>
+            </div> 
                 {% if current_user.is_anonymous %}
-                    <a href="{{ url_for('login') }}">Login</a>
+                    <a class="btn btn-default navbar-btn navbar-text navbar-right" href="{{ url_for('login') }}">Login</a>
                 {% else %}
-                    <a href="{{ url_for('logout') }}">Logout</a>
+                    <a class="btn btn-default navbar-btn navbar-text navbar-right" href="{{ url_for('logout') }}">Logout</a>
                 {% endif %}
-                </div>
             </div>
         </nav>
+        {% with messages = get_flashed_messages() %}
+        {% endwith %}
         {% block content %}{% endblock %}
+        {% block scripts %}{% endblock %}
     </body>
 <script>
 

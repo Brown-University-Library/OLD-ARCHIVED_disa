@@ -1,4 +1,5 @@
-from flask import request, jsonify, render_template, redirect, url_for
+from flask import request, jsonify, render_template, redirect, url_for, flash
+from werkzeug.urls import url_parse
 from app import app, db, models, forms
 from app.models import Document, Record, Entrant, Role, DocumentType, RecordType
 from app.forms import DocumentForm, RecordForm, EntrantForm, EntrantRelationshipForm
@@ -169,11 +170,13 @@ def logout():
     return redirect(url_for('browse'))
 
 @app.route('/documents', methods=['GET'])
+@login_required
 def index_documents():
     all_docs = Document.query.all()
     return render_template('document_index.html', documents=all_docs)
 
 @app.route('/documents/<docId>', methods=['GET','POST'])
+@login_required
 def show_document(docId):
     doc = Document.query.get(docId)
     form = DocumentForm()

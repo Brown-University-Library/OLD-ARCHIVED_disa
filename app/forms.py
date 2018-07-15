@@ -8,7 +8,7 @@ from wtforms.validators import DataRequired
 class LoginForm(FlaskForm):
     email = StringField('email', validators=[DataRequired()])
     password = PasswordField('password', validators=[DataRequired()])
-    submit = SubmitField('Sign In')
+    submit = SubmitField('Submit')
 
 class DocumentForm(FlaskForm):
     # From MongoDB document.sourceType field
