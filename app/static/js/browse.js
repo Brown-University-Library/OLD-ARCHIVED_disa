@@ -95,36 +95,21 @@ function formatDate(someDate) {
 	return [year, month, day].join("-");
 }
 
-function parseReferences(refs) {
-	out = [];
-	for (var ref in refs) {
-		out.push(create("p", ref));
-		var ref_data = refs[ref];
-		for (let i = 0; i < ref_data.length; i++) {
-			var rd = ref_data[i];
-			out.push(create("p", rd.roles.join(',') + " - " + 
-						formatDate(rd.date)));
-		}
-	}
-	return out;
-}
-
 function expandInformation(index) {
 	item = raw_data[index]
 	showDialog(create("div", [
 		create("h2", formatNames(item.person.names), 
 		       {style: "margin-top: 0px;"}),
-		create("h3", "Document")].concat(
-		parseReferences(item.agg.reference_details))
-		// create("p", item.document.citation),
-		// create("p", item.document.stringLocation + ", " + 
-		//             item.document.nationalContext + " " + 
-		// 			item.document.colonyState + " - " + 
-		// 			formatDate(item.document.date)),
-		// create("h3", "Notes"),
-		// create("p", item.additionalInformation),
-		// create("p", item.researcherNotes)
-	));
+		create("h3", "Document"),
+		create("p", item.document.citation),
+		create("p", item.document.stringLocation + ", " + 
+		            item.document.nationalContext + " " + 
+					item.document.colonyState + " - " + 
+					formatDate(item.document.date)),
+		create("h3", "Notes"),
+		create("p", item.additionalInformation),
+		create("p", item.researcherNotes)
+	]));
 }
 
 let imageFormatter = function(row, cell, value, columnDef, dataContext){
@@ -177,6 +162,11 @@ var columns = [
 	 field: "name",
 	 width: 240,
 	 sortable: true},
+	{id: "date",
+	 name: "Date",
+	 field: "date",
+	 width: 100,
+	 sortable: true},
 	{id: "sex",
 	 name: "Gender",
 	 field: "sex",
@@ -207,12 +197,11 @@ var columns = [
 	 field: "vocation",
 	 width: 180,
 	 sortable: true},
-	{id: "dateOfRunaway",
+	/*{id: "dateOfRunaway",
 	 name: "Runaway",
 	 field: "dateOfRunaway",
 	 width: 100,
 	 sortable: true},
-	/*
 	{id: "dateOfEmancipation",
 	 name: "Emancipation",
 	 field: "dateOfEmancipation",
@@ -227,16 +216,11 @@ var columns = [
 	 name: "Marriage",
 	 field: "dateOfMarriage",
 	 width: 100,
-	 sortable: true},*/
-	{id: "date",
-	 name: "Date",
-	 field: "date",
-	 width: 100,
-	 sortable: true},
+	 sortable: true},*/	
 	{id: "abbrNotes",
 	 name: "Notes",
 	 field: "abbrNotes",
-	 width: 280}
+	 width: 500}
 ];
 var columnFilters = {};
 
@@ -293,7 +277,7 @@ $.get("browsedata", (some_data, status) => {
 			                               .dateOfEmancipation),
 			dateOfSale: formatDate(raw_data[i].dateOfSale),
 			dateOfMarriage: formatDate(raw_data[i].dateOfMarriage),*/
-			abbrNotes: ((raw_data[i].additionalInformation + " " + raw_data[i].researcherNotes).substr(0, 50) + "…")
+			abbrNotes: ((raw_data[i].additionalInformation + " " + raw_data[i].researcherNotes))
 		});
 	}
 	dataView = new Slick.Data.DataView();
