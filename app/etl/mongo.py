@@ -27,6 +27,7 @@ def load_data(datafile):
 
         rec = models.Record()
         rec.date = process_record_date(mongo_dict)
+        rec.comments = mongo_dict['additionalInformation']
         rec.record_type = process_record_type(
             mongo_dict['document']['recordType'], rec_types)
         rec.document = doc
@@ -132,8 +133,24 @@ def load_data(datafile):
         db.session.commit()
         counter += 1
 
+def extract_zotero_id(citation):
+    if citation.startswith('Zotero'):
+        return (citation[11:20], citation[22:])
+    elif citation.startswith('DISA'):
+        return (citation[:9], citation[11:])
+    elif '(DISA' in citation[-12:]:
+        return (citation[-10:-1], citation[:-12])
+    elif '; DISA' in citation[-12:]:
+        return (citation[-9:], citation[:-11])
+    else:
+        print(citation)
+        return ('', citation)
+
 def process_document(docData):
     citation = docData['citation']
+    zotero = ''
+    if 'DISA' in citation:
+        zotero, citation = extract_zotero_id(citation)
     date = process_date(docData['date'])
     existing = models.Document.query.filter_by(citation=citation, date=date).first()
     if existing:
@@ -142,6 +159,7 @@ def process_document(docData):
     doc.citation = citation
     doc.national_context = process_national_context(docData)
     doc.date = date
+    doc.zotero_id = zotero
     return doc
 
 def process_date(dateData):

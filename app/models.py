@@ -55,7 +55,7 @@ class Record(db.Model):
         nullable=False)
     citation = db.Column(db.String(255))
     date = db.Column(db.DateTime())
-    comments = db.Column(db.String(255))
+    comments = db.Column(db.Text())
     entrants = db.relationship('Entrant', backref='record', lazy=True)
     document_id = db.Column(db.Integer, db.ForeignKey('documents.id'),
         nullable=False)
