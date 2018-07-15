@@ -1,6 +1,7 @@
-from werkzeug import security
-from app import db
+from app import db, login
 
+from werkzeug import security
+from flask_login import UserMixin
 
 has_role = db.Table('has_role',
     db.Column('id', db.Integer, primary_key=True),
@@ -186,7 +187,7 @@ class Person(db.Model):
     comments = db.Column(db.String(255))
     references = db.relationship('Entrant', backref='person', lazy=True)
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -200,6 +201,10 @@ class User(db.Model):
 
     def check_password(self, password):
         return security.check_password_hash(self.password_hash, password)
+
+@login.user_loader
+def load_user(id):
+    return User.query.get(int(id))
 
 class RecordEdit(db.Model):
     __tablename__ = 'record_edits'

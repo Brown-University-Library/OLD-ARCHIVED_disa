@@ -1,7 +1,14 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, SubmitField
-from wtforms import HiddenField, SelectField, DateField
+from wtforms import StringField, PasswordField, SubmitField
+from wtforms import TextAreaField
+from wtforms import HiddenField, SelectField, DateField,TextAreaField
 from wtforms import FieldList, IntegerField, RadioField
+from wtforms.validators import DataRequired
+
+class LoginForm(FlaskForm):
+    email = StringField('email', validators=[DataRequired()])
+    password = PasswordField('password', validators=[DataRequired()])
+    submit = SubmitField('Sign In')
 
 class DocumentForm(FlaskForm):
     # From MongoDB document.sourceType field

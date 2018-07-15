@@ -1,7 +1,9 @@
 from flask import request, jsonify, render_template, redirect, url_for
-from app import app, db, models
+from app import app, db, models, forms
 from app.models import Document, Record, Entrant, Role, DocumentType, RecordType
 from app.forms import DocumentForm, RecordForm, EntrantForm, EntrantRelationshipForm
+
+from flask_login import current_user, login_user, logout_user, login_required
 
 import collections
 import datetime
@@ -143,6 +145,28 @@ def get_browse_data(opts=None):
 @app.route('/')
 def browse():
     return render_template('browse.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index_documents'))
+    form = forms.LoginForm()
+    if form.validate_on_submit():
+        user = models.User.query.filter_by(email=form.email.data).first()
+        if user is None or not user.check_password(form.password.data):
+            flash('Invalid username or password')
+            return redirect(url_for('login'))
+        login_user(user)
+        next_page = request.args.get('next')
+        if not next_page or url_parse(next_page).netloc != '':
+            next_page = url_for('index_documents')
+        return redirect(next_page)
+    return render_template('login.html', title='Sign In', form=form)
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('browse'))
 
 @app.route('/documents', methods=['GET'])
 def index_documents():

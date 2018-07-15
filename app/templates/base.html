@@ -111,13 +111,18 @@
     </head>
     <body>
         <nav class="navbar navbar-default navbar-fixed-top">
-          <div class="container-fluid">
-             <div class="navbar-header">
-              <a class="navbar-brand" href="{{ url_for('index_documents') }}">Database of Indigenous Slavery in the Americas</a>
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="{{ url_for('browse') }}">Database of Indigenous Slavery in the Americas</a>
+                </div>
+                <div>
+                {% if current_user.is_anonymous %}
+                    <a href="{{ url_for('login') }}">Login</a>
+                {% else %}
+                    <a href="{{ url_for('logout') }}">Logout</a>
+                {% endif %}
+                </div>
             </div>
-            <button type="button" class="btn btn-default navbar-btn navbar-text navbar-right">Sign in</button>
-
-          </div>
         </nav>
         {% block content %}{% endblock %}
     </body>
