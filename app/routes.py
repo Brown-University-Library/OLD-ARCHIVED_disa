@@ -368,7 +368,33 @@ def create_document():
 @app.route('/data/documents/', methods=['PUT'])
 @app.route('/data/documents/<docId>', methods=['PUT'])
 def update_document_data(docId):
-    if docId is None:
+    data = request.get_json()
+    if docId is None or data['citation'] == '':
         return jsonify({})
-    print(request.get_json())
-    return jsonify({"ricky": "you're the best"})
+    doc_types = [ { 'id': dt.id, 'name': dt.name }
+        for dt in models.DocumentType.query.all() ]
+    unspec = [ dt['id'] for dt in doc_types
+        if dt['name'] == 'unspecified' ][0]
+    date = data['date'] or '1/1/2001'
+    data['date'] = datetime.datetime.strptime(date, '%m/%d/%Y')
+    data['document_type_id'] = data['document_type_id'] or unspec
+    doc = models.Document.query.get(docId)
+    doc.citation = data['citation']
+    doc.date = data['date']
+    doc.document_type_id = data['document_type_id']
+    doc.zotero_id = data['zotero_id']
+    doc.acknowledgements = data['acknowledgements']
+    db.session.add(doc)
+    db.session.commit()
+
+    data = { 'doc': {} }
+    data['doc_types'] = [ { 'id': dt.id, 'name': dt.name }
+        for dt in models.DocumentType.query.all() ]
+    data['doc']['id'] = doc.id
+    data['doc']['date'] = '{}/{}/{}'.format(doc.date.month,
+        doc.date.day, doc.date.year)
+    data['doc']['citation'] = doc.citation
+    data['doc']['zotero_id'] = doc.zotero_id
+    data['doc']['acknowledgements'] = doc.acknowledgements
+    data['doc']['document_type_id'] = doc.document_type_id
+    return jsonify(data)
