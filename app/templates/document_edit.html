@@ -27,6 +27,15 @@
             <textarea class="form-control" id="acknowledgements"></textarea>
         </div>
     </form>
+
+    {% if doc %}
+    <h2>Items</h2>
+        <ul>
+        {% for item in doc.records %}
+            <li>Item {{ item.id }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
 </div>
 {% endblock %}
 
@@ -59,7 +68,7 @@ var addTypeOptions = function(opts) {
 }
 
 $( document ).ready(function() {
-    var doc_data_api = '/data/document/' + getDocumentId();
+    var doc_data_api = '/data/documents/' + getDocumentId();
     $.get(doc_data_api, function(data) {
         addTypeOptions(data['doc_types']);
         setInputValues(data['doc']);

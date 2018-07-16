@@ -319,7 +319,7 @@ def add_entrant_relationships(entId):
     form.related_as.choices = [ (1, 'spouse'), (2, 'child of'), (3, 'owned by') ]
     return render_template('entrant_relationships.html', form = form, entrant = ent)
 
-@app.route('/data/document/<docId>')
+@app.route('/data/documents/<docId>', methods=['GET', 'OPTIONS'])
 def get_document_data(docId):
     data = { 'doc': {} }
     data['doc_types'] = [ { 'id': dt.id, 'name': dt.name }
