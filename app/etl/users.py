@@ -19,7 +19,8 @@ def load_existing_users():
         { 'email':'luna_mcnulty@brown.edu', 'role':'Admin' },
         { 'email':'ashley_champagne@brown.edu', 'role':'Admin' },
         { 'email':'gwenyth_winship@brown.edu', 'role':'Admin' },
-        { 'email':'juan_bettancourt-garcia@brown.edu', 'role':'Admin' }
+        { 'email':'juan_bettancourt-garcia@brown.edu', 'role':'Admin' },
+        { 'email':'disagrantreview@gmail.com', 'role':'User'}
     ]
 
     for user in mongo_users:

@@ -26,8 +26,12 @@
             {% endfor %}
             </tbody>
         </table>
+        {% else%}
+        <p class='text-danger'>You have not comitted any changes to any documents</p>
         {% endif %}
-        <a class="btn btn-primary" href="{{ url_for('edit_document') }}">New document</a>
+        <div class="d-flex flex-row-reverse">
+            <a class="btn btn-primary" href="{{ url_for('edit_document') }}">New document</a>
+        </div>
         <h2>All documents</h2>
 		<table class="table">
             <thead>

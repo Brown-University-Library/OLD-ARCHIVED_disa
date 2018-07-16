@@ -438,14 +438,14 @@ def process_location(docData):
 
 def process_administrative_metadata(metaData, users):
     user_map = {
-        '103795391716629952261': 'gwenyth_winship@brown.edu',
+        '103795391716629952261': 'linfordfisher@gmail.com',
         '106123372953260397156': 'juan_bettancourt-garcia@brown.edu',
-        '106895219236186746888': 'linfordfisher@gmail.com',
+        '106895219236186746888': 'disagrantreview@gmail.com',
         '109503335312366098524': 'anne_grasberger@brown.edu',
         '112148132795694739523': 'marley-vincent_lindsey@brown.edu',
         '112487255676465508755': 'rose_lang-maso@brown.edu',
         '113112063790792171857': 'samuel_skinner@brown.edu',
-        '117289295548725522159': 'jane.l.landers@vanderbilt.edu'
+        '117289295548725522159': 'gwenyth_winship@brown.edu'
     }
 
     created_id = metaData['creator']
