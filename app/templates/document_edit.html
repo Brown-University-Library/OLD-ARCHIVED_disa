@@ -10,13 +10,17 @@
             <textarea class="form-control" id="citation"></textarea>
         </div>
         <div class="form-group row">
+            <label for="citation">Zotero ID</label>
+            <input type="text" class="form-control" id="zotero" />
+        </div>
+        <div class="form-group row">
             <label for="document_type">Document type</label> 
             <select class="form-control" id="document_type">
             </select>
         </div>
         <div class="form-group row">
             <label for="document_date">Date</label>
-            <input class="form-control" type="text" id="document_date">
+            <input class="form-control" type="text" id="document_date" />
         </div>
         <div class="form-group row">
             <label for="acknowledgements">Acknowledgements</label>
@@ -33,11 +37,22 @@ var getDocumentId = function () {
     return doc_id;
 }
 
+var setInputValues = function(docData) {
+    if ( docData === {} ) {
+        return;
+    }
+    $('#citation').text(docData['citation']);
+    $('#zotero').val(docData['zotero']);
+    $('#document_type').val(docData['doc_type_id']).attr('selected', true);
+    $('#document_date').val(docData['date']);
+    $('#acknowledgements').text(docData['acknowledgements']);
+}
+
 var addTypeOptions = function(opts) {
     var dtype_select = $('#document_type');
     for (var i = 0; i < opts.length; i++) {
         var opt = opts[i];
-        var opt_elem = $("<option/>", { 'data-dtype_id': opt.id ,
+        var opt_elem = $("<option/>", { 'value': opt.id ,
                                         'text': opt.name });
         dtype_select.append(opt_elem);
     }
@@ -46,7 +61,8 @@ var addTypeOptions = function(opts) {
 $( document ).ready(function() {
     var doc_data_api = '/data/document/' + getDocumentId();
     $.get(doc_data_api, function(data) {
-        addTypeOptions(data);
+        addTypeOptions(data['doc_types']);
+        setInputValues(data['doc']);
     });
     $( function() {
         $( "#document_date" ).datepicker({

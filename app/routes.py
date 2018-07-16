@@ -321,7 +321,17 @@ def add_entrant_relationships(entId):
 
 @app.route('/data/document/<docId>')
 def get_document_data(docId):
-    doc_types = models.DocumentType.query.all()
+    data = { 'doc': {} }
+    data['doc_types'] = [ { 'id': dt.id, 'name': dt.name }
+        for dt in models.DocumentType.query.all() ]
     if docId == 'new':
-        return jsonify([ { 'id': dt.id, 'name': dt.name } for dt in doc_types ])
-    return jsonify({})
+        return jsonify(data)
+    doc = models.Document.query.get(docId)
+    data['doc']['id'] = doc.id
+    data['doc']['date'] = '{}/{}/{}'.format(doc.date.month,
+        doc.date.day, doc.date.year)
+    data['doc']['citation'] = doc.citation
+    data['doc']['zotero'] = doc.zotero_id    
+    data['doc']['acknowledgements'] = doc.acknowledgements
+    data['doc']['doc_type_id'] = doc.document_type_id 
+    return jsonify(data)
