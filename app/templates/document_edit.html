@@ -26,6 +26,7 @@
             <label for="acknowledgements">Acknowledgements</label>
             <textarea class="form-control" id="acknowledgements"></textarea>
         </div>
+        <button type="submit" class="btn btn-primary" id="doc_update">Update</button>
     </form>
 
     {% if doc %}
@@ -67,12 +68,30 @@ var addTypeOptions = function(opts) {
     }
 }
 
-$( document ).ready(function() {
+var readDocumentData = function() {
     var doc_data_api = '/data/documents/' + getDocumentId();
     $.get(doc_data_api, function(data) {
         addTypeOptions(data['doc_types']);
         setInputValues(data['doc']);
     });
+}
+
+var updateDocumentData = function() {
+    var doc_data_api = '/data/documents/' + getDocumentId();
+    $.ajax({
+        type: "PUT",
+        url: doc_data_api,
+        contentType: "application/json",
+        data: JSON.stringify({"ricky": "don't worry"}),
+        success: function(data) {
+            console.log(data);
+        }
+    });
+}
+
+
+$( document ).ready(function() {
+    readDocumentData();
     $( function() {
         $( "#document_date" ).datepicker({
           changeMonth: true,
@@ -80,6 +99,10 @@ $( document ).ready(function() {
           yearRange: "1492:2000"
         });
     } );
+    $( "#doc_update" ).on('click', function(e) {
+          e.preventDefault();
+         updateDocumentData();
+    });
 });
 </script>
 {% endblock %}

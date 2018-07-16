@@ -46,7 +46,7 @@
 
             $.ajaxSetup({
                 beforeSend: function(xhr, settings) {
-                    if (RegExp('^(GET|HEAD|OPTIONS|TRACE|POST|PUT)$').test(settings.type) && !this.crossDomain) {
+                    if (RegExp('^(POST|PUT|PATCH|DELETE)$').test(settings.type) && !this.crossDomain) {
                         xhr.setRequestHeader("X-CSRFToken", csrf_token);
                     }
                 }
