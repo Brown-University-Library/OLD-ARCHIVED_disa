@@ -1,16 +1,56 @@
-{% extends "base.html" %}
+{% extends "editor.html" %}
 
 {% block content %}
 	<div class="container">
-		<a class="btn btn-primary" href="{{ url_for('edit_document') }}">New source</a>
-        <div class="page-header">
-			<h3>Sources</h3>
-		</div>
-		<ul>
-            {% for doc in documents %}
-            <li><a href="{{ url_for('edit_document', docId=doc.id) }}">{{ doc.citation }}</a><span class="badge">{{ doc.records|length }}</span></li>
+		<h2>Your recent documents</h2>
+        {% if user_documents %}
+        <table class="table">
+            <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">Citation</th>
+                  <th scope="col">Items</th>
+                  <th scope="col">Edited</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for date, doc in user_documents %}
+                <tr>
+                    <th scope="row">{{ doc.id }}</th>
+                    <td>
+                        <a href="{{ url_for('edit_document', docId=doc.id) }}">{{ doc.citation }}</a>
+                    </td>
+                    <td>{{ doc.records|length }}</td>
+                    <td>{{ date.strftime('%Y-%m-%d') }}</td>
+                </tr>
             {% endfor %}
-        </ul>
+            </tbody>
+        </table>
+        {% endif %}
+        <a class="btn btn-primary" href="{{ url_for('edit_document') }}">New document</a>
+        <h2>All documents</h2>
+		<table class="table">
+            <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">Citation</th>
+                  <th scope="col">Items</th>
+                  <th scope="col">Edited</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for date, doc in documents %}
+                <tr>
+                    <th scope="row">{{ doc.id }}</th>
+                    <td>
+                        <a href="{{ url_for('edit_document', docId=doc.id) }}">{{ doc.citation }}</a>
+                    </td>
+                    <td>{{ doc.records|length }}</td>
+                    <td>{{ date.strftime('%Y-%m-%d') }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
 	</div>
     
 {% endblock %}
