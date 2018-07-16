@@ -352,18 +352,8 @@ def create_document():
     doc = models.Document(**data)
     db.session.add(doc)
     db.session.commit()
-
-    data = { 'doc': {} }
-    data['doc_types'] = [ { 'id': dt.id, 'name': dt.name }
-        for dt in models.DocumentType.query.all() ]
-    data['doc']['id'] = doc.id
-    data['doc']['date'] = '{}/{}/{}'.format(doc.date.month,
-        doc.date.day, doc.date.year)
-    data['doc']['citation'] = doc.citation
-    data['doc']['zotero_id'] = doc.zotero_id
-    data['doc']['acknowledgements'] = doc.acknowledgements
-    data['doc']['document_type_id'] = doc.document_type_id
-    return jsonify(data)
+    return jsonify(
+        { 'redirect': url_for('edit_document', docId=doc.id) })
 
 @app.route('/data/documents/', methods=['PUT'])
 @app.route('/data/documents/<docId>', methods=['PUT'])

@@ -1,32 +1,42 @@
 {% extends "editor.html" %}
 
+{% block header %}
+<style>
+#document_header {
+    font-size: 150%;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
-    <h2 id="document_header"></h2>
-    <form action="" method="">
-        <div class="form-group row">
-            <label for="citation">Citation</label>
-            <textarea class="form-control" id="citation"></textarea>
-        </div>
-        <div class="form-group row">
-            <label for="citation">Zotero ID</label>
-            <input type="text" class="form-control" id="zotero" />
-        </div>
-        <div class="form-group row">
-            <label for="document_type">Document type</label> 
-            <select class="form-control" id="document_type">
-            </select>
-        </div>
-        <div class="form-group row">
-            <label for="document_date">Date</label>
-            <input class="form-control" type="text" id="document_date" />
-        </div>
-        <div class="form-group row">
-            <label for="acknowledgements">Acknowledgements</label>
-            <textarea class="form-control" id="acknowledgements"></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary" id="doc_update">Update</button>
-    </form>
+    <div id="document_form">
+        <h2 id="document_header"></h2>
+        <form action="" method="">
+            <div class="form-group row">
+                <label for="citation">Citation</label>
+                <textarea class="form-control" id="citation"></textarea>
+            </div>
+            <div class="form-group row">
+                <label for="citation">Zotero ID</label>
+                <input type="text" class="form-control" id="zotero" />
+            </div>
+            <div class="form-group row">
+                <label for="document_type">Document type</label> 
+                <select class="form-control" id="document_type">
+                </select>
+            </div>
+            <div class="form-group row">
+                <label for="document_date">Date</label>
+                <input class="form-control" type="text" id="document_date" />
+            </div>
+            <div class="form-group row">
+                <label for="acknowledgements">Acknowledgements</label>
+                <textarea class="form-control" id="acknowledgements"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" id="doc_update">Update</button>
+        </form>
+    </div>
 
     {% if doc %}
     <h2>Items</h2>
@@ -48,7 +58,7 @@ var getDocumentId = function () {
 }
 
 var setInputValues = function(docData) {
-    if ( docData === {} ) {
+    if ( $.isEmptyObject(docData) ) {
         return;
     }
     $('#citation').text(docData['citation']);
@@ -79,7 +89,18 @@ var addTypeOptions = function(opts) {
     }
 }
 
+var setFormHeader = function (docData) {
+    var header = $('#document_header');
+    if ( $.isEmptyObject(docData) ) {
+        header.text('Create new document');
+        $('#doc_update').text('Create');
+    } else {
+        header.text(docData['citation']);
+    }
+}
+
 var initializeForm = function (data) {
+    setFormHeader(data['doc']);
     addTypeOptions(data['doc_types']);
     setInputValues(data['doc']);    
 }
@@ -101,8 +122,12 @@ var updateDocumentData = function(docId) {
         contentType: "application/json",
         data: JSON.stringify(data),
         success: function(data) {
-            console.log(data);
-            initializeForm(data);
+            if ( method === 'POST' ) {
+                window.location.href = data.redirect;
+            } else {
+                initializeForm(data);
+                $('#document_form').accordion('option','active', false );
+            }
         }
     });
 }
@@ -110,13 +135,16 @@ var updateDocumentData = function(docId) {
 $( document ).ready(function() {
     var doc_id = getDocumentId();
     readDocumentData(doc_id);
-    $( function() {
-        $( "#document_date" ).datepicker({
-          changeMonth: true,
-          changeYear: true,
-          yearRange: "1492:2000"
-        });
-    } );
+    $( "#document_form" ).accordion({
+        collapsible: true,
+        header: "h2",
+        active: (doc_id ? false : 0)
+    });
+    $( "#document_date" ).datepicker({
+      changeMonth: true,
+      changeYear: true,
+      yearRange: "1491:2000"
+    });
     $( "#doc_update" ).on('click', function(e) {
           e.preventDefault();
          updateDocumentData(doc_id);
