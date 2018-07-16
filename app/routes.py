@@ -179,7 +179,10 @@ def index_documents():
 @app.route('/edit/documents/<docId>')
 @login_required
 def edit_document(docId=None):
-    return render_template('document_edit.html')
+    if not docId:
+        return render_template('document_edit.html', doc=None)
+    doc = models.Document.query.get(docId)
+    return render_template('document_edit.html', doc=doc)
 
 @app.route('/documents/<docId>', methods=['GET','POST'])
 @login_required
@@ -315,3 +318,10 @@ def add_entrant_relationships(entId):
         if e.id != ent.id ]
     form.related_as.choices = [ (1, 'spouse'), (2, 'child of'), (3, 'owned by') ]
     return render_template('entrant_relationships.html', form = form, entrant = ent)
+
+@app.route('/data/document/<docId>')
+def get_document_data(docId):
+    doc_types = models.DocumentType.query.all()
+    if docId == 'new':
+        return jsonify([ { 'id': dt.id, 'name': dt.name } for dt in doc_types ])
+    return jsonify({})

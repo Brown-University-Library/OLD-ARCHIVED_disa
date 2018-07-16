@@ -5,26 +5,56 @@
     <h2 id="document_header"></h2>
     <form action="" method="">
         <!-- <input type="text" id="zotero" /> -->
-        <label for="citation">Citation</label>
-        <textarea id="citation"></textarea>
-        <label for="document_type">Document type</label> 
-        <select id="document_type">
-        </select>
-        <p>Date: <input type="text" id="document_date"></p>
-        <label for="acknowledgements">Acknowledgements</label>
-        <textarea id="acknowledgements"></textarea>
+        <div class="form-group row">
+            <label for="citation">Citation</label>
+            <textarea class="form-control" id="citation"></textarea>
+        </div>
+        <div class="form-group row">
+            <label for="document_type">Document type</label> 
+            <select class="form-control" id="document_type">
+            </select>
+        </div>
+        <div class="form-group row">
+            <label for="document_date">Date</label>
+            <input class="form-control" type="text" id="document_date">
+        </div>
+        <div class="form-group row">
+            <label for="acknowledgements">Acknowledgements</label>
+            <textarea class="form-control" id="acknowledgements"></textarea>
+        </div>
     </form>
 </div>
 {% endblock %}
 
 {% block scripts%}
 <script>
-$( function() {
-$( "#document_date" ).datepicker({
-  changeMonth: true,
-  changeYear: true,
-  yearRange: "1492:2000"
+var getDocumentId = function () {
+    var doc_id = "{{ doc.id or 'new' }}";
+    return doc_id;
+}
+
+var addTypeOptions = function(opts) {
+    var dtype_select = $('#document_type');
+    for (var i = 0; i < opts.length; i++) {
+        var opt = opts[i];
+        var opt_elem = $("<option/>", { 'data-dtype_id': opt.id ,
+                                        'text': opt.name });
+        dtype_select.append(opt_elem);
+    }
+}
+
+$( document ).ready(function() {
+    var doc_data_api = '/data/document/' + getDocumentId();
+    $.get(doc_data_api, function(data) {
+        addTypeOptions(data);
+    });
+    $( function() {
+        $( "#document_date" ).datepicker({
+          changeMonth: true,
+          changeYear: true,
+          yearRange: "1492:2000"
+        });
+    } );
 });
-} );
 </script>
 {% endblock %}
