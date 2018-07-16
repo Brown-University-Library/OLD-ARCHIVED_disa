@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block header %}{% endblock %}
+{% block content %}{% endblock %}
+{% block scripts %}
+<script type="text/javascript">
+    var csrf_token = "{{ csrf_token() }}";
+
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (RegExp('^(POST|PUT|PATCH|DELETE)$').test(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrf_token);
+            }
+        }
+    });
+</script>
+{% endblock %}

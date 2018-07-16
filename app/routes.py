@@ -319,12 +319,13 @@ def add_entrant_relationships(entId):
     form.related_as.choices = [ (1, 'spouse'), (2, 'child of'), (3, 'owned by') ]
     return render_template('entrant_relationships.html', form = form, entrant = ent)
 
+@app.route('/data/documents/', methods=['GET'])
 @app.route('/data/documents/<docId>', methods=['GET'])
-def read_document_data(docId):
+def read_document_data(docId=None):
     data = { 'doc': {} }
     data['doc_types'] = [ { 'id': dt.id, 'name': dt.name }
         for dt in models.DocumentType.query.all() ]
-    if docId == 'new':
+    if docId == None:
         return jsonify(data)
     doc = models.Document.query.get(docId)
     data['doc']['id'] = doc.id
@@ -336,7 +337,10 @@ def read_document_data(docId):
     data['doc']['doc_type_id'] = doc.document_type_id 
     return jsonify(data)
 
+@app.route('/data/documents/', methods=['PUT'])
 @app.route('/data/documents/<docId>', methods=['PUT'])
-def update_document_data(docId):
+def update_document_data(docId=None):
+    if docId is None:
+        return jsonify({})
     print(request.get_json())
     return jsonify({"ricky": "you're the best"})

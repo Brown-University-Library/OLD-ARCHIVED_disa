@@ -1,10 +1,9 @@
-{% extends "base.html" %}
+{% extends "editor.html" %}
 
 {% block content %}
 <div class="container">
     <h2 id="document_header"></h2>
     <form action="" method="">
-        <!-- <input type="text" id="zotero" /> -->
         <div class="form-group row">
             <label for="citation">Citation</label>
             <textarea class="form-control" id="citation"></textarea>
@@ -41,9 +40,10 @@
 {% endblock %}
 
 {% block scripts%}
+{{ super() }}
 <script>
 var getDocumentId = function () {
-    var doc_id = "{{ doc.id or 'new' }}";
+    var doc_id = "{{ doc.id or '' }}";
     return doc_id;
 }
 
@@ -68,21 +68,21 @@ var addTypeOptions = function(opts) {
     }
 }
 
-var readDocumentData = function() {
-    var doc_data_api = '/data/documents/' + getDocumentId();
+var readDocumentData = function(docId) {
+    var doc_data_api = "{{ url_for('read_document_data', docId=None ) }}" + docId;
     $.get(doc_data_api, function(data) {
         addTypeOptions(data['doc_types']);
         setInputValues(data['doc']);
     });
 }
 
-var updateDocumentData = function() {
-    var doc_data_api = '/data/documents/' + getDocumentId();
+var updateDocumentData = function(docId) {
+    var doc_data_api = "{{ url_for('update_document_data', docId=None )}}" + docId;
     $.ajax({
         type: "PUT",
         url: doc_data_api,
         contentType: "application/json",
-        data: JSON.stringify({"ricky": "don't worry"}),
+        data: JSON.stringify({"ricky": "don't worry " + docId }),
         success: function(data) {
             console.log(data);
         }
@@ -91,7 +91,8 @@ var updateDocumentData = function() {
 
 
 $( document ).ready(function() {
-    readDocumentData();
+    var doc_id = getDocumentId();
+    readDocumentData(doc_id);
     $( function() {
         $( "#document_date" ).datepicker({
           changeMonth: true,
@@ -101,7 +102,7 @@ $( document ).ready(function() {
     } );
     $( "#doc_update" ).on('click', function(e) {
           e.preventDefault();
-         updateDocumentData();
+         updateDocumentData(doc_id);
     });
 });
 </script>
