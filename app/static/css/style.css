@@ -1,12 +1,12 @@
-body{
-			background-color: #f9f8f8;
-			padding-top: 70px; 
-			color: black;
-			font-family: 'Roboto', sans-serif;
-		}
+/*body {
+	background-color: #f9f8f8;
+	padding-top: 70px; 
+	color: black;
+	font-family: 'Roboto', sans-serif;
+}*/
 
 		
-.panel-default>.panel-heading{
+/*.panel-default>.panel-heading{
 	background-color: #d8dfbb;
 }
 
@@ -25,9 +25,9 @@ body{
 	font-style: bold;
 	font-size: 25px;
 
-}
-
-.navbar{
+}*/
+/*
+nav {
 	background-color: #7b9c59;
 	font-family: Apple Chancery, cursive;
 }
@@ -35,4 +35,4 @@ body{
 input#submit{
 	background-color: inherit;
 	border: None;
-}
+}*/

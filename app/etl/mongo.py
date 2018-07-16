@@ -152,7 +152,7 @@ def process_document(docData):
     if 'DISA' in citation:
         zotero, citation = extract_zotero_id(citation)
     date = process_date(docData['date'])
-    existing = models.Document.query.filter_by(citation=citation, date=date).first()
+    existing = models.Document.query.filter_by(citation=citation).first()
     if existing:
         return existing
     doc = models.Document()
