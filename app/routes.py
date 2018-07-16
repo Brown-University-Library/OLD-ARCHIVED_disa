@@ -175,6 +175,12 @@ def index_documents():
     all_docs = Document.query.all()
     return render_template('document_index.html', documents=all_docs)
 
+@app.route('/edit/documents')
+@app.route('/edit/documents/<docId>')
+@login_required
+def edit_document(docId=None):
+    return render_template('document_edit.html')
+
 @app.route('/documents/<docId>', methods=['GET','POST'])
 @login_required
 def show_document(docId):

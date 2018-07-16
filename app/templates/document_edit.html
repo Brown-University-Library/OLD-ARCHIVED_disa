@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2 id="document_header"></h2>
+    <form action="" method="">
+        <!-- <input type="text" id="zotero" /> -->
+        <label for="citation">Citation</label>
+        <textarea id="citation"></textarea>
+        <label for="document_type">Document type</label> 
+        <select id="document_type">
+        </select>
+        <p>Date: <input type="text" id="document_date"></p>
+        <label for="acknowledgements">Acknowledgements</label>
+        <textarea id="acknowledgements"></textarea>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts%}
+<script>
+$( function() {
+$( "#document_date" ).datepicker({
+  changeMonth: true,
+  changeYear: true,
+  yearRange: "1492:2000"
+});
+} );
+</script>
+{% endblock %}
