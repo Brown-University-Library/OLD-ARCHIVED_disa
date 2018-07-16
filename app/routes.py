@@ -317,7 +317,7 @@ def add_entrant_relationships(entId):
         for e in Entrant.query.filter_by(record_id=ent.record_id)
         if e.id != ent.id ]
     form.related_as.choices = [ (1, 'spouse'), (2, 'child of'), (3, 'owned by') ]
-    return render_template('entrant_relationships.html', form = form, entrant = ent)
+    return render_template('entrant_relationships.html', form = form, entrant = ent)  
 
 @app.route('/data/documents/', methods=['GET'])
 @app.route('/data/documents/<docId>', methods=['GET'])
@@ -332,14 +332,42 @@ def read_document_data(docId=None):
     data['doc']['date'] = '{}/{}/{}'.format(doc.date.month,
         doc.date.day, doc.date.year)
     data['doc']['citation'] = doc.citation
-    data['doc']['zotero'] = doc.zotero_id    
+    data['doc']['zotero_id'] = doc.zotero_id    
     data['doc']['acknowledgements'] = doc.acknowledgements
-    data['doc']['doc_type_id'] = doc.document_type_id 
+    data['doc']['document_type_id'] = doc.document_type_id
+    return jsonify(data)
+
+@app.route('/data/documents/', methods=['POST'])
+def create_document():
+    data = request.get_json()
+    if data['citation'] == '':
+        return {}
+    doc_types = [ { 'id': dt.id, 'name': dt.name }
+        for dt in models.DocumentType.query.all() ]
+    unspec = [ dt['id'] for dt in doc_types
+        if dt['name'] == 'unspecified' ][0]
+    date = data['date'] or '1/1/2001'
+    data['date'] = datetime.datetime.strptime(date, '%m/%d/%Y')
+    data['document_type_id'] = data['document_type_id'] or unspec
+    doc = models.Document(**data)
+    db.session.add(doc)
+    db.session.commit()
+
+    data = { 'doc': {} }
+    data['doc_types'] = [ { 'id': dt.id, 'name': dt.name }
+        for dt in models.DocumentType.query.all() ]
+    data['doc']['id'] = doc.id
+    data['doc']['date'] = '{}/{}/{}'.format(doc.date.month,
+        doc.date.day, doc.date.year)
+    data['doc']['citation'] = doc.citation
+    data['doc']['zotero_id'] = doc.zotero_id
+    data['doc']['acknowledgements'] = doc.acknowledgements
+    data['doc']['document_type_id'] = doc.document_type_id
     return jsonify(data)
 
 @app.route('/data/documents/', methods=['PUT'])
 @app.route('/data/documents/<docId>', methods=['PUT'])
-def update_document_data(docId=None):
+def update_document_data(docId):
     if docId is None:
         return jsonify({})
     print(request.get_json())
