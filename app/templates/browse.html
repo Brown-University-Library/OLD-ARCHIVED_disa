@@ -11,24 +11,28 @@
 
 {% block content %}
 	<header>
-		<h1>Browse the Database</h1>
+		<h1>Browse the database</h1>
+		<hr>
+		<div class="instructions">
+			<p>Find out more about an entry by clicking on the <img src="{{ url_for('static', filename='img/info.png') }}"> icon on left-hand side of each entry.</p>
+			<p>Search each entry by sorting the column header. You can search multiple columns at one time. (Please note that you need to delete the original search to reset the form)</p>
+		</div>
 	</header>
 	
 	<div id="grid-container">
 		<div id="myGrid" style="width:100%; height:100%;"></div>
 	</div>
 	<div class="info-box">
-		<p>Note: Date is in year-month-day format.</p>
-		<hr>
-		<p>You can filter by multiple categories! For instance, to find
-		female Wampanoags, type "female" below the gender header
-		and "Wampanoag" below the Tribe / Nation header.
-		<p>Click the <img src="{{ url_for('static', filename='img/info.png') }}"> icon for more information
-		about the person.</p>
-	</div>	
-	<footer>
-		
-	</footer>
+		<h3>Acknowledgements</h3>
+
+		<p>DISA has been generously funded and supported by the following entities:</p>
+		<ul>
+			<li>Population Studies and Training Center, Brown University</li>
+			<li>Social Sciences Research Institute, Brown University</li>
+			<li>Office of the Vice President for Research, Brown University</li>
+			<li>Center for Digital Scholarship, Brown University Library</li>
+		</ul>
+	</div>
 
 {% endblock %}
 
