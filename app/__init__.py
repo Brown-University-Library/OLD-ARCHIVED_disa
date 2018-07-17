@@ -50,9 +50,9 @@ def rebuild():
 
 @app.cli.command()
 def browse_data():
-    with open('data/denormalized.json','w') as f:
+    with open('app/static/data/denormalized.json','w') as f:
         data = denormalize.json_for_browse()
-        json.dump(data, f, indent=4)
+        json.dump(data, f)
 
 # END CLI
 

@@ -1,6 +1,7 @@
 from app import models
 
 import collections
+import datetime
 import json
 
 def process_reference(entrant):
@@ -14,14 +15,16 @@ def process_reference(entrant):
             'month': rec.date.month,
             'day': rec.date.day
         },
-        'locations': [ l[1] for l in sorted(locs, reverse=True) ]
+        'locations': [ l[1] for l in sorted(locs, reverse=True) ],
+        'comments': rec.comments
     }
     if entrant.description:
         ref_data['description'] = {
             'tribe': entrant.description.tribe,
             'sex': entrant.description.sex,
             'origin': entrant.description.origin,
-            'vocation': entrant.description.vocation
+            'vocation': entrant.description.vocation,
+            'age': entrant.description.age
         }
     for role in entrant.roles:
         ref_data['roles'][role.name] = []
@@ -64,17 +67,48 @@ def json_for_browse():
     out = []
     for p in persons:
         data = {}
+        data['id'] = p.id
         data['first_name'] = p.first_name
         data['last_name'] = p.last_name
         data['documents'] = collections.defaultdict(list)
+        data['description'] = {
+            'tribe': '',
+            'sex': '',
+            'origin': '',
+            'vocation': '',
+            'age': ''
+        }
+        data['status'] = 'enslaved'
+        first_date = datetime.datetime(year=2018,day=1,month=1)
         for ref in p.references:
             citation = ref.record.document.citation
+            new_date = ref.record.date
+            if new_date < first_date:
+                first_date = new_date
             existing_ref_data = data['documents'][citation]
             new_ref_data = process_reference(ref)
             data['documents'][citation] = merge_ref_data(
                 existing_ref_data, new_ref_data)
             for d in data['documents'][citation]:
+                if 'owner' in d['roles']:
+                    data['status'] = 'owner'
                 if d.get('description'):
-                    data['description'] = d['description']
+                    ex_desc = data['description']
+                    new_desc = d['description']
+                    ex_desc['tribe'] = new_desc['tribe'] \
+                        if new_desc['tribe'] else ex_desc['tribe']
+                    ex_desc['sex'] = new_desc['sex'] \
+                        if new_desc['sex'] else ex_desc['sex']
+                    ex_desc['origin'] = new_desc['origin'] \
+                        if new_desc['origin'] else ex_desc['origin']
+                    ex_desc['vocation'] = new_desc['vocation'] \
+                        if new_desc['vocation'] else ex_desc['vocation']
+                    ex_desc['age'] = new_desc['age'] \
+                        if new_desc['age'] else ex_desc['age']
+        data['date'] = {
+            'year': first_date.year,
+            'month': first_date.month,
+            'day': first_date.day
+        }
         out.append(data)
     return out

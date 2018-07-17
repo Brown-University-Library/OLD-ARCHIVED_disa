@@ -1,6 +1,3 @@
-//let darkOverlay = document.getElementById("dark-overlay");
-//darkOverlay.style.display = 'none';
-
 let dragDialog = null;
 let dragOffsetX = 0;
 let dragOffsetY = 0;
@@ -39,13 +36,7 @@ function showDialog(someElement) {
 	document.body.appendChild(dialogWindow);
 	dialogWindow.style.top = ((document.documentElement.clientHeight - dialogWindow.clientHeight) / 2) + window.pageYOffset + "px";
 	dialogWindow.style.left = ((document.documentElement.clientWidth - dialogWindow.clientWidth) / 2) + window.pageXOffset + "px";
-//	document.getElementById("dialog-content").innerHTML 
-//		= someElement.innerHTML;
-//	darkOverlay.style.display = 'flex';
 }
-// function hideDialog() {
-//	darkOverlay.style.display = 'none';
-//}
 
 var raw_data;
 function exists(x) {
@@ -107,8 +98,7 @@ function expandInformation(index) {
 					item.document.colonyState + " - " + 
 					formatDate(item.document.date)),
 		create("h3", "Notes"),
-		create("p", item.additionalInformation),
-		create("p", item.researcherNotes)
+		create("p", item.comments)
 	]));
 }
 
@@ -145,12 +135,6 @@ var options = {
 	enableTextSelectionOnCells: true,
 };
 var columns = [
-	/*{id: "pic",
-	 name: "Image",
-	 field: "pic",
-	 width: 100,
-	 formatter: imageFormatter,
-	 sortable: true},*/
 	{id: "persNumber",
 	 name: "",
 	 field: "persNumber",
@@ -158,12 +142,12 @@ var columns = [
 	 formatter: indexFormatter,
 	 sortable: false},
 	{id: "names",
-	 name: "Names",
+	 name: "Name",
 	 field: "name",
 	 width: 240,
 	 sortable: true},
 	{id: "date",
-	 name: "Date",
+	 name: "Earliest record",
 	 field: "date",
 	 width: 100,
 	 sortable: true},
@@ -173,8 +157,8 @@ var columns = [
 	 width: 100,
 	 sortable: true},
 	{id: "typeKindOfEnslavement",
-	 name: "Type of Enslavement",
-	 field: "typeKindOfEnslavement",
+	 name: "Status",
+	 field: "status",
 	 width: 160,
 	 sortable: true},
 	{id: "race",
@@ -196,31 +180,7 @@ var columns = [
 	 name: "Vocation",
 	 field: "vocation",
 	 width: 180,
-	 sortable: true},
-	/*{id: "dateOfRunaway",
-	 name: "Runaway",
-	 field: "dateOfRunaway",
-	 width: 100,
-	 sortable: true},
-	{id: "dateOfEmancipation",
-	 name: "Emancipation",
-	 field: "dateOfEmancipation",
-	 width: 100,
-	 sortable: true},
-	{id: "dateOfSale",
-	 name: "Sale",
-	 field: "dateOfSale",
-	 width: 100,
-	 sortable: true},
-	{id: "dateOfMarriage",
-	 name: "Marriage",
-	 field: "dateOfMarriage",
-	 width: 100,
-	 sortable: true},*/	
-	{id: "abbrNotes",
-	 name: "Notes",
-	 field: "abbrNotes",
-	 width: 500}
+	 sortable: true}
 ];
 var columnFilters = {};
 
@@ -239,84 +199,3 @@ function filter(item) {
 	}
 	return true;
 }
-
-$.get("browsedata", (some_data, status) => {
-	raw_data = some_data;
-	data = [];
-	for (let i = 0; i < raw_data.length; i++) {
-		let date = "";
-		let dates = [formatDate(raw_data[i].dateOfSale), 
-		             formatDate(raw_data[i].dateOfMarriage),
-		             formatDate(raw_data[i].dateOfRunaway),
-		             formatDate(raw_data[i].dateOfEmancipation),
-					 formatDate(raw_data[i].document.date)];
-		dates = dates.sort((a, b) => {
-			let lengthDiff = a.length - b.length; 
-			if (lengthDiff != 0) {
-				return lengthDiff;
-			} else {
-				return dates.indexOf(a) - dates.indexOf(b);
-			}
-		});
-		date = dates[dates.length - 1];
-		data.push({
-			pic: "",
-			persNumber: String(i),
-			id: raw_data[i]._id,
-			name: formatNames(raw_data[i].person.names),
-			race: raw_data[i].person.race,
-			origin: raw_data[i].person.origin,
-			tribe: formatTribe(raw_data[i].person.tribe),
-			sex: raw_data[i].person.sex,
-			vocation: raw_data[i].person.vocation,
-			typeKindOfEnslavement: raw_data[i].person
-			                       .typeKindOfEnslavement,
-			date: date,
-			/*dateOfRunaway: formatDate(raw_data[i].dateOfRunaway),
-			dateOfEmancipation: formatDate(raw_data[i]
-			                               .dateOfEmancipation),
-			dateOfSale: formatDate(raw_data[i].dateOfSale),
-			dateOfMarriage: formatDate(raw_data[i].dateOfMarriage),*/
-			abbrNotes: ((raw_data[i].additionalInformation + " " + raw_data[i].researcherNotes))
-		});
-	}
-	dataView = new Slick.Data.DataView();
-	grid = new Slick.Grid("#myGrid", dataView, columns, options);
-	dataView.onRowCountChanged.subscribe(function (e, args) {
-		grid.updateRowCount();
-		grid.render();
-	});
-	dataView.onRowsChanged.subscribe(function (e, args) {
-		grid.invalidateRows(args.rows);
-		grid.render();
-	});
-	$(grid.getHeaderRow()).on("change keyup", ":input", function (e) {
-		var columnId = $(this).data("columnId");
-		if (columnId != null) {
-			columnFilters[columnId] = $.trim($(this).val());
-			dataView.refresh();
-		}
-	});
-	grid.onHeaderRowCellRendered.subscribe(function(e, args) {
-		$(args.node).empty();
-		$("<input type='text'>")
-			.data("columnId", args.column.id)
-			.val(columnFilters[args.column.id])
-			.appendTo(args.node);
-	});
-	grid.onSort.subscribe(function(e, args) {
-		console.log(args);
-		var comparer = function(a, b) {
-			return (a[args.sortCol.field] > 
-			        b[args.sortCol.field]) ? 1 : -1;
-		}
-		dataView.beginUpdate();
-		dataView.sort(comparer, args.sortAsc);
-		dataView.endUpdate();
-	});
-	grid.init();
-	dataView.beginUpdate();
-	dataView.setItems(data);
-	dataView.setFilter(filter);
-	dataView.endUpdate();
-});
