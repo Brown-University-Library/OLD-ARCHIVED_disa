@@ -1,98 +1,11 @@
 from flask import request, jsonify, render_template, redirect, url_for, flash
-from werkzeug.urls import url_parse
-from app import app, db, models, forms
-from app.models import Document, Record, Entrant, Role, DocumentType, RecordType
-from app.forms import DocumentForm, RecordForm, EntrantForm, EntrantRelationshipForm
-
 from flask_login import current_user, login_user, logout_user, login_required
+from werkzeug.urls import url_parse
 
-import collections
+from app import app, db, models, forms
+
 import datetime
 
-
-def make_person_dict(p):
-    data = {
-        'first_name': p.first_name,
-        'last_name': p.last_name,
-        'reference_details': collections.defaultdict(list)
-    }
-    for entrant in p.references:
-        rec = entrant.record 
-        ref_data = { 'roles': [] }
-        if len(entrant.as_subject) > 0:
-            ers = entrant.as_subject
-            for er in ers:
-                role = er.related_as.name
-                obj = er.obj
-                if obj is None:
-                    print(er.id)
-                    continue
-                other = "{} {}".format(obj.first_name, obj.last_name).strip()
-                ref_data['roles'].append('{}: {}'.format(role, other))
-        else:
-            ref_data['roles'] = [ role.name for role in entrant.roles ]
-        ref_data['date'] = {
-            'year': rec.date.year,
-            'month': rec.date.month,
-            'day': rec.date.day
-        }
-        doc = rec.document.citation
-        data['reference_details'][doc].append(ref_data)
-    data['references'] = sorted(data['reference_details'].keys())
-    data['reference_details'] = dict(data['reference_details'])
-    return (p, data)
-
-def stub_json(entrant):
-    jdata = {}
-    jdata['_id'] = entrant.id
-    jdata['person'] = {
-        'names': [
-            {
-                'firstName': entrant.first_name,
-                'lastName': entrant.last_name
-            }
-        ],
-        'typeKindOfEnslavement': entrant.roles[0].name
-    }
-    jdata['document'] = {
-        'date': {
-            'year': entrant.record.date.year,
-            'month': entrant.record.date.month,
-            'day': entrant.record.date.day,
-        },
-        'citation': entrant.record.document.citation,
-        'stringLocation': '',
-        'nationalContext': '',
-        'colonyState': ''   
-    }
-    description = getattr(entrant,'description')
-    if description:
-        jdata['person']['tribe'] = description.tribe
-        jdata['person']['sex'] = description.sex
-        jdata['person']['origin'] = description.origin
-        jdata['person']['vocation'] = description.vocation
-    jdata['additionalInformation'] = ''
-    jdata['researcherNotes'] = ''
-    jdata['dateOfRunaway'] =''
-    jdata['dateOfMarriage'] =''
-    jdata['dateOfDeath'] =''
-    jdata['dateOfEmancipation'] =''
-    jdata['dateOfSale'] = ''
-    return jdata
-
-@app.route('/browsedata')
-def get_browse_data(opts=None):
-    persons = models.Person.query.all()
-    person_data = [ make_person_dict(p) for p in persons ]
-    to_merge = [] 
-    for p in person_data:
-        for e in p[0].references:
-            to_merge.append( (p[1], stub_json(e)) )
-    data = []
-    for d in to_merge:
-        d[1]['agg'] = d[0]
-        data.append(d[1])
-    return jsonify(data)
 
 @app.route('/')
 def browse():
@@ -129,7 +42,6 @@ def sort_documents(wrappedDocs):
             continue
     return sorted([ merge[w] for w in merge], reverse=True)
      
-
 @app.route('/editor', methods=['GET'])
 @login_required
 def editor_index():

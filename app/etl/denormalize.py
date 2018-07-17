@@ -24,7 +24,8 @@ def process_reference(entrant):
             'sex': entrant.description.sex,
             'origin': entrant.description.origin,
             'vocation': entrant.description.vocation,
-            'age': entrant.description.age
+            'age': entrant.description.age,
+            'race': entrant.description.race
         }
     for role in entrant.roles:
         ref_data['roles'][role.name] = []
@@ -76,7 +77,8 @@ def json_for_browse():
             'sex': '',
             'origin': '',
             'vocation': '',
-            'age': ''
+            'age': '',
+            'race': ''
         }
         data['status'] = 'enslaved'
         first_date = datetime.datetime(year=2018,day=1,month=1)
@@ -105,6 +107,8 @@ def json_for_browse():
                         if new_desc['vocation'] else ex_desc['vocation']
                     ex_desc['age'] = new_desc['age'] \
                         if new_desc['age'] else ex_desc['age']
+                    ex_desc['race'] = new_desc['race'] \
+                        if new_desc['race'] else ex_desc['race']
         data['date'] = {
             'year': first_date.year,
             'month': first_date.month,
