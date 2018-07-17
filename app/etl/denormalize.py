@@ -74,9 +74,7 @@ def json_for_browse():
         data['first_name'] = p.first_name
         data['last_name'] = p.last_name
         if data['first_name'] == '' and data['last_name'] == '':
-            print(data)
             data['first_name'] = 'unrecorded'
-            print(data['first_name'])
         data['documents'] = collections.defaultdict(list)
         data['description'] = {
             'tribe': '',
