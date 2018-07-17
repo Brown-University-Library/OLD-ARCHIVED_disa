@@ -95,14 +95,57 @@ function formatDate(someDate) {
     return [year, month, day].join("-");
 }
 
+var formatRoleData = function (roleName, roleObjs) {
+    if (roleObjs.length !== 0) {
+        var role_str;
+        var objs_str = roleObjs.join(', ');
+        var of_list = ['child', 'parent', 'manservant',
+            'maidservant', 'manslave', 'servant', 'owner',
+            'pieza'];
+        if (of_list.indexOf(roleName) > -1 ){
+            role_str = roleName + ' of ';
+        }
+        else if (roleName === 'enslaved') {
+            role_str = 'enslaved by ';
+        } else if (roleName === 'indentured servant') {
+            role_str = 'indentured to ';
+        } else {
+            role_str = roleName + ": ";
+        }
+        return role_str + objs_str;
+    } else {
+        return roleName;
+    }
+}
+
+var iterateRoles = function (rolesData) {
+    var lis = [];
+    for (var role in rolesData) {
+        lis.push(create(
+            "li", formatRoleData(role, rolesData[role]),
+            {style: "list-style: none;"}
+        ));
+    }
+    return lis;
+}
+
 var iterateDocumentInfo = function (docArray) {
  out = [];
  for (var cite in docArray) {
-     var doc = docArray[cite][0]
-     out.push(create("h3", "Document"));
-     out.push(create("p", cite));
-     out.push(create("p", doc.locations.join(', ') + "  " + formatDate(doc.date)));
-     out.push(create("p", doc.comments ) );
+    var doc = docArray[cite][0]
+    out.push(create("h3", cite, {style: "margin-bottom: 3px;"}));
+    out.push(create("ul",
+            iterateRoles(doc.roles).concat([
+            create("li", [
+            create("span", doc.locations.join(', ')), 
+            create("span", formatDate(doc.date),
+                {style:"margin-left: 20px;"})
+            ],
+            {style: "list-style: none;"})
+        ]),
+        {style: "margin-top: 0px;"}
+    ));
+    out.push(create("p", doc.comments ) );
  }
  return out;
 }
@@ -110,16 +153,8 @@ var iterateDocumentInfo = function (docArray) {
 function expandInformation(index) {
     var person = raw_data[index];
     showDialog(create("div", [
-    create("h2", person.first_name + " " + person.last_name, 
+    create("h2", (person.first_name + " " + person.last_name).trim(), 
             {style: "margin-top: 0px;"})
-     // create("h3", "Document"),
-     // create("p", item.document.citation),
-     // create("p", item.document.stringLocation + ", " + 
-     //             item.document.nationalContext + " " + 
-     //          item.document.colonyState + " - " + 
-     //          formatDate(item.document.date)),
-     // create("h3", "Notes"),
-     // create("p", item.comments)
     ].concat(iterateDocumentInfo(person.documents))));
 }
 
@@ -231,7 +266,7 @@ $.get("static/data/denormalized.json", (some_data, status) => {
              persNumber: String(i),
              id: rec.id,
              date: formatDate(rec.date),
-             name: rec.first_name + " " + rec.last_name,
+             name: (rec.first_name + " " + rec.last_name).trim(),
              race: rec.description.race,
              origin: rec.description.origin,
              tribe: formatTribe(rec.description.tribe),

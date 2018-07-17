@@ -37,6 +37,8 @@ def process_reference(entrant):
         if obj is None:
             continue
         other = "{} {}".format(obj.first_name, obj.last_name).strip()
+        if other == '':
+            other = 'unrecorded'
         ref_data['roles'][role].append(other)
     ref_data['roles'] = dict(ref_data['roles'])
     return ref_data
@@ -71,6 +73,10 @@ def json_for_browse():
         data['id'] = p.id
         data['first_name'] = p.first_name
         data['last_name'] = p.last_name
+        if data['first_name'] == '' and data['last_name'] == '':
+            print(data)
+            data['first_name'] = 'unrecorded'
+            print(data['first_name'])
         data['documents'] = collections.defaultdict(list)
         data['description'] = {
             'tribe': '',
