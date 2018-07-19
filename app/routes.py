@@ -66,6 +66,21 @@ def edit_document(docId=None):
     doc = models.Document.query.get(docId)
     return render_template('document_edit.html', doc=doc)
 
+@app.route('/editor/records')
+@app.route('/editor/records/<recId>')
+@login_required
+def edit_record(recId=None):
+    locs = [ { 'value': loc.id, 'label': loc.name }
+        for loc in models.Location.query.all()]
+    if not recId:
+        doc_id = request.args.get('doc')
+        doc = models.Document.query.get(doc_id)
+        return render_template(
+            'record_edit.html', rec=None, doc=doc, locs=locs)
+    rec = models.Record.query.get(recId)
+    return render_template(
+        'record_edit.html', rec=rec, doc=rec.document, locs=locs)
+
 @app.route('/data/documents/', methods=['GET'])
 @app.route('/data/documents/<docId>', methods=['GET'])
 def read_document_data(docId=None):
