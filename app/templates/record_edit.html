@@ -27,11 +27,11 @@
                 </div>
                 <ul class="list-inline" id="locations">
                     {% for location in rec.locations %}
-                        <li class="record_location list-inline-item">{{ location.location.name }}</li>
+                        <li class="record_location list-inline-item">{{ location.location.name }} <button>
+                                <span class="fas fa-times-circle"></span>
+                            </button></li>
                         <li class="list-inline-item">
-                            <button>
-                                <span class="glyphicon glyphicon-remove"></span>
-                            </button>
+                            
                         </li>
                     {% endfor %}
                 </ul>
