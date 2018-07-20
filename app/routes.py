@@ -169,4 +169,6 @@ def read_record_data(recId=None):
             for l in rec.locations ]    
     data['rec']['comments'] = rec.comments
     data['rec']['record_type_id'] = rec.record_type_id
+    data['rec']['header'] = '{} {}'.format(
+        rec.record_type.name, rec.citation or '').strip()
     return jsonify(data)

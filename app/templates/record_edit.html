@@ -21,8 +21,9 @@
 
 {% block content %}
 <div class="container">
+    <h2 id="doc_header">{{ doc.citation }}</h2>
     <div id="record_form">
-        <h2 id="record_header">{{ doc.citation }}</h2>
+        <h2 id="record_header"></h2>
         <form action="" method="">
             <div class="form-group row">
                 <label for="record_type">Type</label> 
@@ -121,7 +122,7 @@ var removeLocation = function (locId) {
     var $loc_list, $loc, $nxt_to_last;
 
     $loc_list = $('#locations');
-    $loc = $loc_list.find(`li[data-loc-id='${locId}']`);
+    $loc = $loc_list.find(`li[data-loc-id='${locId}']`).last();
     if ($loc.siblings().length > 0) {
         if ( $loc.is(':last-child') ) {
             $nxt_to_last = $loc.prev();
@@ -134,7 +135,7 @@ var removeLocation = function (locId) {
 var updateLocationsList = function ($locList, locsArray) {
     for ( var i=0; i < locsArray.length-1; i++ ) {
         var loc_data = locsArray[i];
-        $locList = addLocation($locList, loc_data)
+        $locList = addLocation($locList, loc_data, true)
     }
 }
 
@@ -170,18 +171,23 @@ var addTypeOptions = function(opts) {
     }
 }
 
-var setFormHeader = function (docData) {
-    var header = $('#document_header');
-    if ( $.isEmptyObject(docData) ) {
-        header.text('Create new document');
-        $('#doc_update').text('Create');
+var setFormHeader = function (recData) {
+    var header, header_txt = '';
+
+    header = $('#record_header');
+    if ( $.isEmptyObject(recData) ) {
+        header.text('Add new item');
+        $('#rec_update').text('Create');
     } else {
-        header.text(docData['citation']);
+        if (recData['citation'] !== '') {
+            header_txt = recData['citation'] + ' ';
+        }
+        header.text(recData['header']);
     }
 }
 
 var initializeForm = function (data) {
-    // setFormHeader(data['rec']);
+    setFormHeader(data['rec']);
     addTypeOptions(data['rec_types']);
     setInputValues(data['rec']);    
 }
@@ -220,9 +226,16 @@ $( document ).ready(function() {
         source: JSON.parse('{{ locs | tojson | safe}}'),
         minLength: 2,
         delay: 10,
-        autoFocus: true,
         select: function( event, ui ) {
+            event.preventDefault()
+            $("#location_autocomplete").val(ui.item.label)
             addLocation($('#locations'), ui.item, true);
+            $("#location_autocomplete").val('');
+            return false;
+        },
+        focus: function( event, ui ) {
+            event.preventDefault()
+            $("#location_autocomplete").val(ui.item.label)
             return false;
         }
     });
