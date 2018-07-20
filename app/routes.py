@@ -150,3 +150,23 @@ def update_document_data(docId):
     data['doc']['acknowledgements'] = doc.acknowledgements
     data['doc']['document_type_id'] = doc.document_type_id
     return jsonify(data)
+
+@app.route('/data/records/', methods=['GET'])
+@app.route('/data/records/<recId>', methods=['GET'])
+def read_record_data(recId=None):
+    data = { 'rec': {} }
+    data['rec_types'] = [ { 'id': rt.id, 'name': rt.name }
+        for rt in models.RecordType.query.all() ]
+    if recId == None:
+        return jsonify(data)
+    rec = models.Record.query.get(recId)
+    data['rec']['id'] = rec.id
+    data['rec']['date'] = '{}/{}/{}'.format(rec.date.month,
+        rec.date.day, rec.date.year)
+    data['rec']['citation'] = rec.citation
+    data['rec']['locations'] = [ 
+        { 'label':l.location.name, 'value': l.location.id }
+            for l in rec.locations ]    
+    data['rec']['comments'] = rec.comments
+    data['rec']['record_type_id'] = rec.record_type_id
+    return jsonify(data)
