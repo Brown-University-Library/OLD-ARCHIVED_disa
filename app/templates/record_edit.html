@@ -82,8 +82,8 @@ var makeLocation = function (locData) {
         $icon;
     $li = $('<li/>', { 
         'class': 'record_location list-inline-item',
-        'data-loc-id': locData.value });
-    $span = $('<span/>', { 'text' : locData.label });
+        'data-loc-id': locData.id });
+    $span = $('<span/>', { 'text' : locData.value });
     $button = $('<button/>', { 'class': 'location-btn' });
     $icon = $('<span/>', { 'class': 'fas fa-times-circle' });
 
@@ -226,16 +226,23 @@ $( document ).ready(function() {
         source: JSON.parse('{{ locs | tojson | safe}}'),
         minLength: 2,
         delay: 10,
+        autoFocus: true,
+        response: function (event, ui) {
+
+            if (ui.content.length == 0) {
+                ui.content.push({
+                    label: $(this).val(),
+                    value: $(this).val(),
+                    id: 0
+                });
+            }
+        },
+        // https://stackoverflow.com/questions/14942379/jquery-ui-autocomplete-how-to-allow-free-text
         select: function( event, ui ) {
             event.preventDefault()
-            $("#location_autocomplete").val(ui.item.label)
+            $("#location_autocomplete").val(ui.item.value)
             addLocation($('#locations'), ui.item, true);
             $("#location_autocomplete").val('');
-            return false;
-        },
-        focus: function( event, ui ) {
-            event.preventDefault()
-            $("#location_autocomplete").val(ui.item.label)
             return false;
         }
     });

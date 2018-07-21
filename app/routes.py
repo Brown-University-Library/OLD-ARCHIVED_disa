@@ -70,7 +70,7 @@ def edit_document(docId=None):
 @app.route('/editor/records/<recId>')
 @login_required
 def edit_record(recId=None):
-    locs = [ { 'value': loc.id, 'label': loc.name }
+    locs = [ { 'id': loc.id, 'value': loc.name,'label': loc.name }
         for loc in models.Location.query.all()]
     if not recId:
         doc_id = request.args.get('doc')
@@ -165,8 +165,8 @@ def read_record_data(recId=None):
         rec.date.day, rec.date.year)
     data['rec']['citation'] = rec.citation
     data['rec']['locations'] = [ 
-        { 'label':l.location.name, 'value': l.location.id }
-            for l in rec.locations ]    
+        { 'label':l.location.name, 'value':l.location.name,
+            'id': l.location.id } for l in rec.locations ]
     data['rec']['comments'] = rec.comments
     data['rec']['record_type_id'] = rec.record_type_id
     data['rec']['header'] = '{} {}'.format(
