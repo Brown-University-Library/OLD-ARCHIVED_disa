@@ -27,7 +27,7 @@
         <form action="" method="">
             <div class="form-group row">
                 <label for="recordtype_autocomplete">Type</label> 
-                <input class="form-control" type="text" id="recordtype_autocomplete"/>
+                <input class="form-control" data-rectype-id="" type="text" id="recordtype_autocomplete"/>
             </div>
             <div class="form-group">
                 <div class="row">
@@ -71,6 +71,11 @@
 {% block scripts%}
 {{ super() }}
 <script>
+var getDocumentId = function () {
+    var doc_id = "{{ doc.id or '' }}";
+    return doc_id;
+}
+
 var getRecId = function () {
     var rec_id = "{{ rec.id or '' }}";
     return rec_id;
@@ -82,7 +87,8 @@ var makeLocation = function (locData) {
     $li = $('<li/>', { 
         'class': 'record_location list-inline-item',
         'data-loc-id': locData.id });
-    $span = $('<span/>', { 'text' : locData.value });
+    $span = $('<span/>', { 'text' : locData.value,
+                        'class': 'loc-name' });
     $button = $('<button/>', { 'class': 'location-btn' });
     $icon = $('<span/>', { 'class': 'fas fa-times-circle' });
 
@@ -132,7 +138,8 @@ var removeLocation = function (locId) {
 }
 
 var updateLocationsList = function ($locList, locsArray) {
-    for ( var i=0; i < locsArray.length-1; i++ ) {
+    $locList.empty();
+    for ( var i=0; i < locsArray.length; i++ ) {
         var loc_data = locsArray[i];
         $locList = addLocation($locList, loc_data, true)
     }
@@ -159,13 +166,31 @@ var updateRecordType = function ($input, data) {
     }
 }
 
-var collectInputValues = function() {
+var collectLocations = function() {
+    var locArray = [];
+    $("#locations").children().each( function( idx ) {
+        var locData = {}
+        locData['id'] = Number( $(this).attr('data-loc-id') );
+        var loc_name = $(this).find('.loc-name').text()
+        locData['label'] = loc_name;
+        locData['value'] = loc_name;
+        locArray.push(locData);
+    });
+    return locArray;
+}
+
+var collectInputValues = function(docId) {
     var data = {};
     data['citation'] = $('#citation').val();
-    data['zotero_id'] = $('#zotero').val();
-    data['document_type_id'] = Number($('#document_type').val());
-    data['date'] = $('#document_date').val();
-    data['acknowledgements'] = $('#acknowledgements').val();
+    data['comments'] = $('#comments').val();
+    data['record_type'] =  { 
+        'id': Number( $('#recordtype_autocomplete').attr('data-rectype-id') ),
+        'value': $('#recordtype_autocomplete').val(),
+        'label': $('#recordtype_autocomplete').val()
+    }
+    data['locations'] = collectLocations();
+    data['date'] = $('#record_date').val();
+    data['document_id'] = Number(docId);
     return data;
 }
 
@@ -208,9 +233,9 @@ var readRecordData = function(recId) {
     });
 }
 
-var updateRecordData = function(recId) {
-    var rec_data_api = "{{ url_for('update_document_data', recId=None )}}" + recId;
-    var data = collectInputValues();
+var updateRecordData = function(recId, docId) {
+    var rec_data_api = "{{ url_for('update_record_data', recId=None )}}" + recId;
+    var data = collectInputValues(docId);
     var method = (recId ? "PUT" : "POST");
     $.ajax({
         type: method,
@@ -229,6 +254,8 @@ var updateRecordData = function(recId) {
 }
 
 $( document ).ready(function() {
+    var doc_id = getDocumentId();
+    console.log(doc_id);
     var rec_id = getRecId();
     $('#recordtype_autocomplete').autocomplete({
         source: JSON.parse('{{ rec_types | tojson | safe}}'),
@@ -241,7 +268,7 @@ $( document ).ready(function() {
                 ui.content.push({
                     label: $(this).val(),
                     value: $(this).val(),
-                    id: 0
+                    id: -1
                 });
             }
         },
@@ -260,7 +287,7 @@ $( document ).ready(function() {
                 ui.content.push({
                     label: $(this).val(),
                     value: $(this).val(),
-                    id: 0
+                    id: -1
                 });
             }
         },
@@ -286,7 +313,7 @@ $( document ).ready(function() {
     });
     $( "#rec_update" ).on('click', function(e) {
           e.preventDefault();
-         updateRecordData(rec_id);
+         updateRecordData(rec_id, doc_id);
     });
     readRecordData(rec_id);
 });

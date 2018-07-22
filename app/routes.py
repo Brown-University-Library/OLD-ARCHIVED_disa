@@ -175,3 +175,91 @@ def read_record_data(recId=None):
     data['rec']['header'] = '{} {}'.format(
         rec.record_type.name, rec.citation or '').strip()
     return jsonify(data)
+
+
+def get_or_create_type(typeData, typeModel):
+    if typeData['id'] == -1:
+        new_type = typeModel(name=typeData['value'])
+        db.session.add(new_type)
+        db.session.commit()
+        return new_type
+    elif typeData == '':
+        unspec = typeModel.query.filter_by(name='unspecified').first()
+        return unspec
+    else:
+        existing = typeModel.query.get(typeData['id'])
+        return existing
+
+def process_record_locations(locData, recObj):
+    locations = []
+    for loc in locData:
+        if loc['id'] == -1:
+            location = models.Location(name=loc['value'])
+            db.session.add(location)
+            db.session.commit()
+        else:
+            location = models.Location.query.get(loc['id'])
+        locations.append(location)
+    for loc in locations:
+        rec_loc = models.RecordLocation()
+        rec_loc.record = recObj
+        rec_loc.location = loc
+        rec_loc.location_rank = locations.index(loc)
+        db.session.add(rec_loc)
+    db.session.commit()
+    return recObj
+
+
+@app.route('/data/records/', methods=['POST'])
+def create_record():
+    data = request.get_json()
+    print(data['document_id'])
+    doc = models.Document.query.get(data['document_id'])
+    if data['date']:
+        date = datetime.datetime.strptime(data['date'], '%m/%d/%Y')
+    else:
+        date = doc.date
+    record_type = get_or_create_type(data['record_type'], models.RecordType)
+    rec = models.Record(citation=data['citation'],
+        comments=data['comments'], date=date, document_id=doc.id,
+        record_type_id=record_type.id)
+    db.session.add(rec)
+    db.session.commit()
+    rec = process_record_locations(data['locations'], rec)
+    return jsonify(
+        { 'redirect': url_for('edit_record', recId=rec.id) })
+
+@app.route('/data/records/', methods=['PUT'])
+@app.route('/data/records/<recId>', methods=['PUT'])
+def update_record_data(recId):
+    data = request.get_json()
+    if recId is None:
+        return jsonify({})
+    rec = models.Record.query.get(recId)
+    rec.locations = []
+    db.session.commit()
+    rec = process_record_locations(data['locations'], rec)
+    if data['date']:
+        date = datetime.datetime.strptime(data['date'], '%m/%d/%Y')
+    else:
+        date = doc.date
+    record_type = get_or_create_type(data['record_type'], models.RecordType)
+    rec.citation = data['citation']
+    rec.comments = data['comments']
+    rec.date = date
+    rec.record_type_id = record_type.id
+    db.session.add(rec)
+    db.session.commit()
+
+    data = { 'rec': {} }
+    data['rec']['id'] = rec.id
+    data['rec']['date'] = '{}/{}/{}'.format(rec.date.month,
+        rec.date.day, rec.date.year)
+    data['rec']['citation'] = rec.citation
+    data['rec']['comments'] = rec.comments
+    data['rec']['locations'] = [ 
+        { 'label':l.location.name, 'value':l.location.name,
+            'id': l.location.id } for l in rec.locations ]
+    data['rec']['record_type'] = {'label': rec.record_type.name,
+        'value': rec.record_type.name, 'id':rec.record_type.id }
+    return jsonify(data)
