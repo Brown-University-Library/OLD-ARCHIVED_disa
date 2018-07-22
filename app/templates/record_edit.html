@@ -26,9 +26,8 @@
         <h2 id="record_header"></h2>
         <form action="" method="">
             <div class="form-group row">
-                <label for="record_type">Type</label> 
-                <select class="form-control" id="record_type">
-                </select>
+                <label for="recordtype_autocomplete">Type</label> 
+                <input class="form-control" type="text" id="recordtype_autocomplete"/>
             </div>
             <div class="form-group">
                 <div class="row">
@@ -143,11 +142,21 @@ var setInputValues = function(recData) {
     if ( $.isEmptyObject(recData) ) {
         return;
     }
-    $('#citation').text(recData['citation']);
-    $('#record_type').val(recData['record_type_id']).attr('selected', true);
+    $('#citation').text(recData['citation']);;
     $('#record_date').val(recData['date']);
     $('#comments').text(recData['comments']);
     updateLocationsList($('#locations'), recData['locations']);
+    updateRecordType($('#recordtype_autocomplete'), recData['record_type']);
+}
+
+var updateRecordType = function ($input, data) {
+    if ( $.isEmptyObject(data) ) {
+        $input.attr('data-rectype-id', '');
+        $input.val = '';
+    } else {
+        $input.attr('data-rectype-id', data.id);
+        $input.val(data.value);
+    }
 }
 
 var collectInputValues = function() {
@@ -188,12 +197,12 @@ var setFormHeader = function (recData) {
 
 var initializeForm = function (data) {
     setFormHeader(data['rec']);
-    addTypeOptions(data['rec_types']);
     setInputValues(data['rec']);    
 }
 
 var readRecordData = function(recId) {
     var rec_data_api = "{{ url_for('read_record_data', recId=None ) }}" + recId;
+    var out = null;
     $.get(rec_data_api, function(data) {
         initializeForm(data);
     });
@@ -221,7 +230,25 @@ var updateRecordData = function(recId) {
 
 $( document ).ready(function() {
     var rec_id = getRecId();
-    readRecordData(rec_id);
+    $('#recordtype_autocomplete').autocomplete({
+        source: JSON.parse('{{ rec_types | tojson | safe}}'),
+        minLength: 0,
+        delay: 5,
+        autoFocus: true,
+        response: function (event, ui) {
+
+            if (ui.content.length == 0) {
+                ui.content.push({
+                    label: $(this).val(),
+                    value: $(this).val(),
+                    id: 0
+                });
+            }
+        },
+        select: function (event, ui) {
+            updateRecordType($('#recordtype_autocomplete'), ui.item);
+        }
+    });
     $('#location_autocomplete').autocomplete({
         source: JSON.parse('{{ locs | tojson | safe}}'),
         minLength: 2,
@@ -261,6 +288,7 @@ $( document ).ready(function() {
           e.preventDefault();
          updateRecordData(rec_id);
     });
+    readRecordData(rec_id);
 });
 </script>
 {% endblock %}

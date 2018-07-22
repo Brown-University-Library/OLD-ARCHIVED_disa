@@ -72,14 +72,18 @@ def edit_document(docId=None):
 def edit_record(recId=None):
     locs = [ { 'id': loc.id, 'value': loc.name,'label': loc.name }
         for loc in models.Location.query.all()]
+    rec_types = [ { 'id': rt.id, 'value': rt.name, 'name': rt.name }
+        for rt in models.RecordType.query.all() ]
     if not recId:
         doc_id = request.args.get('doc')
         doc = models.Document.query.get(doc_id)
         return render_template(
-            'record_edit.html', rec=None, doc=doc, locs=locs)
+            'record_edit.html', rec=None, doc=doc,
+            rec_types=rec_types, locs=locs)
     rec = models.Record.query.get(recId)
     return render_template(
-        'record_edit.html', rec=rec, doc=rec.document, locs=locs)
+        'record_edit.html', rec=rec, doc=rec.document,
+            rec_types=rec_types, locs=locs)
 
 @app.route('/data/documents/', methods=['GET'])
 @app.route('/data/documents/<docId>', methods=['GET'])
@@ -155,8 +159,6 @@ def update_document_data(docId):
 @app.route('/data/records/<recId>', methods=['GET'])
 def read_record_data(recId=None):
     data = { 'rec': {} }
-    data['rec_types'] = [ { 'id': rt.id, 'name': rt.name }
-        for rt in models.RecordType.query.all() ]
     if recId == None:
         return jsonify(data)
     rec = models.Record.query.get(recId)
@@ -168,7 +170,8 @@ def read_record_data(recId=None):
         { 'label':l.location.name, 'value':l.location.name,
             'id': l.location.id } for l in rec.locations ]
     data['rec']['comments'] = rec.comments
-    data['rec']['record_type_id'] = rec.record_type_id
+    data['rec']['record_type'] = {'label': rec.record_type.name,
+        'value': rec.record_type.name, 'id':rec.record_type.id }
     data['rec']['header'] = '{} {}'.format(
         rec.record_type.name, rec.citation or '').strip()
     return jsonify(data)
