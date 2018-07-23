@@ -67,8 +67,11 @@ def merge_ref_roles(o,n):
 
 def json_for_browse():
     persons = models.Person.query.all()
+    owner_role = models.Role.query.get(192)
+    ensl = list({ p for p in persons
+        for r in p.references if owner_role not in r.roles })
     out = []
-    for p in persons:
+    for p in ensl:
         data = {}
         data['id'] = p.id
         data['first_name'] = p.first_name
