@@ -178,12 +178,13 @@ def read_record_data(recId=None):
 
 
 def get_or_create_type(typeData, typeModel):
+    print(typeData)
     if typeData['id'] == -1:
         new_type = typeModel(name=typeData['value'])
         db.session.add(new_type)
         db.session.commit()
         return new_type
-    elif typeData == '':
+    elif typeData == '' or typeData['id'] == 0:
         unspec = typeModel.query.filter_by(name='unspecified').first()
         return unspec
     else:

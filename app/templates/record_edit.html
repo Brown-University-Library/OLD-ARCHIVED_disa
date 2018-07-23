@@ -21,7 +21,14 @@
 
 {% block content %}
 <div class="container">
-    <h2 id="doc_header">{{ doc.citation }}</h2>
+    <div class="row">
+        <div class='col-md-11'>
+            <h2 id="doc_header">{{ doc.citation }}</h2>
+        </div>
+        <div class='col-md-1'>
+            <a href="{{ url_for('edit_document', docId=doc.id)}}">Back</a>
+        </div>
+    </div>
     <div id="record_form">
         <h2 id="record_header"></h2>
         <form action="" method="">
@@ -59,7 +66,9 @@
         {% for ent in rec.entrants %}
             <li>{{ ent.first_name }} {{ent.last_name}}</li>
         {% endfor %}
-        </ul>            
+        </ul>
+        {% else %}
+            <p>No individuals associated with this item</p>
         {% endif %}
         <div id="new_person_button" class="d-flex flex-row-reverse">
             <a class="btn btn-primary" href="">Add a person</a>
@@ -291,7 +300,6 @@ $( document ).ready(function() {
                 });
             }
         },
-        // https://stackoverflow.com/questions/14942379/jquery-ui-autocomplete-how-to-allow-free-text
         select: function( event, ui ) {
             event.preventDefault()
             $("#location_autocomplete").val(ui.item.value)
