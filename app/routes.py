@@ -85,6 +85,19 @@ def edit_record(recId=None):
         'record_edit.html', rec=rec, doc=rec.document,
             rec_types=rec_types, locs=locs)
 
+@app.route('/editor/person')
+@app.route('/editor/person/<entId>')
+@login_required
+def edit_entrant(entId=None):
+    if not entId:
+        rec_id = request.args.get('rec')
+        rec = models.Record.query.get(rec_id)
+        return render_template(
+            'entrant_edit.html', rec=rec, ent=None)
+    ent = models.Entrant.query.get(entId)
+    return render_template(
+        'entrant_edit.html', rec=ent.record, ent=ent)
+
 @app.route('/data/documents/', methods=['GET'])
 @app.route('/data/documents/<docId>', methods=['GET'])
 def read_document_data(docId=None):
