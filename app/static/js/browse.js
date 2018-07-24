@@ -243,7 +243,7 @@ var columns = [
   width: 300,
   sortable: true},
  {id: "transcription",
-  name: "Transcription",
+  name: "Notes",
   field: "transcription",
   width: 300,
   sortable: true}
