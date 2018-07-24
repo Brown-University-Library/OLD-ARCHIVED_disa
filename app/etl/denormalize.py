@@ -85,9 +85,12 @@ def json_for_browse():
             'origin': '',
             'vocation': '',
             'age': '',
-            'race': ''
+            'race': '',
+            'title': ''
         }
         data['status'] = 'enslaved'
+        data['owner'] = ''
+        data['transcription'] = ''
         first_date = datetime.datetime(year=2018,day=1,month=1)
         for ref in p.references:
             citation = ref.record.document.citation
@@ -99,8 +102,6 @@ def json_for_browse():
             data['documents'][citation] = merge_ref_data(
                 existing_ref_data, new_ref_data)
             for d in data['documents'][citation]:
-                if 'owner' in d['roles']:
-                    data['status'] = 'owner'
                 if d.get('description'):
                     ex_desc = data['description']
                     new_desc = d['description']
@@ -116,6 +117,12 @@ def json_for_browse():
                         if new_desc['age'] else ex_desc['age']
                     ex_desc['race'] = new_desc['race'] \
                         if new_desc['race'] else ex_desc['race']
+            for ref in data['documents'][citation]:
+                if 'enslaved' in ref['roles']:
+                    if len(ref['roles']['enslaved']) > 0:
+                        data['owner'] = ref['roles']['enslaved'][0]
+            for ref in data['documents'][citation]:
+                data['comments'] = ref['comments']
         data['date'] = {
             'year': first_date.year,
             'month': first_date.month,
