@@ -106,7 +106,7 @@ var formatRoleData = function (roleName, roleObjs) {
             role_str = roleName + ' of ';
         }
         else if (roleName === 'enslaved') {
-            role_str = 'enslaved by ';
+            role_str = 'owned by ';
         } else if (roleName === 'indentured servant') {
             role_str = 'indentured to ';
         } else {
@@ -212,10 +212,10 @@ var columns = [
   field: "sex",
   width: 100,
   sortable: true},
- {id: "status",
-  name: "Status",
-  field: "status",
-  width: 125,
+ {id: "age",
+  name: "Age",
+  field: "age",
+  width: 100,
   sortable: true},
  {id: "race",
   name: "Race",
@@ -231,11 +231,21 @@ var columns = [
   name: "Origin",
   field: "origin",
   width: 180,
-  sortable: true},   
+  sortable: true},
  {id: "vocation",
   name: "Vocation",
   field: "vocation",
   width: 180,
+  sortable: true},
+ {id: "owner",
+  name: "Owner",
+  field: "owner",
+  width: 300,
+  sortable: true},
+ {id: "transcription",
+  name: "Notes",
+  field: "transcription",
+  width: 300,
   sortable: true}
 ];
 var columnFilters = {};
@@ -266,13 +276,15 @@ $.get("static/data/denormalized.json", (some_data, status) => {
              persNumber: String(i),
              id: rec.id,
              date: formatDate(rec.date),
+             age: rec.description.age,
              name: (rec.first_name + " " + rec.last_name).trim(),
              race: rec.description.race,
              origin: rec.description.origin,
              tribe: formatTribe(rec.description.tribe),
              sex: rec.description.sex,
              vocation: rec.description.vocation,
-             status: rec.status
+             owner: rec.owner,
+             transcription: rec.comments
          });
      }
     dataView = new Slick.Data.DataView();
