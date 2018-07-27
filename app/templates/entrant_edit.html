@@ -7,11 +7,11 @@
     font-size: 150%;
 }
 
-#locations {
+#descriptors {
     margin-top: 5px;
 }
 
-.location-btn {
+.role-btn {
     background-color: Transparent;
     border: none;
 }
@@ -109,6 +109,40 @@
 {% block scripts%}
 {{ super() }}
 <script>
+var addDescriptor = function ($descList, descData) {
+    $new_role = makeRole(descData);
+    $descList.append($new_role);
+    return $descList;
+}
+
+var removeDescriptor = function (descId) {
+    var $desc_list, $desc;
+
+    $desc_list = $('#descriptors');
+    $desc = $desc_list.find(`li[data-role-id='${descId}']`).last();
+    $desc.remove();
+}
+
+var makeRole = function (data) {
+    var $li, $span, $button,
+        $icon;
+    $li = $('<li/>', { 
+        'class': 'entrant_role list-inline-item',
+        'data-role-id': data.id });
+    $span = $('<span/>', { 'text' : data.value,
+                        'class': 'role-name' });
+    $button = $('<button/>', { 'class': 'role-btn' });
+    $icon = $('<span/>', { 'class': 'fas fa-times-circle' });
+
+    $button.append($icon);
+    $button.on('click', function(e) {
+        e.preventDefault();
+        removeDescriptor($li.attr('data-role-id'));
+    })
+
+    $li.append($span).append($button);
+    return $li;
+}
 $( document ).ready(function() {
     $( "#entrant_description" ).accordion({
         collapsible: true,
