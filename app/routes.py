@@ -89,14 +89,16 @@ def edit_record(recId=None):
 @app.route('/editor/person/<entId>')
 @login_required
 def edit_entrant(entId=None):
+    roles = [ { 'id': role.id, 'value': role.name, 'label': role.name }
+        for role in models.Role.query.all()]
     if not entId:
         rec_id = request.args.get('rec')
         rec = models.Record.query.get(rec_id)
         return render_template(
-            'entrant_edit.html', rec=rec, ent=None)
+            'entrant_edit.html', roles=roles, rec=rec, ent=None)
     ent = models.Entrant.query.get(entId)
     return render_template(
-        'entrant_edit.html', rec=ent.record, ent=ent)
+        'entrant_edit.html', roles=roles, rec=ent.record, ent=ent)
 
 @app.route('/data/documents/', methods=['GET'])
 @app.route('/data/documents/<docId>', methods=['GET'])
