@@ -13,6 +13,7 @@ def load_data(datafile):
 
     parent_role = filter_collection('parent', roles)
     child_role = filter_collection('child', roles)
+    spouse_role = filter_collection('spouse', roles)
     owner_role = filter_collection('owner', roles)
     enslaved_role = filter_collection('enslaved', roles)
     
@@ -82,6 +83,13 @@ def load_data(datafile):
             ers = process_entrant_relationship(
                 father, person, parent_role, child_role)
             entrants.append(father)
+            relationships.extend(ers)
+
+        if mother and father:
+            father.roles.extend([ spouse_role ])
+            mother.roles.extend([ spouse_role ])
+            ers = process_entrant_relationship(
+                father, mother, spouse_role, spouse_role)
             relationships.extend(ers)
         
         children = [ process_child(child)
