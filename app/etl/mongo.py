@@ -13,6 +13,8 @@ def load_data(datafile):
 
     parent_role = filter_collection('parent', roles)
     child_role = filter_collection('child', roles)
+    mother_role = filter_collection('mother', roles)
+    father_role = filter_collection('father', roles)
     spouse_role = filter_collection('spouse', roles)
     owner_role = filter_collection('owner', roles)
     enslaved_role = filter_collection('enslaved', roles)
@@ -67,10 +69,10 @@ def load_data(datafile):
         if mother:
             role = process_enslavement_type(
                 mongo_dict['person']['mother']['status'], roles)
-            mother.roles.extend([ role, parent_role ])
+            mother.roles.extend([ role, parent_role, mother_role ])
             person.roles.append(child_role)
             ers = process_entrant_relationship(
-                mother, person, parent_role, child_role)
+                mother, person, mother_role, child_role)
             entrants.append(mother)
             relationships.extend(ers)
 
@@ -78,10 +80,10 @@ def load_data(datafile):
         if father:
             role = process_enslavement_type(
                 mongo_dict['person']['father']['status'], roles)
-            father.roles.extend([ role, parent_role ])
+            father.roles.extend([ role, parent_role, father_role ])
             person.roles.append(child_role)
             ers = process_entrant_relationship(
-                father, person, parent_role, child_role)
+                father, person, father_role, child_role)
             entrants.append(father)
             relationships.extend(ers)
 
