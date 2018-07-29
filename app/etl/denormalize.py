@@ -90,6 +90,9 @@ def json_for_browse():
         }
         data['status'] = 'enslaved'
         data['owner'] = ''
+        data['mother'] = ''
+        data['father'] = ''
+        data['spouse'] = ''
         data['transcription'] = ''
         first_date = datetime.datetime(year=2018,day=1,month=1)
         for ref in p.references:
@@ -121,6 +124,15 @@ def json_for_browse():
                 if 'enslaved' in ref['roles']:
                     if len(ref['roles']['enslaved']) > 0:
                         data['owner'] = ref['roles']['enslaved'][0]
+                if 'mother' in ref['roles']:
+                    if len(ref['roles']['mother']) > 0:
+                        data['mother'] = ref['roles']['mother'][0]
+                if 'father' in ref['roles']:
+                    if len(ref['roles']['father']) > 0:
+                        data['father'] = ref['roles']['father'][0]
+                if 'spouse' in ref['roles']:
+                    if len(ref['roles']['spouse']) > 0:
+                        data['spouse'] = ref['roles']['spouse'][0]
             for ref in data['documents'][citation]:
                 data['comments'] = ref['comments']
         data['date'] = {
