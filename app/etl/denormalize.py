@@ -31,11 +31,18 @@ def process_reference(entrant):
         ref_data['roles'][role.name] = []
     ers = entrant.as_subject
     for er in ers:
-        role = er.related_as.name
         obj = er.obj
         # There is a data anomaly, likely due to merge
         if obj is None:
             continue
+
+        role = er.related_as.name
+        if role == 'child':
+            invs = models.EntrantRelationship.query.filter_by(
+                subject_id=obj.id, object_id=entrant.id).all()
+            inv = [ i for i in invs if i.related_as.name in {'mother', 'father'}]
+            if len(inv) > 0:
+                role = 'has_' + inv[0].related_as.name
         other = "{} {}".format(obj.first_name, obj.last_name).strip()
         if other == '':
             other = 'unrecorded'
@@ -90,8 +97,8 @@ def json_for_browse():
         }
         data['status'] = 'enslaved'
         data['owner'] = ''
-        data['mother'] = ''
-        data['father'] = ''
+        data['has_mother'] = ''
+        data['has_father'] = ''
         data['spouse'] = ''
         data['transcription'] = ''
         first_date = datetime.datetime(year=2018,day=1,month=1)
@@ -124,12 +131,12 @@ def json_for_browse():
                 if 'enslaved' in ref['roles']:
                     if len(ref['roles']['enslaved']) > 0:
                         data['owner'] = ref['roles']['enslaved'][0]
-                if 'mother' in ref['roles']:
-                    if len(ref['roles']['mother']) > 0:
-                        data['mother'] = ref['roles']['mother'][0]
-                if 'father' in ref['roles']:
-                    if len(ref['roles']['father']) > 0:
-                        data['father'] = ref['roles']['father'][0]
+                if 'has_mother' in ref['roles']:
+                    if len(ref['roles']['has_mother']) > 0:
+                        data['has_mother'] = ref['roles']['has_mother'][0]
+                if 'has_father' in ref['roles']:
+                    if len(ref['roles']['has_father']) > 0:
+                        data['has_father'] = ref['roles']['has_father'][0]
                 if 'spouse' in ref['roles']:
                     if len(ref['roles']['spouse']) > 0:
                         data['spouse'] = ref['roles']['spouse'][0]

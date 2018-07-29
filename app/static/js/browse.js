@@ -101,7 +101,7 @@ var formatRoleData = function (roleName, roleObjs) {
         var objs_str = roleObjs.join(', ');
         var of_list = ['child', 'parent', 'manservant',
             'maidservant', 'manslave', 'servant', 'owner',
-            'pieza'];
+            'pieza', 'father', 'mother'];
         if (of_list.indexOf(roleName) > -1 ){
             role_str = roleName + ' of ';
         }
@@ -109,6 +109,10 @@ var formatRoleData = function (roleName, roleObjs) {
             role_str = 'owned by ';
         } else if (roleName === 'indentured servant') {
             role_str = 'indentured to ';
+        } else if (roleName === 'has_mother') {
+            role_str = 'child of ';
+        } else if (roleName === 'has_father') {
+            role_str = 'child of ';
         } else {
             role_str = roleName + ": ";
         }
@@ -242,6 +246,21 @@ var columns = [
   field: "owner",
   width: 300,
   sortable: true},
+ {id: "mother",
+  name: "Mother",
+  field: "mother",
+  width: 200,
+  sortable: true},
+ {id: "father",
+  name: "Father",
+  field: "father",
+  width: 200,
+  sortable: true},
+ {id: "spouse",
+  name: "Spouse",
+  field: "spouse",
+  width: 200,
+  sortable: true},
  {id: "transcription",
   name: "Notes",
   field: "transcription",
@@ -284,6 +303,9 @@ $.get("static/data/denormalized.json", (some_data, status) => {
              sex: rec.description.sex,
              vocation: rec.description.vocation,
              owner: rec.owner,
+             spouse: rec.spouse,
+             mother: rec.has_mother,
+             father: rec.has_father,
              transcription: rec.comments
          });
      }
