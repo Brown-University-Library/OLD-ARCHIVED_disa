@@ -48,6 +48,12 @@ def process_reference(entrant):
             other = 'unrecorded'
         ref_data['roles'][role].append(other)
     ref_data['roles'] = dict(ref_data['roles'])
+    if 'has_mother' in ref_data['roles'] or 'has_father' in ref_data['roles']:
+        if 'child' in ref_data['roles'] and ref_data['roles']['child']==[]:
+            del ref_data['roles']['child']
+    if 'mother' in ref_data['roles'] or 'father' in ref_data['roles']:
+        if 'parent' in ref_data['roles']:
+            del ref_data['roles']['parent']
     return ref_data
 
 def merge_ref_data(existingDataList, newData):
