@@ -31,16 +31,29 @@ def process_reference(entrant):
         ref_data['roles'][role.name] = []
     ers = entrant.as_subject
     for er in ers:
-        role = er.related_as.name
         obj = er.obj
         # There is a data anomaly, likely due to merge
         if obj is None:
             continue
+
+        role = er.related_as.name
+        if role == 'child':
+            invs = models.EntrantRelationship.query.filter_by(
+                subject_id=obj.id, object_id=entrant.id).all()
+            inv = [ i for i in invs if i.related_as.name in {'mother', 'father'}]
+            if len(inv) > 0:
+                role = 'has_' + inv[0].related_as.name
         other = "{} {}".format(obj.first_name, obj.last_name).strip()
         if other == '':
             other = 'unrecorded'
         ref_data['roles'][role].append(other)
     ref_data['roles'] = dict(ref_data['roles'])
+    if 'has_mother' in ref_data['roles'] or 'has_father' in ref_data['roles']:
+        if 'child' in ref_data['roles'] and ref_data['roles']['child']==[]:
+            del ref_data['roles']['child']
+    if 'mother' in ref_data['roles'] or 'father' in ref_data['roles']:
+        if 'parent' in ref_data['roles']:
+            del ref_data['roles']['parent']
     return ref_data
 
 def merge_ref_data(existingDataList, newData):
@@ -90,6 +103,9 @@ def json_for_browse():
         }
         data['status'] = 'enslaved'
         data['owner'] = ''
+        data['has_mother'] = ''
+        data['has_father'] = ''
+        data['spouse'] = ''
         data['transcription'] = ''
         first_date = datetime.datetime(year=2018,day=1,month=1)
         for ref in p.references:
@@ -121,6 +137,15 @@ def json_for_browse():
                 if 'enslaved' in ref['roles']:
                     if len(ref['roles']['enslaved']) > 0:
                         data['owner'] = ref['roles']['enslaved'][0]
+                if 'has_mother' in ref['roles']:
+                    if len(ref['roles']['has_mother']) > 0:
+                        data['has_mother'] = ref['roles']['has_mother'][0]
+                if 'has_father' in ref['roles']:
+                    if len(ref['roles']['has_father']) > 0:
+                        data['has_father'] = ref['roles']['has_father'][0]
+                if 'spouse' in ref['roles']:
+                    if len(ref['roles']['spouse']) > 0:
+                        data['spouse'] = ref['roles']['spouse'][0]
             for ref in data['documents'][citation]:
                 data['comments'] = ref['comments']
         data['date'] = {

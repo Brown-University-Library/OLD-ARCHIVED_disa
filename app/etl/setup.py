@@ -20,7 +20,9 @@ def load_multivalued_attributes():
         { 'name': 'servant' },
         { 'name': 'parent' },
         { 'name': 'spouse' },
-        { 'name': 'child' }
+        { 'name': 'child' },
+        { 'name': 'mother' },
+        { 'name': 'father' }
     ]
     record_types = [ 
         { 'name': 'runaway advertisement' },

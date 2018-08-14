@@ -13,6 +13,9 @@ def load_data(datafile):
 
     parent_role = filter_collection('parent', roles)
     child_role = filter_collection('child', roles)
+    mother_role = filter_collection('mother', roles)
+    father_role = filter_collection('father', roles)
+    spouse_role = filter_collection('spouse', roles)
     owner_role = filter_collection('owner', roles)
     enslaved_role = filter_collection('enslaved', roles)
     
@@ -62,25 +65,27 @@ def load_data(datafile):
         entrants = [ person ]
         relationships = []
         
-        mother = process_parent(mongo_dict['person']['mother'])
+        mother = process_parent(
+            mongo_dict['person']['mother'], mother=True)
         if mother:
             role = process_enslavement_type(
                 mongo_dict['person']['mother']['status'], roles)
-            mother.roles.extend([ role, parent_role ])
+            mother.roles.extend([ role, parent_role, mother_role ])
             person.roles.append(child_role)
             ers = process_entrant_relationship(
-                mother, person, parent_role, child_role)
+                mother, person, mother_role, child_role)
             entrants.append(mother)
             relationships.extend(ers)
 
-        father = process_parent(mongo_dict['person']['father'])
+        father = process_parent(
+            mongo_dict['person']['father'], father=True)
         if father:
             role = process_enslavement_type(
                 mongo_dict['person']['father']['status'], roles)
-            father.roles.extend([ role, parent_role ])
+            father.roles.extend([ role, parent_role, father_role ])
             person.roles.append(child_role)
             ers = process_entrant_relationship(
-                father, person, parent_role, child_role)
+                father, person, father_role, child_role)
             entrants.append(father)
             relationships.extend(ers)
         
@@ -88,10 +93,21 @@ def load_data(datafile):
             for child in mongo_dict['person']['children'] ]
         for child in children:
             child.roles.extend([ enslaved_role, child_role])
-            person.roles.append(parent_role)
-            ers = process_entrant_relationship(
-                person, child, parent_role, child_role)
-            relationships.extend(ers)
+            if person.description.sex == 'Male':
+                person.roles.extend([parent_role, father_role])
+                ers = process_entrant_relationship(
+                    person, child, father_role, child_role)
+                relationships.extend(ers)
+            elif person.description.sex == 'Female':
+                person.roles.extend([parent_role, mother_role])
+                ers = process_entrant_relationship(
+                    person, child, mother_role, child_role)
+                relationships.extend(ers)
+            else:
+                person.roles.append(parent_role)
+                ers = process_entrant_relationship(
+                    person, child, gendered, child_role)
+                relationships.extend(ers)
         entrants.extend(children)
         
         owner = process_owner(mongo_dict['owner'])
@@ -204,7 +220,7 @@ def process_person(personData):
     entrant.description = desc
     return entrant
 
-def process_parent(personData):
+def process_parent(personData, mother=False, father=False):
     empty_data = {
         'name': {
             'firstName': '',
@@ -224,10 +240,16 @@ def process_parent(personData):
    }
     if personData == {} or personData == empty_data:
         return None
+    if mother:
+        sex = 'Female'
+    elif father:
+        sex = 'Male'
+    else:
+        sex = None
     entrant = models.Entrant(first_name=personData['name']['firstName'].strip(),
         last_name=personData['name']['lastName'].strip())
     desc = models.Description(race=personData['race'],
-        origin=personData['origin'])
+        origin=personData['origin'], sex=sex)
     entrant.description = desc
     return entrant
 
