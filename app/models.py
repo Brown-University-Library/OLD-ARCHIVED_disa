@@ -9,6 +9,43 @@ has_role = db.Table('has_role',
     db.Column('role', db.Integer, db.ForeignKey('roles.id'))
 )
 
+has_title = db.Table('has_title',
+    db.Column('id', db.Integer, primary_key=True),
+    db.Column('entrant', db.Integer, db.ForeignKey('entrants.id')),
+    db.Column('title', db.Integer, db.ForeignKey('titles.id'))
+)
+
+has_vocation = db.Table('has_vocation',
+    db.Column('id', db.Integer, primary_key=True),
+    db.Column('entrant', db.Integer, db.ForeignKey('entrants.id')),
+    db.Column('vocation', db.Integer, db.ForeignKey('vocations.id'))
+)
+
+has_tribe = db.Table('has_tribe',
+    db.Column('id', db.Integer, primary_key=True),
+    db.Column('entrant', db.Integer, db.ForeignKey('entrants.id')),
+    db.Column('tribe', db.Integer, db.ForeignKey('tribes.id'))
+)
+
+has_race = db.Table('has_race',
+    db.Column('id', db.Integer, primary_key=True),
+    db.Column('entrant', db.Integer, db.ForeignKey('entrants.id')),
+    db.Column('race', db.Integer, db.ForeignKey('races.id'))
+)
+
+has_origin = db.Table('has_origin',
+    db.Column('id', db.Integer, primary_key=True),
+    db.Column('entrant', db.Integer, db.ForeignKey('entrants.id')),
+    db.Column('origin', db.Integer, db.ForeignKey('locations.id'))
+)
+
+enslaved_as = db.Table('enslaved_as',
+    db.Column('id', db.Integer, primary_key=True),
+    db.Column('entrant', db.Integer, db.ForeignKey('entrants.id')),
+    db.Column('enslavement', db.Integer,
+        db.ForeignKey('enslavement_types.id'))
+)
+
 recordtype_roles = db.Table('recordtype_roles',
     db.Column('id', db.Integer, primary_key=True),
     db.Column('record_type', db.Integer, db.ForeignKey('record_types.id')),
@@ -82,6 +119,8 @@ class Location(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
+    origin_for = db.relationship('Entrant',
+        secondary='has_origin', back_populates='origins')
 
     def __repr__(self):
         return '<Location {0}: {1}>'.format(self.id, self.name)
@@ -104,35 +143,70 @@ class Entrant(db.Model):
     __tablename__ = 'entrants'
 
     id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(255))
-    last_name = db.Column(db.String(255))
+    age = db.Column(db.String(255))
+    sex = db.Column(db.String(255))
     record_id = db.Column(db.Integer, db.ForeignKey('records.id'),
         nullable=False)
     person_id = db.Column(db.Integer, db.ForeignKey('people.id'),
         nullable=True)
     roles = db.relationship('Role',
         secondary='has_role', back_populates='entrants')
-    description = db.relationship('Description',
-        back_populates='entrant', uselist=False, passive_deletes=True)
+    tribes = db.relationship('Tribe',
+        secondary='has_tribe', back_populates='entrants')
+    races = db.relationship('Race',
+        secondary='has_race', back_populates='entrants')
+    titles = db.relationship('Title',
+        secondary='has_title', back_populates='entrants')
+    vocations = db.relationship('Vocation',
+        secondary='has_vocation', back_populates='entrants')
+    origins = db.relationship('Location',
+        secondary='has_origin', back_populates='origin_for')
+    enslavements = db.relationship('EnslavementType',
+        secondary='enslaved_as', back_populates='entrants')
 
     def __repr__(self):
         return '<Entrant {0}: {1} {2}>'.format(
             self.id, self.first_name, self.last_name)
 
-class Description(db.Model):
-    __tablename__ = 'entrant_description'
+class Title(db.Model):
+    __tablename__ = 'titles'
 
-    id = db.Column(db.Integer, primary_key=True)    
-    age = db.Column(db.String(255))
-    sex = db.Column(db.String(255))
-    title = db.Column(db.String(255))
-    race = db.Column(db.String(255))
-    tribe = db.Column(db.String(255))
-    origin = db.Column(db.String(255))
-    vocation = db.Column(db.String(255))
-    entrant_id = db.Column(db.Integer, db.ForeignKey('entrants.id', ondelete='CASCADE'),
-        nullable=False)
-    entrant = db.relationship('Entrant', back_populates='description')
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    entrants = db.relationship('Entrant',
+        secondary='has_title', back_populates='titles')
+
+class Tribe(db.Model):
+    __tablename__ = 'tribes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    entrants = db.relationship('Entrant',
+        secondary='has_tribe', back_populates='tribes')
+
+class Race(db.Model):
+    __tablename__ = 'races'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    entrants = db.relationship('Entrant',
+        secondary='has_race', back_populates='races')
+
+class Vocation(db.Model):
+    __tablename__ = 'vocations'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    entrants = db.relationship('Entrant',
+        secondary='has_vocation', back_populates='vocations')
+
+class EnslavementType(db.Model):
+    __tablename__ = 'enslavement_types'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    entrants = db.relationship('Entrant',
+        secondary='enslaved_as', back_populates='enslavements')
 
 class Role(db.Model):
     __tablename__ = 'roles'
@@ -144,6 +218,27 @@ class Role(db.Model):
     record_types = db.relationship(
         'RecordType', secondary=recordtype_roles,
         back_populates='roles')
+
+class NameType(db.Model):
+    __tablename__ = 'name_types'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+
+class EntrantName(db.Model):
+    __tablename__ = 'entrant_names'
+
+    id = db.Column(db.Integer, primary_key=True)
+    entrant_id = db.Column(db.Integer, db.ForeignKey('entrants.id'))
+    name_type_id = db.Column(db.Integer, db.ForeignKey('name_types.id'))
+    first = db.Column(db.String(255))
+    last = db.Column(db.String(255))
+    entrant = db.relationship(Entrant,
+        primaryjoin=(entrant_id == Entrant.id),
+        backref='names')
+    name_type = db.relationship(NameType,
+        primaryjoin=(name_type_id == NameType.id),
+        backref='entrants')
 
 class EntrantRelationship(db.Model):
     __tablename__ = 'entrant_relationships'
