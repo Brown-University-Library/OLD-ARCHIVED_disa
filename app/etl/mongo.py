@@ -1,6 +1,45 @@
 import json
+import re
 import datetime
 from app import db, models
+
+def titlecase(s):
+    return re.sub(
+        r"[A-Za-z\u00E1\u00ed]+('[A-Za-z\u00E1\u00ed]+)?",
+        lambda mo: mo.group(0)[0].upper() +
+        mo.group(0)[1:].lower(),
+        s)
+
+def clean_text(val):
+    skipwords = { 'and', 'of', 'de', 'y', 'la', 'del', 'the' }
+    stripped = val.strip()
+    titled = [ v if v in skipwords else titlecase(v)
+                for v in stripped.split() ]
+    cleaned = ' '.join(titled)
+    return cleaned
+
+def filter_collection(fltr, coll, mapped={}):
+    if mapped == {}:
+        filtered = [ c for c in coll if c.name == fltr ]
+    else:
+        filtered = [ c for c in coll if c.name == mapped[fltr] ]
+    if len(filtered) > 1:
+        raise
+    return filtered[0]
+
+def process_multivalued_attr(attrStr, collection, mapped={}, nulls=[]):
+    if attrStr.strip() in nulls:
+        return []
+    if attrStr.strip() in mapped:
+        attrStr = mapped[attrStr.strip()]
+    val = clean_text(attrStr)
+    try:
+        obj = filter_collection(val, collection)
+        return [ obj ]
+    except:
+        print(attrStr)
+        print(val)
+        print(mapped)
 
 def load_data(datafile):
     with open(datafile, 'r') as f:
@@ -10,21 +49,30 @@ def load_data(datafile):
     rec_types = models.RecordType.query.all()
     roles = models.Role.query.all()
     users = models.User.query.all()
+    tribes = models.Tribe.query.all()
+    races = models.Race.query.all()
+    vocations = models.Vocation.query.all()
+    enslavements = models.EnslavementType.query.all()
+    titles = models.Title.query.all()
+    locations = models.Location.query.all()
+    name_types = models.NameType.query.all()
 
-    parent_role = filter_collection('parent', roles)
-    child_role = filter_collection('child', roles)
-    mother_role = filter_collection('mother', roles)
-    father_role = filter_collection('father', roles)
-    spouse_role = filter_collection('spouse', roles)
-    owner_role = filter_collection('owner', roles)
-    enslaved_role = filter_collection('enslaved', roles)
+    parent_role = filter_collection('Parent', roles)
+    child_role = filter_collection('Child', roles)
+    mother_role = filter_collection('Mother', roles)
+    father_role = filter_collection('Father', roles)
+    owner_role = filter_collection('Owner', roles)
+    enslaved_role = filter_collection('Enslaved', roles)
+    buyer_role = filter_collection('Buyer', roles)
+    seller_role = filter_collection('Seller', roles)
     
     counter = 0
     for mongo_dict in data:
         print(counter)
         doc = process_document(mongo_dict['document'])
         doc.document_type = process_document_type(
-            mongo_dict['document']['sourceType'], doc_types)
+            mongo_dict['document']['sourceType'],
+            mongo_dict['document']['recordType'], doc_types)[0]
         db.session.add(doc)
         db.session.commit()
 
@@ -32,7 +80,8 @@ def load_data(datafile):
         rec.date = process_record_date(mongo_dict)
         rec.comments = mongo_dict['additionalInformation']
         rec.record_type = process_record_type(
-            mongo_dict['document']['recordType'], rec_types)
+            mongo_dict['document']['recordType'],
+            mongo_dict['document']['sourceType'], rec_types)[0]
         rec.document = doc
         db.session.add(rec)
         db.session.commit()
@@ -58,47 +107,50 @@ def load_data(datafile):
             db.session.add(rec_loc)
         db.session.commit()
 
-        person = process_person(mongo_dict['person'])
-        role = process_enslavement_type(
-            mongo_dict['person']['typeKindOfEnslavement'], roles)
-        person.roles.append(role)
+        valid_person = check_person(mongo_dict['person'], 'primary')
+        if valid_person:
+            person = process_person(valid_person, name_types,
+                tribes, races, locations, vocations, enslavements)
         entrants = [ person ]
         relationships = []
         
-        mother = process_parent(
-            mongo_dict['person']['mother'], mother=True)
-        if mother:
-            role = process_enslavement_type(
-                mongo_dict['person']['mother']['status'], roles)
-            mother.roles.extend([ role, parent_role, mother_role ])
+        valid_mother = check_person(
+            mongo_dict['person']['mother'], 'parent')
+        if valid_mother:
+            mother = process_parent( valid_mother, name_types, 
+                races, locations, enslavements, 'Female',
+                parent_role, mother_role)
             person.roles.append(child_role)
             ers = process_entrant_relationship(
                 mother, person, mother_role, child_role)
             entrants.append(mother)
             relationships.extend(ers)
 
-        father = process_parent(
-            mongo_dict['person']['father'], father=True)
-        if father:
-            role = process_enslavement_type(
-                mongo_dict['person']['father']['status'], roles)
-            father.roles.extend([ role, parent_role, father_role ])
+        valid_father = check_person(
+            mongo_dict['person']['father'], 'parent')
+        if valid_father:
+            father = process_parent(valid_father, name_types,
+                races, locations, enslavements, 'Male',
+                parent_role, father_role)
             person.roles.append(child_role)
             ers = process_entrant_relationship(
                 father, person, father_role, child_role)
             entrants.append(father)
             relationships.extend(ers)
         
-        children = [ process_child(child)
+        valid_children = [ check_person(child, 'child') 
             for child in mongo_dict['person']['children'] ]
-        for child in children:
-            child.roles.extend([ enslaved_role, child_role])
-            if person.description.sex == 'Male':
+        if valid_children:
+            valid_children = [ v for v in valid_children if v ]
+        children = []
+        for child_data in valid_children:
+            child = process_child(child_data, name_types, child_role)
+            if person.sex == 'Male':
                 person.roles.extend([parent_role, father_role])
                 ers = process_entrant_relationship(
                     person, child, father_role, child_role)
                 relationships.extend(ers)
-            elif person.description.sex == 'Female':
+            elif person.sex == 'Female':
                 person.roles.extend([parent_role, mother_role])
                 ers = process_entrant_relationship(
                     person, child, mother_role, child_role)
@@ -108,30 +160,53 @@ def load_data(datafile):
                 ers = process_entrant_relationship(
                     person, child, gendered, child_role)
                 relationships.extend(ers)
+            children.append(child)
         entrants.extend(children)
         
-        owner = process_owner(mongo_dict['owner'])
-        if owner:
-            owner.roles.append(owner_role)
+        valid_owner = check_person(mongo_dict['owner'], 'owner')
+        if valid_owner:
+            owner = process_owner(valid_owner, name_types,
+                titles, owner_role)
             ers = process_entrant_relationship(
                 owner, person, owner_role, enslaved_role)
             entrants.append(owner)
             relationships.extend(ers)
-        mother_owner = process_owner(mongo_dict['person']['mother']['owner'])
-        if mother_owner:
-            mother_owner.roles.append(owner_role)
+        valid_mowner = check_person(
+            mongo_dict['person']['mother']['owner'], 'owner')
+        if valid_mowner:
+            mother_owner = process_owner(valid_mowner,
+                name_types, titles, owner_role)
             ers = process_entrant_relationship(
                 mother_owner, mother, owner_role, enslaved_role)
             entrants.append(mother_owner)
             relationships.extend(ers)
-        father_owner = process_owner(mongo_dict['person']['father']['owner'])
-        if father_owner:
-            father_owner.roles.append(owner_role)
+        valid_fowner = check_person(
+            mongo_dict['person']['father']['owner'], 'owner')
+        if valid_fowner:
+            father_owner = process_owner(valid_fowner,
+                name_types, titles, owner_role)
             ers = process_entrant_relationship(
                 father_owner, father, owner_role, enslaved_role)
             entrants.append(father_owner)
             relationships.extend(ers)
         
+        valid_buyer = check_person(mongo_dict['buyer'], 'other')
+        if valid_buyer:
+            buyer = process_other(valid_buyer,
+                name_types, buyer_role)
+            ers = process_entrant_relationship(
+                buyer, person, buyer_role, enslaved_role)
+            entrants.append(buyer)
+            relationships.extend(ers)
+        valid_seller = check_person(mongo_dict['seller'], 'other')
+        if valid_seller:
+            seller = process_other(valid_seller,
+                name_types, seller_role)
+            ers = process_entrant_relationship(
+                seller, person, seller_role, enslaved_role)
+            entrants.append(seller)
+            relationships.extend(ers)
+
         for e in entrants:
             e.record = rec
             db.session.add(e)
@@ -142,8 +217,7 @@ def load_data(datafile):
         db.session.commit()
 
         for e in entrants:
-            prsn = models.Person(
-                first_name=e.first_name, last_name=e.last_name)
+            prsn = models.Person()
             prsn.references.append(e)
             db.session.add(prsn)
         db.session.commit()
@@ -207,27 +281,20 @@ def process_record_date(entryData):
     else:
         return clean_dates[0]
 
-def process_person(personData):
-    try:
-        name = personData['names'][0]
-    except IndexError:
-        name = { 'firstName': '', 'lastName': '' }
-    entrant = models.Entrant(
-        first_name=name['firstName'].strip(), last_name=name['lastName'].strip())
-    desc = models.Description(race=personData['race'], origin=personData['origin'],
-        tribe=personData['tribe'], sex=personData['sex'], age=personData.get('age',0),
-        vocation=personData['vocation'])
-    entrant.description = desc
-    return entrant
-
-def process_parent(personData, mother=False, father=False):
-    empty_data = {
-        'name': {
-            'firstName': '',
-            'lastName': ''
+def check_person(personData, personType):
+    prs_templates = {
+        'primary': {
+            'names': [],
+            'vocation': '',
+            'children': [],
+            'origin': '',
+            'age': '',
+            'sex': '',
+            'race': '',
+            'typeKindOfEnslavement': '',
+            'tribe': '',
         },
-        'origin': '',
-        'owner': {
+        'owner' :     {
             'name': {
                 'firstName': '',
                 'lastName': '',
@@ -235,159 +302,234 @@ def process_parent(personData, mother=False, father=False):
             },
             'vocation': ''
         },
-        'race': '',
-        'status': ''
-   }
-    if personData == {} or personData == empty_data:
-        return None
-    if mother:
-        sex = 'Female'
-    elif father:
-        sex = 'Male'
-    else:
-        sex = None
-    entrant = models.Entrant(first_name=personData['name']['firstName'].strip(),
-        last_name=personData['name']['lastName'].strip())
-    desc = models.Description(race=personData['race'],
-        origin=personData['origin'], sex=sex)
-    entrant.description = desc
-    return entrant
-
-def process_child(personData):
-    empty_data = {
-        'name' : {
+        'parent' : {
+            'name': {
+                'firstName': '',
+                'lastName': ''
+            },
+            'origin': '',
+            'owner': {
+                'name': {
+                    'firstName': '',
+                    'lastName': '',
+                    'title': ''
+                },
+                'vocation': ''
+            },
+            'race': '',
+            'status': ''
+        },
+        'child': {
+            'name' : {
+                'firstName': '',
+                'lastName': ''
+            }
+        },
+        'other': {
             'firstName': '',
             'lastName': ''
         }
     }
-    if personData == {} or personData == empty_data:
+    if personData == prs_templates[personType]:
         return None
-    entrant = models.Entrant(first_name=personData['name']['firstName'].strip(),
-        last_name=personData['name']['lastName'].strip())
-    return entrant
+    return personData
 
-def process_other_person(personData):
-    empty_data = {
-        'firstName': '',
-        'lastName': ''
+def process_person(personData, nameTypes, tribes,
+        races, origins, vocations, enslavements):
+    ent = models.Entrant()
+    ent.names = process_names(personData['names'], nameTypes)
+    ent.sex = personData['sex']
+    ent.age = personData.get('age','')
+    ent.tribes = process_tribe(personData['tribe'], tribes)
+    ent.races = process_race(personData['race'], races)
+    ent.origins = process_origin(personData['origin'], origins)
+    ent.vocations = process_vocation(personData['vocation'], vocations)
+    ent.enslavements = process_enslavement(
+        personData['typeKindOfEnslavement'], enslavements)
+    return ent
+
+def process_parent(parentData, nameTypes, races, origins,
+        enslavements, gender, parentRole, genderRole):
+    ent = models.Entrant()
+    ent.sex = gender
+    ent.names = process_name(parentData['name'], nameTypes)
+    ent.races = process_race(parentData['race'], races)
+    ent.origins = process_origin(parentData['origin'], origins)
+    ent.enslavements = process_enslavement(
+        parentData['status'], enslavements)
+    ent.roles.extend([ parentRole, genderRole ])
+    return ent
+
+def process_child(childData, nameTypes, childRole):
+    ent = models.Entrant()
+    ent.names = process_name(childData['name'], nameTypes)
+    ent.roles.append(childRole)
+    return ent
+
+def process_owner(ownerData, nameTypes, titles, ownerRole):
+    ent = models.Entrant()
+    ent.names = process_name(ownerData['name'], nameTypes)
+    ent.titles = process_title(ownerData['name']['title'], titles)
+    ent.roles.append(ownerRole)
+    return ent
+
+def process_other(otherData, nameTypes, otherRole):
+    ent = models.Entrant()
+    ent.names = process_name(otherData, nameTypes)
+    ent.roles.append(otherRole)
+    return ent
+
+def process_names(nameList, objs):
+    names = []
+    for name_data in nameList:
+        name_type = name_data['type'] or 'Given'
+        names.extend( process_name(name_data, objs, name_type) )
+    return names
+
+def process_name(nameData, nameTypes, typeStr='Given'):
+    type_obj = filter_collection(typeStr, nameTypes)
+    name = models.EntrantName()
+    name.first = nameData['firstName'].strip()
+    name.last = nameData['lastName'].strip()
+    name.name_type = type_obj
+    return [ name ]
+
+def process_origin(originStr, objs):
+    nulls = [ '', 'ditto', 'Unspecified', 'The Valiante Nation',
+        'Blanco']
+    mapped = {
+        'Allentown, PA' : 'Allentown',
+        'Píritu (Cumaná province)' : 'Píritu',
+        'Spanish' : 'Spain',
+        'Y[iu]by' : 'Yiuby'
     }
-    if personData == {} or personData == empty_data:
-        return None
-    entrant = models.Entrant(first_name=personData['firstName'].strip(),
-        last_name=personData['lastName'].strip())
-    return entrant
+    return process_multivalued_attr(originStr, objs,
+        mapped, nulls)
 
-def process_owner(personData):
-    empty_data = {
-        'name': {
-            'firstName': '',
-            'lastName': '',
-            'title': ''
-        },
-        'vocation': ''
+def process_race(raceStr, objs):
+    nulls = ['']
+    mapped = {
+        '"Part African and Part Indian"': 'Part African and Part Indian',
+        'India' : 'Indian',
+        'Surrinam Indian' : 'Surinam Indian'
     }
-    if personData == {} or personData == empty_data:
-        return None
-    entrant = models.Entrant(first_name=personData['name']['firstName'].strip(),
-        last_name=personData['name']['lastName'].strip())
-    desc = models.Description(vocation=personData['vocation'],
-        title=personData['name']['title'])
-    entrant.description = desc
-    return entrant
+    return process_multivalued_attr(raceStr, objs, mapped, nulls)
 
-def filter_collection(fltr, coll, mapped={}):
-    if mapped == {}:
-        filtered = [ c for c in coll if c.name == fltr ]
-    else:
-        filtered = [ c for c in coll if c.name == mapped[fltr] ]
-    if len(filtered) > 1:
-        raise
-    return filtered[0]    
-
-def process_document_type(typeData, docTypes):
-    type_map = {
-        '': 'unspecified',
-        'Archie': 'archive',
-        'Archival': 'archive',
-        'Archival ': 'archive',
-        'Archive': 'archive',
-        'Archive ': 'archive',
-        'Book': 'book',
-        'Census': 'census',
-        'Court Documents': 'court documents',
-        'Indenture': 'court documents',
-        'Inventory': 'inventory',
-        'Letter': 'letter',
-        'Mosquito Coast ': 'archive',
-        'Newsletter': 'newspaper',
-        'Newspaper': 'newspaper',
-        'Newspaper ': 'newspaper',
-        'Newspaper; DISA00081' : 'newspaper',
-        'Printed primary source': 'newspaper',
-        'Probate Account': 'court documents',
-        'Probate note': 'court documents',
-        'Registry': 'archive',
-        'Runaway Advertisement': 'newspaper',
-        'Runaway advertisement': 'newspaper',
-        'Will': 'will',
-        'Will Written': 'will'
+def process_title(titleStr, objs):
+    nulls = ['']
+    mapped = {
+        'Mr' : 'Mr.'
     }
-    return filter_collection(typeData, docTypes, type_map)
+    return process_multivalued_attr(titleStr, objs, mapped, nulls)
 
-def process_record_type(typeData, recTypes):
-    type_map = {'': 'unspecified',
-        'Advertisement of Sale': 'advertisement of sale',
-        'Advertisement of sale': 'advertisement of sale',
-        'Archival': 'unspecified',
-        'Archive': 'unspecified',
-        'Book': 'unspecified',
-        'British Honduras' : 'registry',
-        'Court Document': 'unspecified',
-        'Execution notice': 'execution notice',
-        'Honduras': 'unspecified',
-        'Inventory': 'unspecified',
-        'LIst': 'unspecified',
-        'Letter': 'unspecified',
-        'List': 'unspecified',
-        'Listing': 'unspecified',
-        'Manumission': 'manumission',
-        'Manumission ': 'manumission',
-        'News story': 'news story',
-        'Newspaper': 'news story',
-        'Probate': 'probate',
-        'Registry': 'registry',
-        'Registry ': 'registry',
-        'Runaway Advertisement': 'runaway advertisement',
-        'Runaway Advertisement ': 'runaway advertisement',
-        'Runaway Advertisements': 'runaway advertisement',
-        'Runaway Capture Advertisement': 'runaway capture advertisement',
-        'Runaway advertisement': 'runaway advertisement',
-        'Runaway capture advertisement': 'runaway capture advertisement',
-        'Slave Advertisment' : 'advertisement of sale',
-        'Smallpox inoculation notice': 'smallpox inoculation notice'
+def process_tribe(tribeStr, objs):
+    nulls = [ '', 'Unspecified', 'TEST' ]
+    mapped = {
+        'Blanco Nation' : 'Blanco',
+        'Co[d]ira': 'Codira',
+        'Eastern Pequot (?)': 'Eastern Pequot',
+        'Mohegan (?)': 'Mohegan',
+        'Naragansett (?)': 'Naragansett',
+        'Noleva Indian' : 'Noleva',
+        '[Nidwa]': 'Nidwa'
     }
-    return filter_collection(typeData, recTypes, type_map)
+    return process_multivalued_attr(tribeStr, objs,
+        mapped, nulls)
 
-def process_enslavement_type(typeData, roles):
-    type_map = {
-        '': 'enslaved',
-        '(maybe) ': 'enslaved',
-        '(probably) ': 'enslaved',
-        'Indenture': 'indentured servant',
-        'Indenture, court-ordered' : 'indentured servant',
-        'Indentured servant': 'indentured servant',
-        'Maid Servant': 'maidservant',
-        'Maid servant': 'maidservant',
-        'Man servant': 'manservant',
-        'Man slave': 'manslave',
-        'Manslave': 'manslave',
-        'Pieza': 'pieza',
-        'Servant': 'servant',
-        'Enslaved': 'enslaved',
-        'Slave': 'enslaved',
-        'Woman servant': 'maidservant'
+def process_vocation(vocStr, objs):
+    nulls = [ '','N/A','[Pos]']
+    mapped = {
+        'Shipcarpenter' : 'Ship Carpenter',
+        'sargento mayor actual de esta cuidad' : 'sargento mayor actual de esta ciudad'
     }
-    return filter_collection(typeData, roles, type_map)
+    return process_multivalued_attr(vocStr, objs,
+        mapped, nulls)
+
+def process_enslavement(enslvStr, objs):
+    nulls = ['']
+    mapped = {
+        '(maybe)': 'Enslaved',
+        '(probably)': 'Enslaved',
+        'Man servant': 'Manservant',
+        'Man slave': 'Manslave',
+        'Maid servant': 'Maidservant',
+        'Maid Servant': 'Maidservant',
+        'Indenture': 'Indentured Servant'
+    }
+    return process_multivalued_attr(enslvStr, objs, mapped, nulls)
+
+def process_document_type(docTypeStr, recTypeStr, objs):
+    pairs = {
+        ('', 'Archival'): 'Town Record',
+        ('', 'Inventory'): 'Probate Record',
+        ('Archie', 'Manumission'): 'Letter',
+        ('Archival', 'List'): 'List',
+        ('Archival', 'Listing'): 'List',
+        ('Archival', 'Registry'): 'Registry',
+        ('Archival ', 'Listing'): 'List',
+        ('Archive', ''): 'Record',
+        ('Archive', 'LIst'): 'List',
+        ('Archive', 'List'): 'List',
+        ('Archive', 'Manumission'): 'Letter',
+        ('Archive', 'Manumission '): 'Letter',
+        ('Archive', 'Registry'): 'Registry',
+        ('Archive', 'Registry '): 'Registry',
+        ('Archive ', 'Registry'): 'Registry'
+    }
+    if ( docTypeStr, recTypeStr ) in pairs:
+        docTypeStr = pairs[( docTypeStr, recTypeStr )]
+    mapped = {
+        '': 'Document',
+        'Court Documents': 'Court Document',
+        'Indenture': 'Book',
+        'Mosquito Coast': 'Registry',
+        'Newspaper; DISA00081' : 'Newspaper',
+        'Printed primary source': 'Letter',
+        'Probate Account': 'Probate Record',
+        'Probate note': 'Probate Record',
+        'Runaway Advertisement': 'Newspaper',
+        'Runaway advertisement': 'Newspaper',
+        'Will Written': 'Will',
+    }
+    return process_multivalued_attr(docTypeStr, objs, mapped)
+
+def process_record_type(recTypeStr, docTypeStr, objs):
+    pairs = {
+        ('', ''): 'Section',
+        ('', 'Archive'): 'Section',
+        ('', 'Book'): 'Section',
+        ('', 'Census') : 'Listing',
+        ('', 'Indenture'): 'Indenture',
+        ('', 'Inventory'): 'Listing',
+        ('', 'Probate note'): 'Note',
+        ('Archival', ''): 'Section',
+        ('Archival', 'Court Documents'): 'Section',
+        ('Archival', 'Inventory') : 'Listing',
+        ('Archival', 'Letter'): 'Section',
+        ('Probate', 'Inventory'): 'Listing',
+        ('Probate', 'Probate Account'): 'Listing',
+        ('Probate', 'Will'): 'Listing',
+        ('Probate', 'Will Written'): 'Listing',
+    }
+    if ( recTypeStr, docTypeStr ) in pairs:
+        recTypeStr = pairs[( recTypeStr, docTypeStr )]
+    mapped = {
+        '': 'Section',
+        'Archive': 'Section',
+        'Book': 'Indenture',
+        'British Honduras': 'Listing',
+        'Court Document': 'Section',
+        'Execution notice': 'Execution Notice',
+        'Inventory': 'Listing',
+        'Letter': 'Section',
+        'List': 'Listing',
+        'LIst': 'Listing',
+        'Newspaper': 'Runaway Advertisement',
+        'Registry': 'Listing',
+        'Runaway Advertisements': 'Runaway Advertisement',
+        'Slave Advertisment' : 'Advertisement of Sale',
+    }
+    return process_multivalued_attr(recTypeStr, objs, mapped)
 
 def process_entrant_relationship(e1, e2, e1Role, e2Role):
     er1 = models.EntrantRelationship()

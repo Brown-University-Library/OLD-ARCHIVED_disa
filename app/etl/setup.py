@@ -26,7 +26,6 @@ def load_multivalued_attributes():
     ]
     tribes = [
         {'name': 'Blanco'},
-        {'name': 'Blanco Nation'},
         {'name': 'Bocotora'},
         {'name': 'Codira'},
         {'name': 'Eastern Pequot'},
@@ -35,7 +34,6 @@ def load_multivalued_attributes():
         {'name': 'Naragansett'},
         {'name': 'Nidwa'},
         {'name': 'Noleva'},
-        {'name': 'Noleva Indian'},
         {'name': 'Pequot'},
         {'name': 'Rocotora'},
         {'name': 'Sambo'},
@@ -48,10 +46,10 @@ def load_multivalued_attributes():
         {'name': 'Valiante'},
         {'name': 'Wampanoag'},
         {'name': 'Woolwa'},
-        {'name': 'Nidwa'},
         {'name': 'de Nacion Caribe Cuchibero'}
     ]
     enslavements = [
+        {'name': 'Enslaved'},
         {'name': 'Maidservant'},
         {'name': 'Manservant'},
         {'name': 'Indentured Servant'},
@@ -71,7 +69,6 @@ def load_multivalued_attributes():
         {'name': 'Criollo'},
         {'name': 'East India Negro'},
         {'name': 'Half Indian'},
-        {'name': 'India'},
         {'name': 'Indian'},
         {'name': 'Indian Mulatto'},
         {'name': 'Indio'},
@@ -140,6 +137,22 @@ def load_multivalued_attributes():
         {'name': 'Sacristán Mayor'},
         {'name': 'Sargento Mayor Actual de Esta Ciudad'}
     ]
+    origins = [
+        { 'name': 'Allentown' },
+        { 'name': 'Bermuda' },
+        { 'name': 'Casanare' },
+        { 'name': 'Casanave' },
+        { 'name': 'Chabba' },
+        { 'name': 'Jamaica' },
+        { 'name': 'Pueblo de Casanare' },
+        { 'name': 'Pueblo de Pauto' },
+        { 'name': 'Píritu' },
+        { 'name': 'Rio de Orinoco' },
+        { 'name': 'Shangena' },
+        { 'name': 'Spain' },
+        { 'name': 'Yiuby' },
+        { 'name': 'Yulusky' }
+    ]
     record_types = [
         {'name': 'Runaway Advertisement'},
         {'name': 'Advertisement of Sale'},
@@ -151,18 +164,29 @@ def load_multivalued_attributes():
         {'name': 'Manumission'},
         {'name': 'Registry'},
         {'name': 'News Story'},
-        {'name': 'Unspecified'}
+        {'name': 'Section'},
+        {'name': 'Listing'},
+        {'name': 'Letter'},
+        {'name': 'Indenture'},
+        {'name': 'Court Document'},
+        {'name': 'Account'},
+        {'name': 'Note'},
     ]
     document_types = [
-        {'name': 'Newspaper'},
-        {'name': 'Letter'},
-        {'name': 'Archive'},
-        {'name': 'Inventory'},
-        {'name': 'Census'},
-        {'name': 'Court Documents'},
         {'name': 'Book'},
-        {'name': 'Will'},
-        {'name': 'Unspecified'}
+        {'name': 'Census'},
+        {'name': 'Court Document'},
+        {'name': 'Document'},
+        {'name': 'Inventory'},
+        {'name': 'Letter'},
+        {'name': 'List'},
+        {'name': 'Newsletter'},
+        {'name': 'Newspaper'},
+        {'name': 'Probate Record'},
+        {'name': 'Record'},
+        {'name': 'Registry'},
+        {'name': 'Town Record'},
+        {'name': 'Will'}
     ]
     name_types = [
         { 'name': 'Alias' },
@@ -182,7 +206,8 @@ def load_multivalued_attributes():
         ( models.Tribe, tribes ),
         ( models.Title, titles ),
         ( models.NameType, name_types ),
-        ( models.EnslavementType, enslavements)
+        ( models.EnslavementType, enslavements ),
+        ( models.Location, origins )
     ]
     for pair in tables:
         table = pair[0]

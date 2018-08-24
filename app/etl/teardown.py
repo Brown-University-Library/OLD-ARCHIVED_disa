@@ -3,6 +3,12 @@ from app import db, models
 def clear_data(tables=[]):
     many_to_many = [
         models.has_role,
+        models.has_title,
+        models.has_vocation,
+        models.has_race,
+        models.has_tribe,
+        models.has_origin,
+        models.enslaved_as,
         models.recordtype_roles,
         models.documenttype_recordtypes
     ]
@@ -10,7 +16,13 @@ def clear_data(tables=[]):
         models.EntrantRelationship,
         models.RecordLocation,
         models.RecordEdit,
-        models.Description,
+        models.Tribe,
+        models.Race,
+        models.Title,
+        models.Vocation,
+        models.EnslavementType,
+        models.EntrantName,
+        models.NameType,
         models.Entrant,
         models.Person,
         models.Role,
@@ -27,7 +39,6 @@ def clear_data(tables=[]):
         'entrants' : models.Entrant,
         'roles' : models.Role,
         'people' : models.Person,
-        'entrant_description' : models.Description,
         'record_types' : models.RecordType,
         'document_types': models.DocumentType
     }
