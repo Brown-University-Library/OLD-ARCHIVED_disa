@@ -26,7 +26,8 @@ def converge_document_people(doc):
         for e in rec.entrants:
             person = e.person
             formatted_name = '{} {}'.format(
-                person.first_name.strip(), person.last_name.strip()).strip()
+                person.first_name.strip(),
+                person.last_name.strip() ).strip()
             to_converge[ formatted_name ].append(person)
     for c in to_converge:
         if len(to_converge[c]) > 1:
@@ -52,7 +53,8 @@ def converge_record_names(record):
     to_converge = defaultdict(list)
     for e in record.entrants:
         formatted_name = '{} {}'.format(
-            e.first_name.strip(), e.last_name.strip()).strip()
+            e.primary_name.first.strip(),
+            e.primary_name.last.strip() ).strip()
         to_converge[ formatted_name ].append(e)
     for c in to_converge:
         if len(to_converge[c]) > 1:

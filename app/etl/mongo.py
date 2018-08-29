@@ -213,17 +213,14 @@ def load_data(datafile):
             db.session.add(e)
         db.session.commit()
 
-        # for e in entrants:
-        #     e.primary_name_id = e.names[0].id
-        #     db.session.add(e)
-        # db.session.commit()
-
         for r in relationships:
             db.session.add(r)
         db.session.commit()
 
         for e in entrants:
             prsn = models.Person()
+            prsn.first_name = e.primary_name.first
+            prsn.last_name = e.primary_name.last
             prsn.references.append(e)
             db.session.add(prsn)
         db.session.commit()
