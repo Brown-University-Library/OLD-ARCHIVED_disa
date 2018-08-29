@@ -4,6 +4,9 @@ import collections
 import datetime
 import json
 
+def merge_entrant_attributes(attList):
+    return ','.join([ att.name for att in attList ])
+
 def process_reference(entrant):
     rec = entrant.record
     locs = [ (loc.location_rank, loc.location.name)
@@ -18,15 +21,14 @@ def process_reference(entrant):
         'locations': [ l[1] for l in sorted(locs, reverse=True) ],
         'comments': rec.comments
     }
-    if entrant.description:
-        ref_data['description'] = {
-            'tribe': entrant.description.tribe,
-            'sex': entrant.description.sex,
-            'origin': entrant.description.origin,
-            'vocation': entrant.description.vocation,
-            'age': entrant.description.age,
-            'race': entrant.description.race
-        }
+    ref_data['description'] = {
+        'tribe': merge_entrant_attributes(entrant.tribes),
+        'sex': entrant.sex,
+        'origin': merge_entrant_attributes(entrant.origins),
+        'vocation': merge_entrant_attributes(entrant.vocations),
+        'age': entrant.age,
+        'race': merge_entrant_attributes(entrant.races)
+    }
     for role in entrant.roles:
         ref_data['roles'][role.name] = []
     ers = entrant.as_subject
@@ -43,7 +45,8 @@ def process_reference(entrant):
             inv = [ i for i in invs if i.related_as.name in {'mother', 'father'}]
             if len(inv) > 0:
                 role = 'has_' + inv[0].related_as.name
-        other = "{} {}".format(obj.first_name, obj.last_name).strip()
+        other = "{} {}".format(
+            obj.primary_name.first, obj.primary_name.last).strip()
         if other == '':
             other = 'unrecorded'
         ref_data['roles'][role].append(other)
