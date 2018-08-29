@@ -209,8 +209,14 @@ def load_data(datafile):
 
         for e in entrants:
             e.record = rec
+            e.primary_name = e.names[0]
             db.session.add(e)
         db.session.commit()
+
+        # for e in entrants:
+        #     e.primary_name_id = e.names[0].id
+        #     db.session.add(e)
+        # db.session.commit()
 
         for r in relationships:
             db.session.add(r)
@@ -381,12 +387,18 @@ def process_other(otherData, nameTypes, otherRole):
 
 def process_names(nameList, objs):
     names = []
+    if nameList == []:
+        nameList = [ 
+            { 'firstName': '', 'lastName': '', 'type': 'Unknown' }
+        ]
     for name_data in nameList:
         name_type = name_data['type'] or 'Given'
         names.extend( process_name(name_data, objs, name_type) )
     return names
 
 def process_name(nameData, nameTypes, typeStr='Given'):
+    if nameData == { 'firstName': '', 'lastName': '' }:
+        typeStr = 'Unknown'
     type_obj = filter_collection(typeStr, nameTypes)
     name = models.EntrantName()
     name.first = nameData['firstName'].strip()

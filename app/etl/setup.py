@@ -195,7 +195,8 @@ def load_multivalued_attributes():
         { 'name': 'European' },
         { 'name': 'Indian' },
         { 'name': 'Nickname' },
-        { 'name': 'Given' }
+        { 'name': 'Given' },
+        { 'name': 'Unknown' }
     ]
     tables = [
         ( models.Role, roles ),

@@ -139,16 +139,40 @@ class RecordLocation(db.Model):
         primaryjoin=(location_id == Location.id),
         backref='records')
 
+class NameType(db.Model):
+    __tablename__ = 'name_types'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+
+class EntrantName(db.Model):
+    __tablename__ = 'entrant_names'
+
+    id = db.Column(db.Integer, primary_key=True)
+    entrant_id = db.Column(db.Integer, db.ForeignKey('entrants.id'))
+    name_type_id = db.Column(db.Integer, db.ForeignKey('name_types.id'))
+    first = db.Column(db.String(255))
+    last = db.Column(db.String(255))
+    name_type = db.relationship('NameType',
+        primaryjoin=(name_type_id == NameType.id) )
+
 class Entrant(db.Model):
     __tablename__ = 'entrants'
 
     id = db.Column(db.Integer, primary_key=True)
     age = db.Column(db.String(255))
     sex = db.Column(db.String(255))
+    primary_name_id = db.Column(db.Integer, 
+        db.ForeignKey('entrant_names.id'))
     record_id = db.Column(db.Integer, db.ForeignKey('records.id'),
         nullable=False)
     person_id = db.Column(db.Integer, db.ForeignKey('people.id'),
         nullable=True)
+    names = db.relationship('EntrantName',
+        primaryjoin=(id == EntrantName.entrant_id) )
+    primary_name = db.relationship('EntrantName',
+        primaryjoin=(primary_name_id == EntrantName.id),
+        post_update=True )
     roles = db.relationship('Role',
         secondary='has_role', back_populates='entrants')
     tribes = db.relationship('Tribe',
@@ -218,27 +242,6 @@ class Role(db.Model):
     record_types = db.relationship(
         'RecordType', secondary=recordtype_roles,
         back_populates='roles')
-
-class NameType(db.Model):
-    __tablename__ = 'name_types'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255))
-
-class EntrantName(db.Model):
-    __tablename__ = 'entrant_names'
-
-    id = db.Column(db.Integer, primary_key=True)
-    entrant_id = db.Column(db.Integer, db.ForeignKey('entrants.id'))
-    name_type_id = db.Column(db.Integer, db.ForeignKey('name_types.id'))
-    first = db.Column(db.String(255))
-    last = db.Column(db.String(255))
-    entrant = db.relationship(Entrant,
-        primaryjoin=(entrant_id == Entrant.id),
-        backref='names')
-    name_type = db.relationship(NameType,
-        primaryjoin=(name_type_id == NameType.id),
-        backref='entrants')
 
 class EntrantRelationship(db.Model):
     __tablename__ = 'entrant_relationships'
