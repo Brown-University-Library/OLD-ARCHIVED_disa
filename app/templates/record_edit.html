@@ -64,7 +64,7 @@
         {% if rec.entrants|length != 0 %}
         <ul>
         {% for ent in rec.entrants %}
-            <li>{{ ent.first_name }} {{ent.last_name}}</li>
+            <li><a href="{{ url_for('edit_entrant', rec=rec.id, entId=ent.id)}}">{{ ent.primary_name.first }} {{ent.primary_name.last}}</a></li>
         {% endfor %}
         </ul>
         {% else %}
