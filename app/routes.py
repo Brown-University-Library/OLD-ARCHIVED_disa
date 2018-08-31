@@ -91,6 +91,19 @@ def edit_record(recId=None):
 def edit_entrant(entId=None):
     roles = [ { 'id': role.id, 'value': role.name, 'label': role.name }
         for role in models.Role.query.all()]
+    # desc_data = models.Description.query.all()
+    origins = [ { 'id': loc.id, 'value': loc.name, 'label': loc.name }
+        for loc in models.Location.query.all()]
+    races = [ { 'id': loc.id, 'value': loc.name, 'label': loc.name }
+        for loc in models.Race.query.all()]
+    tribes = [ { 'id': loc.id, 'value': loc.name, 'label': loc.name }
+        for loc in models.Tribe.query.all()]
+    titles = [ { 'id': loc.id, 'value': loc.name, 'label': loc.name }
+        for loc in models.Title.query.all()]
+    vocations = [ { 'id': loc.id, 'value': loc.name, 'label': loc.name }
+        for loc in models.Vocation.query.all()]
+    enslavements = [ { 'id': loc.id, 'value': loc.name, 'label': loc.name }
+        for loc in models.EnslavementType.query.all()]
     if not entId:
         rec_id = request.args.get('rec')
         rec = models.Record.query.get(rec_id)
@@ -98,7 +111,10 @@ def edit_entrant(entId=None):
             'entrant_edit.html', roles=roles, rec=rec, ent=None)
     ent = models.Entrant.query.get(entId)
     return render_template(
-        'entrant_edit.html', roles=roles, rec=ent.record, ent=ent)
+        'entrant_edit.html', rec=ent.record, ent=ent,
+        roles=roles, origins=origins, races=races, tribes=tribes,
+        vocations=vocations, enslavements=enslavements,
+        titles=titles)
 
 @app.route('/data/documents/', methods=['GET'])
 @app.route('/data/documents/<docId>', methods=['GET'])

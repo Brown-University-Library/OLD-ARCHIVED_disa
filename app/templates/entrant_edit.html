@@ -108,24 +108,28 @@ select {
                         <input class="form-control" type="text" id="entrant_age" />
                     </div>
                     <div class="row">
-                        <label for="entrant_race">Race</label>
-                        <input class="form-control" type="text" id="entrant_race" />
+                        <label for="races_autocomplete">Race</label>
+                        <input class="form-control" type="text" id="races_autocomplete" />
                     </div>
                     <div class="row">
-                        <label for="entrant_tribe">Tribe</label>
-                        <input class="form-control" type="text" id="entrant_tribe" />
+                        <label for="tribes_autocomplete">Tribe</label>
+                        <input class="form-control" type="text" id="tribes_autocomplete" />
                     </div>
                     <div class="row">
-                        <label for="entrant_origin">Origin</label>
-                        <input class="form-control" type="text" id="entrant_origin" />
+                        <label for="origins_autocomplete">Origin</label>
+                        <input class="form-control" type="text" id="origins_autocomplete" />
                     </div>
                     <div class="row">
-                        <label for="entrant_title">Title</label>
-                        <input class="form-control" type="text" id="entrant_title"/>
+                        <label for="enslavements_autocomplete">Kind of Enslavement</label>
+                        <input class="form-control" type="text" id="enslavements_autocomplete"/>
                     </div>
                     <div class="row">
-                        <label for="entrant_vocation">Vocation</label>
-                        <input class="form-control" type="text" id="entrant_vocation" />
+                        <label for="titles_autocomplete">Title</label>
+                        <input class="form-control" type="text" id="titles_autocomplete"/>
+                    </div>
+                    <div class="row">
+                        <label for="vocations_autocomplete">Vocation</label>
+                        <input class="form-control" type="text" id="vocations_autocomplete" />
                     </div>
                 </div>
             </div>
@@ -202,6 +206,120 @@ $( document ).ready(function() {
             addDescriptor($('#descriptors'), ui.item, true);
             $("#roles_autocomplete").val('');
             return false;
+        }
+    });
+    $('#races_autocomplete').autocomplete({
+        source: JSON.parse('{{ races | tojson | safe}}'),
+        minLength: 0,
+        delay: 5,
+        autoFocus: true,
+        response: function (event, ui) {
+
+            if (ui.content.length == 0) {
+                ui.content.push({
+                    label: $(this).val(),
+                    value: $(this).val(),
+                    id: -1
+                });
+            }
+        },
+        select: function (event, ui) {
+            updateEntrantAttribute($('#races_autocomplete'), ui.item);
+        }
+    });
+    $('#tribes_autocomplete').autocomplete({
+        source: JSON.parse('{{ tribes | tojson | safe}}'),
+        minLength: 0,
+        delay: 5,
+        autoFocus: true,
+        response: function (event, ui) {
+
+            if (ui.content.length == 0) {
+                ui.content.push({
+                    label: $(this).val(),
+                    value: $(this).val(),
+                    id: -1
+                });
+            }
+        },
+        select: function (event, ui) {
+            updateEntrantAttribute($('#tribes_autocomplete'), ui.item);
+        }
+    });
+    $('#origins_autocomplete').autocomplete({
+        source: JSON.parse('{{ origins | tojson | safe}}'),
+        minLength: 0,
+        delay: 5,
+        autoFocus: true,
+        response: function (event, ui) {
+
+            if (ui.content.length == 0) {
+                ui.content.push({
+                    label: $(this).val(),
+                    value: $(this).val(),
+                    id: -1
+                });
+            }
+        },
+        select: function (event, ui) {
+            updateEntrantAttribute($('#origins_autocomplete'), ui.item);
+        }
+    });
+    $('#enslavements_autocomplete').autocomplete({
+        source: JSON.parse('{{ enslavements | tojson | safe}}'),
+        minLength: 0,
+        delay: 5,
+        autoFocus: true,
+        response: function (event, ui) {
+
+            if (ui.content.length == 0) {
+                ui.content.push({
+                    label: $(this).val(),
+                    value: $(this).val(),
+                    id: -1
+                });
+            }
+        },
+        select: function (event, ui) {
+            updateEntrantAttribute($('#enslavements_autocomplete'), ui.item);
+        }
+    });
+    $('#titles_autocomplete').autocomplete({
+        source: JSON.parse('{{ titles | tojson | safe}}'),
+        minLength: 0,
+        delay: 5,
+        autoFocus: true,
+        response: function (event, ui) {
+
+            if (ui.content.length == 0) {
+                ui.content.push({
+                    label: $(this).val(),
+                    value: $(this).val(),
+                    id: -1
+                });
+            }
+        },
+        select: function (event, ui) {
+            updateEntrantAttribute($('#titles_autocomplete'), ui.item);
+        }
+    });
+    $('#vocations_autocomplete').autocomplete({
+        source: JSON.parse('{{ vocations | tojson | safe}}'),
+        minLength: 0,
+        delay: 5,
+        autoFocus: true,
+        response: function (event, ui) {
+
+            if (ui.content.length == 0) {
+                ui.content.push({
+                    label: $(this).val(),
+                    value: $(this).val(),
+                    id: -1
+                });
+            }
+        },
+        select: function (event, ui) {
+            updateEntrantAttribute($('#vocations_autocomplete'), ui.item);
         }
     });
  
