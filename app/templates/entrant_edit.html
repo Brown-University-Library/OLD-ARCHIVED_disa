@@ -11,7 +11,7 @@
     margin-top: 5px;
 }
 
-.role-btn {
+.del-btn {
     background-color: Transparent;
     border: none;
 }
@@ -83,17 +83,17 @@ select {
                 <div class="col-md-8">
                 <label>Gender</label>
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-6" id="gender_select">
                             <label class="radio-inline">
-                              <input type="radio" name="entrant_gender" id="gender_male" value="male">
+                              <input type="radio" name="entrant_gender" id="gender_male" value="Male">
                               Male
                             </label>
                             <label class="radio-inline">
-                              <input type="radio" name="entrant_gender" id="gender_female" value="female">
+                              <input type="radio" name="entrant_gender" id="gender_female" value="Female">
                               Female
                             </label>
                             <label class="radio-inline">
-                              <input type="radio" name="entrant_gender" id="gender_other" value="other" checked>
+                              <input type="radio" name="entrant_gender" id="gender_other" value="Other" checked>
                               Other/Unknown
                             </label>
                         </div>
@@ -110,26 +110,38 @@ select {
                     <div class="row">
                         <label for="races_autocomplete">Race</label>
                         <input class="form-control" type="text" id="races_autocomplete" />
+                        <ul class="list-inline" id="races">
+                        </ul>
                     </div>
                     <div class="row">
                         <label for="tribes_autocomplete">Tribe</label>
                         <input class="form-control" type="text" id="tribes_autocomplete" />
+                        <ul class="list-inline" id="tribes">
+                        </ul>
                     </div>
                     <div class="row">
                         <label for="origins_autocomplete">Origin</label>
                         <input class="form-control" type="text" id="origins_autocomplete" />
+                        <ul class="list-inline" id="origins">
+                        </ul>
                     </div>
                     <div class="row">
                         <label for="enslavements_autocomplete">Kind of Enslavement</label>
                         <input class="form-control" type="text" id="enslavements_autocomplete"/>
+                        <ul class="list-inline" id="enslavements">
+                        </ul>
                     </div>
                     <div class="row">
                         <label for="titles_autocomplete">Title</label>
                         <input class="form-control" type="text" id="titles_autocomplete"/>
+                        <ul class="list-inline" id="titles">
+                        </ul>
                     </div>
                     <div class="row">
                         <label for="vocations_autocomplete">Vocation</label>
                         <input class="form-control" type="text" id="vocations_autocomplete" />
+                        <ul class="list-inline" id="vocations">
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -178,7 +190,94 @@ var makeRole = function (data) {
     $li.append($span).append($button);
     return $li;
 }
+
+var updateRadio = function($radioSelect, val) {
+    var $radio_opt;
+    $radio_opt = $radioSelect.find(`input:radio[value=${val}]`);
+    if ( $radio_opt ) {
+        $radio_opt.prop('checked', true);
+    } else {
+        return;
+    }
+}
+
+var updateEntrantAttribute = function($attList, attData, attGroup) {
+    $new_attribute = makeAttribute($attList, attData, attGroup);
+    $attList.append($new_attribute);
+    return $attList;
+}
+
+var makeAttribute = function ($attList, data, attGroup) {
+    var $li, $span, $button,
+        $icon;
+    const data_id_field = `data-${attGroup}-id`;
+    $li = $('<li/>', { 
+        'class': `entrant_${attGroup} list-inline-item`,
+        });
+    $li.attr(data_id_field, data.id);
+    $span = $('<span/>', { 'text' : data.value,
+                        'class': `${attGroup}-name` });
+    $button = $('<button/>', { 'class': `del-btn` });
+    $icon = $('<span/>', { 'class': 'fas fa-times-circle' });
+
+    $button.append($icon);
+    $button.on('click', function(e) {
+        e.preventDefault();
+        removeAttribute($attList,
+            $li.attr(data_id_field), data_id_field);
+    })
+
+    $li.append($span).append($button);
+    return $li;
+}
+
+var removeAttribute = function ($attList, dataId, dataIdField) {
+    var $att;
+
+    $att = $attList.find(`li[${dataIdField}='${dataId}']`).last();
+    $att.remove();
+}
+
+var updateAttributeList = function ($attList, attArray, attGroup) {
+    $attList.empty();
+    for ( var i=0; i < attArray.length; i++ ) {
+        var att_data = attArray[i];
+        $attList = updateEntrantAttribute(
+            $attList, att_data, attGroup);
+    }
+}
+
+var initializeForm = function(entData) {
+    if ( $.isEmptyObject(entData) ) {
+        return;
+    }
+    $('#entrant_age').val(entData['age']);
+    updateRadio($('#gender_select'), entData['sex']);
+    updateAttributeList($('#races'), entData['races'], 'races');
+    updateAttributeList($('#tribes'), entData['tribes'], 'tribes');
+    updateAttributeList($('#origins'), entData['origins'], 'origins');
+    updateAttributeList($('#titles'), entData['titles'], 'titles');
+    updateAttributeList(
+        $('#enslavements'), entData['enslavements'], 'enslavements');
+    updateAttributeList(
+        $('#vocations'), entData['vocations'], 'vocations');
+}
+
+var readEntrantData = function(entId) {
+    var ent_data_api = "{{ url_for('read_entrant_data', entId=None ) }}" + entId;
+    var out = null;
+    $.get(ent_data_api, function(data) {
+        initializeForm(data['ent']);
+    });
+}
+
+var getEntId = function () {
+    var ent_id = "{{ ent.id or '' }}";
+    return ent_id;
+}
+
 $( document ).ready(function() {
+    var ent_id = getEntId();
     $( "#entrant_description" ).accordion({
         collapsible: true,
         header: "h3",
@@ -201,8 +300,8 @@ $( document ).ready(function() {
             }
         },
         select: function( event, ui ) {
-            event.preventDefault()
-            $("#roles_autocomplete").val(ui.item.value)
+            event.preventDefault();
+            $("#roles_autocomplete").val(ui.item.value);
             addDescriptor($('#descriptors'), ui.item, true);
             $("#roles_autocomplete").val('');
             return false;
@@ -224,8 +323,24 @@ $( document ).ready(function() {
             }
         },
         select: function (event, ui) {
-            updateEntrantAttribute($('#races_autocomplete'), ui.item);
+            event.preventDefault()
+            $("#races_autocomplete").val(ui.item.value);
+            updateEntrantAttribute($('#races'), ui.item, 'races');
+            $("#races_autocomplete").val('');
+            return false;
         }
+        // focus: function (event, ui) {
+        //     return false;
+        // },
+        // change: function(event, ui) {
+        //     if (ui.item == null) {
+        //         ui.content.push({
+        //             label: $(this).val(),
+        //             value: $(this).val(),
+        //             id: -1
+        //         });
+        //     }
+        // }
     });
     $('#tribes_autocomplete').autocomplete({
         source: JSON.parse('{{ tribes | tojson | safe}}'),
@@ -243,7 +358,11 @@ $( document ).ready(function() {
             }
         },
         select: function (event, ui) {
-            updateEntrantAttribute($('#tribes_autocomplete'), ui.item);
+            event.preventDefault()
+            $("#tribes_autocomplete").val(ui.item.value);
+            updateEntrantAttribute($('#tribes'), ui.item, 'tribes');
+            $("#tribes_autocomplete").val('');
+            return false;
         }
     });
     $('#origins_autocomplete').autocomplete({
@@ -262,7 +381,11 @@ $( document ).ready(function() {
             }
         },
         select: function (event, ui) {
-            updateEntrantAttribute($('#origins_autocomplete'), ui.item);
+            event.preventDefault()
+            $("#origins_autocomplete").val(ui.item.value);
+            updateEntrantAttribute($('#origins'), ui.item, 'origins');
+            $("#origins_autocomplete").val('');
+            return false;
         }
     });
     $('#enslavements_autocomplete').autocomplete({
@@ -281,7 +404,12 @@ $( document ).ready(function() {
             }
         },
         select: function (event, ui) {
-            updateEntrantAttribute($('#enslavements_autocomplete'), ui.item);
+            event.preventDefault()
+            $("#enslavements_autocomplete").val(ui.item.value);
+            updateEntrantAttribute(
+                $('#enslavements'), ui.item, 'enslavements');
+            $("#enslavements_autocomplete").val('');
+            return false;
         }
     });
     $('#titles_autocomplete').autocomplete({
@@ -300,7 +428,11 @@ $( document ).ready(function() {
             }
         },
         select: function (event, ui) {
-            updateEntrantAttribute($('#titles_autocomplete'), ui.item);
+            event.preventDefault()
+            $("#titles_autocomplete").val(ui.item.value);
+            updateEntrantAttribute($('#titles'), ui.item, 'titles');
+            $("#titles_autocomplete").val('');
+            return false;
         }
     });
     $('#vocations_autocomplete').autocomplete({
@@ -319,10 +451,14 @@ $( document ).ready(function() {
             }
         },
         select: function (event, ui) {
-            updateEntrantAttribute($('#vocations_autocomplete'), ui.item);
+            event.preventDefault()
+            $("#vocations_autocomplete").val(ui.item.value);
+            updateEntrantAttribute($('#vocations'), ui.item, 'vocations');
+            $("#vocations_autocomplete").val('');
+            return false;
         }
     });
- 
+    readEntrantData(ent_id);
 });
 </script>
 {% endblock %}

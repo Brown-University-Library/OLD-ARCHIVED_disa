@@ -207,9 +207,38 @@ def read_record_data(recId=None):
         rec.record_type.name, rec.citation or '').strip()
     return jsonify(data)
 
+@app.route('/data/entrants/', methods=['GET'])
+@app.route('/data/entrants/<entId>', methods=['GET'])
+def read_entrant_data(entId=None):
+    data = { 'ent': {} }
+    if entId == None:
+        return jsonify(data)
+    ent = models.Entrant.query.get(entId)
+    data['ent']['id'] = ent.id
+    data['ent']['age'] = ent.age
+    data['ent']['sex'] = ent.sex
+    data['ent']['races'] = [ 
+        { 'label': r.name, 'value': r.name,
+            'id': r.id } for r in ent.races ]
+    data['ent']['tribes'] = [ 
+        { 'label': t.name, 'value': t.name,
+            'id': t.id } for t in ent.tribes ]
+    data['ent']['origins'] = [ 
+        { 'label': o.name, 'value': o.name,
+            'id': o.id } for o in ent.origins ]
+    data['ent']['titles'] = [ 
+        { 'label': t.name, 'value': t.name,
+            'id': t.id } for t in ent.titles ]
+    data['ent']['vocations'] = [ 
+        { 'label': v.name, 'value': v.name,
+            'id': v.id } for v in ent.vocations ]
+    data['ent']['enslavements'] = [ 
+        { 'label': e.name, 'value': e.name,
+            'id': e.id } for e in ent.enslavements ]
+    return jsonify(data)
+
 
 def get_or_create_type(typeData, typeModel):
-    print(typeData)
     if typeData['id'] == -1:
         new_type = typeModel(name=typeData['value'])
         db.session.add(new_type)

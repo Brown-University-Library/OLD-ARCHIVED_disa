@@ -264,7 +264,6 @@ var updateRecordData = function(recId, docId) {
 
 $( document ).ready(function() {
     var doc_id = getDocumentId();
-    console.log(doc_id);
     var rec_id = getRecId();
     $('#recordtype_autocomplete').autocomplete({
         source: JSON.parse('{{ rec_types | tojson | safe}}'),
