@@ -89,6 +89,8 @@ def edit_record(recId=None):
 @app.route('/editor/person/<entId>')
 @login_required
 def edit_entrant(entId=None):
+    nametypes = [ { 'id': role.id, 'value': role.name, 'label': role.name }
+        for role in models.NameType.query.all()]
     roles = [ { 'id': role.id, 'value': role.name, 'label': role.name }
         for role in models.Role.query.all()]
     # desc_data = models.Description.query.all()
@@ -112,6 +114,7 @@ def edit_entrant(entId=None):
     ent = models.Entrant.query.get(entId)
     return render_template(
         'entrant_edit.html', rec=ent.record, ent=ent,
+        nametypes=nametypes,
         roles=roles, origins=origins, races=races, tribes=tribes,
         vocations=vocations, enslavements=enslavements,
         titles=titles)

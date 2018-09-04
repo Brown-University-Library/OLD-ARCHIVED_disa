@@ -64,15 +64,22 @@ select {
     <div id="entrant_form">
         <form action="" method="">
             <h2>Person</h2>
-            <div class="form-group row">
-                <div class="col-md-6 mb-3">
-                    <label for="entrant_first_name">First</label>
-                    <input class="form-control" type="text" id="entrant_first_name"/>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="entrant_last_name">Last</label> 
-                    <input class="form-control" type="text" id="entrant_last_name"/>
-                </div>
+            <div id="names">
+<!--                 <div class="row">
+                    <div class="col-md-5">
+                        <label for="entrant_first_name">First</label>
+                        <input class="form-control" type="text" id="entrant_first_name"/>
+                    </div>
+                    <div class="col-md-5">
+                        <label for="entrant_last_name">Last</label> 
+                        <input class="form-control" type="text" id="entrant_last_name"/>
+                    </div>
+                    <div class="col-md-2">
+                        <label>Name Type</label>
+                        <select class="form-control" type="text">
+                        </select>
+                    </div>
+                </div> -->
             </div>
             <div class="form-group row">
                 <div class="col-md-6">
@@ -241,6 +248,53 @@ var updateRadio = function($radioSelect, val) {
     }
 }
 
+var addTypeOptions = function(opts) {
+    var rtype_select = $('#record_type');
+    rtype_select.empty(); 
+    for (var i = 0; i < opts.length; i++) {
+        var opt = opts[i];
+        var opt_elem = $("<option/>", { 'value': opt.id ,
+                                        'text': opt.name });
+        rtype_select.append(opt_elem);
+    }
+}
+
+var makeNameInput = function($nameContainer, nameTypes) {
+    var $row, $col_1, $col_2, $col_3,
+        $label_1, $label_2, $label_3,
+        $input_1, $input_2,
+        $nametype_select;
+
+    $row = $('<div/>', { 'class': 'row' });
+    $col_1 = $('<div/>', { 'class': 'col-md-5' });
+    $col_2 = $('<div/>', { 'class': 'col-md-5' });
+    $col_3 = $('<div/>', { 'class': 'col-md-2' });
+    $label_1 = $('<label/>', { 'text': 'First' });
+    $label_2 = $('<label/>', { 'text': 'Last' });
+    $label_3 = $('<label/>', { 'text': 'Name Type' });
+    $input_1 = $('<input/>',
+        { 'class': 'form-control', 'type': 'text' });
+    $input_2 = $('<input/>',
+        { 'class': 'form-control', 'type': 'text' });
+    $nametype_select = $('<select/>',
+        { 'class': 'form-control', 'type': 'text' });
+
+    for (var i = 0; i < nameTypes.length; i++) {
+        var opt = nameTypes[i];
+        var $opt_elem = $("<option/>", { 'value': opt.id ,
+                                        'text': opt.value });
+        $nametype_select.append($opt_elem);
+    }
+
+    $col_1.append($label_1).append($input_1);
+    $col_2.append($label_2).append($input_2);
+    $col_3.append($label_3).append($nametype_select);
+    $row.append($col_1).append($col_2).append($col_3);
+    $nameContainer.append($row);
+
+    return $nameContainer;
+}
+
 var updateEntrantAttribute = function($attList, attData, attGroup) {
     $new_attribute = makeAttribute($attList, attData, attGroup);
     $attList.append($new_attribute);
@@ -318,6 +372,8 @@ var getEntId = function () {
 
 $( document ).ready(function() {
     var ent_id = getEntId();
+    var $names_div = makeNameInput(
+        $('#names'), JSON.parse('{{ nametypes | tojson | safe}}'))
     $( "#entrant_description" ).accordion({
         collapsible: true,
         header: "h3",
