@@ -14,6 +14,24 @@
 .del-btn {
     background-color: Transparent;
     border: none;
+    margin-left: 0.3em;
+    cursor: pointer;
+}
+
+.attr-list {
+    margin-top: 2em;
+    margin-bottom: 0;
+}
+
+.attr-item {
+    background-color: #DCDCDC;
+    padding: 0.2em;
+    border-radius: 5px;
+    margin-top: 0.2em;
+}
+
+.attr-label {
+    padding: 0.5em;
 }
 
 label {
@@ -80,6 +98,12 @@ select {
                 </div>
             </div> -->
             <div class="form-group row">
+                <div class="col-md-3">
+                    <label for="entrant_age">Age</label>
+                    <input class="form-control" type="text" id="entrant_age" />
+                </div>
+            </div>
+            <div class="form-group row">
                 <div class="col-md-8">
                 <label>Gender</label>
                     <div class="row">
@@ -104,49 +128,65 @@ select {
                 <h3>Additional information</h3>
                 <div class="form-group">
                     <div class="row">
-                        <label for="entrant_age">Age</label>
-                        <input class="form-control" type="text" id="entrant_age" />
+                        <div class='col-md-6'>
+                            <label for="races_autocomplete">Race</label>
+                            <input class="form-control" type="text" id="races_autocomplete" />
+                        </div>
+                        <div class='col-md-6'>
+                            <ul class="list-inline attr-list" id="races"></ul>
+                        </div>
                     </div>
                     <div class="row">
-                        <label for="races_autocomplete">Race</label>
-                        <input class="form-control" type="text" id="races_autocomplete" />
-                        <ul class="list-inline" id="races">
-                        </ul>
+                        <div class='col-md-6'>
+                            <label for="tribes_autocomplete">Tribe</label>
+                            <input class="form-control" type="text" id="tribes_autocomplete" />
+                        </div>
+                        <div class='col-md-6'>
+                            <ul class="list-inline attr-list" id="tribes"></ul>
+                        </div>
                     </div>
                     <div class="row">
-                        <label for="tribes_autocomplete">Tribe</label>
-                        <input class="form-control" type="text" id="tribes_autocomplete" />
-                        <ul class="list-inline" id="tribes">
-                        </ul>
+                        <div class='col-md-6'>
+                            <label for="origins_autocomplete">Origin</label>
+                            <input class="form-control" type="text" id="origins_autocomplete" />
+                        </div>
+                        <div class='col-md-6'>
+                            <ul class="list-inline attr-list" id="origins"></ul>
+                        </div>
                     </div>
                     <div class="row">
-                        <label for="origins_autocomplete">Origin</label>
-                        <input class="form-control" type="text" id="origins_autocomplete" />
-                        <ul class="list-inline" id="origins">
-                        </ul>
+                        <div class='col-md-6'>
+                            <label for="enslavements_autocomplete">Kind of Enslavement</label>
+                            <input class="form-control" type="text" id="enslavements_autocomplete"/>
+                        </div>
+                        <div class='col-md-6'>
+                            <ul class="list-inline attr-list" id="enslavements"></ul>
+                        </div>
                     </div>
                     <div class="row">
-                        <label for="enslavements_autocomplete">Kind of Enslavement</label>
-                        <input class="form-control" type="text" id="enslavements_autocomplete"/>
-                        <ul class="list-inline" id="enslavements">
-                        </ul>
+                        <div class='col-md-6'>
+                            <label for="titles_autocomplete">Title</label>
+                            <input class="form-control" type="text" id="titles_autocomplete"/>
+                        </div>
+                        <div class='col-md-6'>
+                            <ul class="list-inline-item attr-list" id="titles"></ul>
+                        </div>
                     </div>
                     <div class="row">
-                        <label for="titles_autocomplete">Title</label>
-                        <input class="form-control" type="text" id="titles_autocomplete"/>
-                        <ul class="list-inline" id="titles">
-                        </ul>
-                    </div>
-                    <div class="row">
-                        <label for="vocations_autocomplete">Vocation</label>
-                        <input class="form-control" type="text" id="vocations_autocomplete" />
-                        <ul class="list-inline" id="vocations">
-                        </ul>
+                        <div class='col-md-6'>
+                            <label for="vocations_autocomplete">Vocation</label>
+                            <input class="form-control" type="text" id="vocations_autocomplete" />
+                        </div>
+                        <div class='col-md-6'>
+                            <ul class="list-inline attr-list" id="vocations"></ul>
+                        </div>
                     </div>
                 </div>
             </div>
         <div class="row">
-            <button type="submit" class="btn btn-primary" id="rec_update">Update</button>
+            <div class='col-md-6'>
+                <button type="submit" class="btn btn-primary" id="rec_update">Update</button>
+            </div>
         </div>
         </form>
     </div>
@@ -212,11 +252,11 @@ var makeAttribute = function ($attList, data, attGroup) {
         $icon;
     const data_id_field = `data-${attGroup}-id`;
     $li = $('<li/>', { 
-        'class': `entrant_${attGroup} list-inline-item`,
+        'class': `entrant_${attGroup} list-inline-item attr-item`,
         });
     $li.attr(data_id_field, data.id);
     $span = $('<span/>', { 'text' : data.value,
-                        'class': `${attGroup}-name` });
+                        'class': `${attGroup}-name attr-label` });
     $button = $('<button/>', { 'class': `del-btn` });
     $icon = $('<span/>', { 'class': 'fas fa-times-circle' });
 
