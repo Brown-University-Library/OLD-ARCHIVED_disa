@@ -208,6 +208,13 @@ def read_record_data(recId=None):
         'value': rec.record_type.name, 'id':rec.record_type.id }
     data['rec']['header'] = '{} {}'.format(
         rec.record_type.name, rec.citation or '').strip()
+    data['entrants'] = [
+        { 'first': e.primary_name.first,
+        'last': e.primary_name.last,
+        'tags' : [ 
+            { 'label': r.name, 'value': r.name,
+                'id': r.id } for r in e.roles ] }
+            for e in rec.entrants ]
     return jsonify(data)
 
 @app.route('/data/entrants/', methods=['GET'])

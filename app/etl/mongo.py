@@ -111,6 +111,7 @@ def load_data(datafile):
         if valid_person:
             person = process_person(valid_person, name_types,
                 tribes, races, locations, vocations, enslavements)
+            person.roles.append(enslaved_role)
         entrants = [ person ]
         relationships = []
         

@@ -11,9 +11,27 @@
     margin-top: 5px;
 }
 
-.location-btn {
+.del-btn {
     background-color: Transparent;
     border: none;
+    margin-left: 0.3em;
+    cursor: pointer;
+}
+
+.attr-list {
+    margin-top: 2em;
+    margin-bottom: 0;
+}
+
+.attr-item {
+    background-color: #DCDCDC;
+    padding: 0.2em;
+    border-radius: 5px;
+    margin-top: 0.2em;
+}
+
+.attr-label {
+    padding: 0.5em;
 }
 
 </style>
@@ -61,6 +79,8 @@
     </div>
     {% if rec %}
     <h2>People</h2>
+    <div id="entrants">
+    </div>
         {% if rec.entrants|length != 0 %}
         <ul>
         {% for ent in rec.entrants %}
@@ -98,7 +118,7 @@ var makeLocation = function (locData) {
         'data-loc-id': locData.id });
     $span = $('<span/>', { 'text' : locData.value,
                         'class': 'loc-name' });
-    $button = $('<button/>', { 'class': 'location-btn' });
+    $button = $('<button/>', { 'class': 'del-btn' });
     $icon = $('<span/>', { 'class': 'fas fa-times-circle' });
 
     $button.append($icon);
@@ -151,6 +171,81 @@ var updateLocationsList = function ($locList, locsArray) {
     for ( var i=0; i < locsArray.length; i++ ) {
         var loc_data = locsArray[i];
         $locList = addLocation($locList, loc_data, true)
+    }
+}
+
+var makeEntrantInput = function(entData) {
+    var $row, $col_1, $col_2, $col_3,
+        $label_1, $label_2, $label_3,
+        $input_1, $input_2,
+        $tag_list;
+
+    $row = $('<div/>', { 'class': 'row' });
+    $col_1 = $('<div/>', { 'class': 'col-md-4' });
+    $col_2 = $('<div/>', { 'class': 'col-md-4' });
+    $col_3 = $('<div/>', { 'class': 'col-md-3' });
+    $label_1 = $('<label/>', {'text': 'First' });
+    $label_2 = $('<label/>', { 'text': 'Last' });
+    $input_1 = $('<input/>',
+        { 'class': 'form-control', 'type': 'text',
+            'value': entData['first'] });
+    $input_2 = $('<input/>',
+        { 'class': 'form-control', 'type': 'text',
+            'value': entData['last'] });
+    $tag_list = $('<ul/>',
+        { 'class': 'list-inline attr-list' })
+
+    for (var i = 0; i < entData.tags.length; i++) {
+        var tag_data = entData.tags[i];
+        var $li = makeTag($tag_list, tag_data);
+        $tag_list.append($li);
+    }
+
+    $col_1.append($label_1).append($input_1);
+    $col_2.append($label_2).append($input_2);
+    $col_3.append($label_3).append($tag_list);
+    $row.append($col_1).append($col_2).append($col_3);
+
+    return $row;
+}
+
+var makeTag = function ($attList, data) {
+    var $li, $span, $button,
+        $icon;
+    const data_id_field = `data-tag-id`;
+    $li = $('<li/>', { 
+        'class': `entrant_tag list-inline-item attr-item`,
+        });
+    $li.attr(data_id_field, data.id);
+    $span = $('<span/>', { 'text' : data.value,
+                        'class': `tag-name attr-label` });
+    $button = $('<button/>', { 'class': `del-btn` });
+    $icon = $('<span/>', { 'class': 'fas fa-times-circle' });
+
+    $button.append($icon);
+    $button.on('click', function(e) {
+        e.preventDefault();
+        removeAttribute($attList,
+            $li.attr(data_id_field), data_id_field);
+    })
+
+    $li.append($span).append($button);
+    return $li;
+}
+
+var removeAttribute = function ($attList, dataId, dataIdField) {
+    var $att;
+
+    $att = $attList.find(`li[${dataIdField}='${dataId}']`).last();
+    $att.remove();
+}
+
+var updateAttributeList = function ($attList, attArray, attGroup) {
+    $attList.empty();
+    for ( var i=0; i < attArray.length; i++ ) {
+        var att_data = attArray[i];
+        $attList = updateEntrantAttribute(
+            $attList, att_data, attGroup);
     }
 }
 
@@ -229,9 +324,18 @@ var setFormHeader = function (recData) {
     }
 }
 
+var addEntrantData = function(entJsonArray, $container) {
+    for (var i = 0; i < entJsonArray.length; i++) {
+        var ent = entJsonArray[i];
+        var $row = makeEntrantInput(ent);
+        $container.append($row);
+    }
+}
+
 var initializeForm = function (data) {
     setFormHeader(data['rec']);
-    setInputValues(data['rec']);    
+    setInputValues(data['rec']);
+    addEntrantData(data['entrants'], $('#entrants'));    
 }
 
 var readRecordData = function(recId) {
