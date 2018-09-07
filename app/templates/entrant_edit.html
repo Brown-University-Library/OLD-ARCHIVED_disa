@@ -136,56 +136,62 @@ select {
                 <div class="form-group">
                     <div class="row">
                         <div class='col-md-6'>
-                            <label for="races_autocomplete">Race</label>
-                            <input class="form-control" type="text" id="races_autocomplete" />
-                        </div>
-                        <div class='col-md-6'>
-                            <ul class="list-inline attr-list" id="races"></ul>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class='col-md-6'>
-                            <label for="tribes_autocomplete">Tribe</label>
-                            <input class="form-control" type="text" id="tribes_autocomplete" />
-                        </div>
-                        <div class='col-md-6'>
-                            <ul class="list-inline attr-list" id="tribes"></ul>
+                            <label>Race</label>
+                            <select class="form-control select2-tags" multiple="multiple">
+                            {% for opt in races %}
+                                <option value="{{opt.id}}">{{opt.value}}</option>
+                            {% endfor %}
+                            </select>
                         </div>
                     </div>
                     <div class="row">
                         <div class='col-md-6'>
-                            <label for="origins_autocomplete">Origin</label>
-                            <input class="form-control" type="text" id="origins_autocomplete" />
-                        </div>
-                        <div class='col-md-6'>
-                            <ul class="list-inline attr-list" id="origins"></ul>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class='col-md-6'>
-                            <label for="enslavements_autocomplete">Kind of Enslavement</label>
-                            <input class="form-control" type="text" id="enslavements_autocomplete"/>
-                        </div>
-                        <div class='col-md-6'>
-                            <ul class="list-inline attr-list" id="enslavements"></ul>
+                            <label>Tribe</label>
+                            <select class="form-control select2-tags" multiple="multiple">
+                            {% for opt in tribes %}
+                                <option value="{{opt.id}}">{{opt.value}}</option>
+                            {% endfor %}
+                            </select>
                         </div>
                     </div>
                     <div class="row">
                         <div class='col-md-6'>
-                            <label for="titles_autocomplete">Title</label>
-                            <input class="form-control" type="text" id="titles_autocomplete"/>
-                        </div>
-                        <div class='col-md-6'>
-                            <ul class="list-inline-item attr-list" id="titles"></ul>
+                            <label>Origin</label>
+                            <select class="form-control select2-tags" multiple="multiple">
+                            {% for opt in origins %}
+                                <option value="{{opt.id}}">{{opt.value}}</option>
+                            {% endfor %}
+                            </select>
                         </div>
                     </div>
                     <div class="row">
                         <div class='col-md-6'>
-                            <label for="vocations_autocomplete">Vocation</label>
-                            <input class="form-control" type="text" id="vocations_autocomplete" />
+                            <label>Enslavements</label>
+                            <select class="form-control select2-tags" multiple="multiple">
+                            {% for opt in enslavements %}
+                                <option value="{{opt.id}}">{{opt.value}}</option>
+                            {% endfor %}
+                            </select>
                         </div>
+                    </div>
+                    <div class="row">
                         <div class='col-md-6'>
-                            <ul class="list-inline attr-list" id="vocations"></ul>
+                            <label>Title</label>
+                            <select class="form-control select2-tags" multiple="multiple">
+                            {% for opt in titles %}
+                                <option value="{{opt.id}}">{{opt.value}}</option>
+                            {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class='col-md-6'>
+                            <label>Vocation</label>
+                            <select class="form-control select2-tags" multiple="multiple">
+                            {% for opt in vocations %}
+                                <option value="{{opt.id}}">{{opt.value}}</option>
+                            {% endfor %}
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -379,180 +385,6 @@ $( document ).ready(function() {
         header: "h3",
         heightStyle: 'content',
         active: false
-    });
-    $('#roles_autocomplete').autocomplete({
-        source: JSON.parse('{{ roles | tojson | safe}}'),
-        minLength: 2,
-        delay: 10,
-        autoFocus: true,
-        response: function (event, ui) {
-
-            if (ui.content.length == 0) {
-                ui.content.push({
-                    label: $(this).val(),
-                    value: $(this).val(),
-                    id: -1
-                });
-            }
-        },
-        select: function( event, ui ) {
-            event.preventDefault();
-            $("#roles_autocomplete").val(ui.item.value);
-            addDescriptor($('#descriptors'), ui.item, true);
-            $("#roles_autocomplete").val('');
-            return false;
-        }
-    });
-    $('#races_autocomplete').autocomplete({
-        source: JSON.parse('{{ races | tojson | safe}}'),
-        minLength: 0,
-        delay: 5,
-        autoFocus: true,
-        response: function (event, ui) {
-
-            if (ui.content.length == 0) {
-                ui.content.push({
-                    label: $(this).val(),
-                    value: $(this).val(),
-                    id: -1
-                });
-            }
-        },
-        select: function (event, ui) {
-            event.preventDefault()
-            $("#races_autocomplete").val(ui.item.value);
-            updateEntrantAttribute($('#races'), ui.item, 'races');
-            $("#races_autocomplete").val('');
-            return false;
-        }
-        // focus: function (event, ui) {
-        //     return false;
-        // },
-        // change: function(event, ui) {
-        //     if (ui.item == null) {
-        //         ui.content.push({
-        //             label: $(this).val(),
-        //             value: $(this).val(),
-        //             id: -1
-        //         });
-        //     }
-        // }
-    });
-    $('#tribes_autocomplete').autocomplete({
-        source: JSON.parse('{{ tribes | tojson | safe}}'),
-        minLength: 0,
-        delay: 5,
-        autoFocus: true,
-        response: function (event, ui) {
-
-            if (ui.content.length == 0) {
-                ui.content.push({
-                    label: $(this).val(),
-                    value: $(this).val(),
-                    id: -1
-                });
-            }
-        },
-        select: function (event, ui) {
-            event.preventDefault()
-            $("#tribes_autocomplete").val(ui.item.value);
-            updateEntrantAttribute($('#tribes'), ui.item, 'tribes');
-            $("#tribes_autocomplete").val('');
-            return false;
-        }
-    });
-    $('#origins_autocomplete').autocomplete({
-        source: JSON.parse('{{ origins | tojson | safe}}'),
-        minLength: 0,
-        delay: 5,
-        autoFocus: true,
-        response: function (event, ui) {
-
-            if (ui.content.length == 0) {
-                ui.content.push({
-                    label: $(this).val(),
-                    value: $(this).val(),
-                    id: -1
-                });
-            }
-        },
-        select: function (event, ui) {
-            event.preventDefault()
-            $("#origins_autocomplete").val(ui.item.value);
-            updateEntrantAttribute($('#origins'), ui.item, 'origins');
-            $("#origins_autocomplete").val('');
-            return false;
-        }
-    });
-    $('#enslavements_autocomplete').autocomplete({
-        source: JSON.parse('{{ enslavements | tojson | safe}}'),
-        minLength: 0,
-        delay: 5,
-        autoFocus: true,
-        response: function (event, ui) {
-
-            if (ui.content.length == 0) {
-                ui.content.push({
-                    label: $(this).val(),
-                    value: $(this).val(),
-                    id: -1
-                });
-            }
-        },
-        select: function (event, ui) {
-            event.preventDefault()
-            $("#enslavements_autocomplete").val(ui.item.value);
-            updateEntrantAttribute(
-                $('#enslavements'), ui.item, 'enslavements');
-            $("#enslavements_autocomplete").val('');
-            return false;
-        }
-    });
-    $('#titles_autocomplete').autocomplete({
-        source: JSON.parse('{{ titles | tojson | safe}}'),
-        minLength: 0,
-        delay: 5,
-        autoFocus: true,
-        response: function (event, ui) {
-
-            if (ui.content.length == 0) {
-                ui.content.push({
-                    label: $(this).val(),
-                    value: $(this).val(),
-                    id: -1
-                });
-            }
-        },
-        select: function (event, ui) {
-            event.preventDefault()
-            $("#titles_autocomplete").val(ui.item.value);
-            updateEntrantAttribute($('#titles'), ui.item, 'titles');
-            $("#titles_autocomplete").val('');
-            return false;
-        }
-    });
-    $('#vocations_autocomplete').autocomplete({
-        source: JSON.parse('{{ vocations | tojson | safe}}'),
-        minLength: 0,
-        delay: 5,
-        autoFocus: true,
-        response: function (event, ui) {
-
-            if (ui.content.length == 0) {
-                ui.content.push({
-                    label: $(this).val(),
-                    value: $(this).val(),
-                    id: -1
-                });
-            }
-        },
-        select: function (event, ui) {
-            event.preventDefault()
-            $("#vocations_autocomplete").val(ui.item.value);
-            updateEntrantAttribute($('#vocations'), ui.item, 'vocations');
-            $("#vocations_autocomplete").val('');
-            return false;
-        }
     });
     readEntrantData(ent_id);
 });
