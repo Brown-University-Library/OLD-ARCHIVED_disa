@@ -44,9 +44,6 @@ label.radio-inline {
     margin-right:0.5rem;
 }
 
-select {
-    width: ;
-}
 
 </style>
 {% endblock %}
@@ -55,7 +52,8 @@ select {
 <div class="container">
     <div class="row">
         <div class='col-md-11'>
-            <h2 id="doc_header">{{ rec.document.citation }}</h2>
+            <h2 id="doc_header"><h2>{{ rec.document.citation }}</h2>
+            <h3>Individual Details</h3>
         </div>
         <div class='col-md-1'>
             <a href="{{ url_for('edit_record', recId=rec.id)}}">Back</a>
@@ -63,139 +61,138 @@ select {
     </div>
     <div id="entrant_form">
         <form action="" method="">
-            <h2>Person</h2>
+            <h4>Name</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                      <th scope="col">First</th>
+                      <th scope="col">Last</th>
+                      <th scope="col">Type</th>
+                      <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody id="names">
+                    <tr data-name-id="1" class="name-row">
+                        <td>
+                            <input type="text" class="form-control" />
+                        </td>
+                        <td><input type="text" class="form-control" /></td>
+                        <td>
+                            <select class="form-control steve-dropdown">
+                            {% for opt in nametypes %}
+                                <option value="{{opt.id}}">{{opt.value}}</option>
+                            {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger name-btn">
+                                <span class="fas fa-times-circle"></span>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="row">
+                <div class='col-md-6'>
+                    <button class="btn btn-primary" id="add-name">Add Name</button>
+                </div>
+            </div>
             <div id="names">
-                <!-- <div class="row">
-                    <div class="col-md-5">
-                        <label for="entrant_first_name">First</label>
-                        <input class="form-control" type="text" id="entrant_first_name"/>
+            </div>
+            <hr/>
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="entrant_age">Age</label>
+                        <input class="form-control" type="text" id="entrant_age" />
                     </div>
-                    <div class="col-md-5">
-                        <label for="entrant_last_name">Last</label> 
-                        <input class="form-control" type="text" id="entrant_last_name"/>
+                </div>
+                <div class="row">
+                    <div class="col-md-8">
+                        <label>Gender</label>
+                        <div class="row">
+                            <div class="col-md-6" id="gender_select">
+                                <label class="radio-inline">
+                                  <input type="radio" name="entrant_gender" id="gender_male" value="Male">
+                                  Male
+                                </label>
+                                <label class="radio-inline">
+                                  <input type="radio" name="entrant_gender" id="gender_female" value="Female">
+                                  Female
+                                </label>
+                                <label class="radio-inline">
+                                  <input type="radio" name="entrant_gender" id="gender_other" value="Other" checked>
+                                  Other/Unknown
+                                </label>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-2">
-                        <label>Name Type</label>
-                        <select class="form-control" type="text">
+                </div>
+            </div>
+            <hr/>
+            <div class='form-group'>
+                <div class="row">
+                    <div class='col-md-6'>
+                        <label>Race</label>
+                        <select class="form-control steve-tags" multiple="multiple">
+                        {% for opt in races %}
+                            <option value="{{opt.id}}">{{opt.value}}</option>
+                        {% endfor %}
                         </select>
                     </div>
-                </div> -->
-            </div>
-            <div class="form-group row">
-                <div class="col-md-6">
-                    <label for="roles_enslaved">Is this an Enslaved Person?</label>
-                    <div class="row">
-                        <div class="col-md-3">
-                            <select class="form-control" type="text" id="roles_enslaved">
-                                <option>Yes</option>
-                                <option>No</option>
-                            </select>
-                        </div>
+                </div>
+                <div class="row">
+                    <div class='col-md-6'>
+                        <label>Tribe</label>
+                        <select class="form-control steve-tags" multiple="multiple">
+                        {% for opt in tribes %}
+                            <option value="{{opt.id}}">{{opt.value}}</option>
+                        {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class='col-md-6'>
+                        <label>Origin</label>
+                        <select class="form-control steve-tags" multiple="multiple">
+                        {% for opt in origins %}
+                            <option value="{{opt.id}}">{{opt.value}}</option>
+                        {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class='col-md-6'>
+                        <label>Status</label>
+                        <select class="form-control steve-tags" multiple="multiple">
+                        {% for opt in enslavements %}
+                            <option value="{{opt.id}}">{{opt.value}}</option>
+                        {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class='col-md-6'>
+                        <label>Title</label>
+                        <select class="form-control steve-tags" multiple="multiple">
+                        {% for opt in titles %}
+                            <option value="{{opt.id}}">{{opt.value}}</option>
+                        {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class='col-md-6'>
+                        <label>Vocation</label>
+                        <select class="form-control steve-tags" multiple="multiple">
+                        {% for opt in vocations %}
+                            <option value="{{opt.id}}">{{opt.value}}</option>
+                        {% endfor %}
+                        </select>
                     </div>
                 </div>
             </div>
-<!--             <div class="form-group row">
-                <div class="col-md-4">
-                    <label for="roles_autocomplete">Description</label>
-                    <input class="form-control" type="text" id="roles_autocomplete" />
-                </div>
-                <div class="col-md-8">
-                    <ul class="list-inline" id="descriptors">
-                    </ul>
-                </div>
-            </div> -->
-            <div class="form-group row">
-                <div class="col-md-3">
-                    <label for="entrant_age">Age</label>
-                    <input class="form-control" type="text" id="entrant_age" />
-                </div>
-            </div>
-            <div class="form-group row">
-                <div class="col-md-8">
-                <label>Gender</label>
-                    <div class="row">
-                        <div class="col-md-6" id="gender_select">
-                            <label class="radio-inline">
-                              <input type="radio" name="entrant_gender" id="gender_male" value="Male">
-                              Male
-                            </label>
-                            <label class="radio-inline">
-                              <input type="radio" name="entrant_gender" id="gender_female" value="Female">
-                              Female
-                            </label>
-                            <label class="radio-inline">
-                              <input type="radio" name="entrant_gender" id="gender_other" value="Other" checked>
-                              Other/Unknown
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="entrant_description">
-                <h3>Additional information</h3>
-                <div class="form-group">
-                    <div class="row">
-                        <div class='col-md-6'>
-                            <label>Race</label>
-                            <select class="form-control select2-tags" multiple="multiple">
-                            {% for opt in races %}
-                                <option value="{{opt.id}}">{{opt.value}}</option>
-                            {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class='col-md-6'>
-                            <label>Tribe</label>
-                            <select class="form-control select2-tags" multiple="multiple">
-                            {% for opt in tribes %}
-                                <option value="{{opt.id}}">{{opt.value}}</option>
-                            {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class='col-md-6'>
-                            <label>Origin</label>
-                            <select class="form-control select2-tags" multiple="multiple">
-                            {% for opt in origins %}
-                                <option value="{{opt.id}}">{{opt.value}}</option>
-                            {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class='col-md-6'>
-                            <label>Enslavements</label>
-                            <select class="form-control select2-tags" multiple="multiple">
-                            {% for opt in enslavements %}
-                                <option value="{{opt.id}}">{{opt.value}}</option>
-                            {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class='col-md-6'>
-                            <label>Title</label>
-                            <select class="form-control select2-tags" multiple="multiple">
-                            {% for opt in titles %}
-                                <option value="{{opt.id}}">{{opt.value}}</option>
-                            {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class='col-md-6'>
-                            <label>Vocation</label>
-                            <select class="form-control select2-tags" multiple="multiple">
-                            {% for opt in vocations %}
-                                <option value="{{opt.id}}">{{opt.value}}</option>
-                            {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        </div>
         <div class="row">
             <div class='col-md-6'>
                 <button type="submit" class="btn btn-primary" id="rec_update">Update</button>
@@ -209,40 +206,6 @@ select {
 {% block scripts%}
 {{ super() }}
 <script>
-var addDescriptor = function ($descList, descData) {
-    $new_role = makeRole(descData);
-    $descList.append($new_role);
-    return $descList;
-}
-
-var removeDescriptor = function (descId) {
-    var $desc_list, $desc;
-
-    $desc_list = $('#descriptors');
-    $desc = $desc_list.find(`li[data-role-id='${descId}']`).last();
-    $desc.remove();
-}
-
-var makeRole = function (data) {
-    var $li, $span, $button,
-        $icon;
-    $li = $('<li/>', { 
-        'class': 'entrant_role list-inline-item',
-        'data-role-id': data.id });
-    $span = $('<span/>', { 'text' : data.value,
-                        'class': 'role-name' });
-    $button = $('<button/>', { 'class': 'role-btn' });
-    $icon = $('<span/>', { 'class': 'fas fa-times-circle' });
-
-    $button.append($icon);
-    $button.on('click', function(e) {
-        e.preventDefault();
-        removeDescriptor($li.attr('data-role-id'));
-    })
-
-    $li.append($span).append($button);
-    return $li;
-}
 
 var updateRadio = function($radioSelect, val) {
     var $radio_opt;
@@ -254,52 +217,7 @@ var updateRadio = function($radioSelect, val) {
     }
 }
 
-var addTypeOptions = function(opts) {
-    var rtype_select = $('#record_type');
-    rtype_select.empty(); 
-    for (var i = 0; i < opts.length; i++) {
-        var opt = opts[i];
-        var opt_elem = $("<option/>", { 'value': opt.id ,
-                                        'text': opt.name });
-        rtype_select.append(opt_elem);
-    }
-}
 
-var makeNameInput = function($nameContainer, nameTypes) {
-    var $row, $col_1, $col_2, $col_3,
-        $label_1, $label_2, $label_3,
-        $input_1, $input_2,
-        $nametype_select;
-
-    $row = $('<div/>', { 'class': 'row' });
-    $col_1 = $('<div/>', { 'class': 'col-md-5' });
-    $col_2 = $('<div/>', { 'class': 'col-md-5' });
-    $col_3 = $('<div/>', { 'class': 'col-md-2' });
-    $label_1 = $('<label/>', { 'text': 'First' });
-    $label_2 = $('<label/>', { 'text': 'Last' });
-    $label_3 = $('<label/>', { 'text': 'Name Type' });
-    $input_1 = $('<input/>',
-        { 'class': 'form-control', 'type': 'text' });
-    $input_2 = $('<input/>',
-        { 'class': 'form-control', 'type': 'text' });
-    $nametype_select = $('<select/>',
-        { 'class': 'form-control', 'type': 'text' });
-
-    for (var i = 0; i < nameTypes.length; i++) {
-        var opt = nameTypes[i];
-        var $opt_elem = $("<option/>", { 'value': opt.id ,
-                                        'text': opt.value });
-        $nametype_select.append($opt_elem);
-    }
-
-    $col_1.append($label_1).append($input_1);
-    $col_2.append($label_2).append($input_2);
-    $col_3.append($label_3).append($nametype_select);
-    $row.append($col_1).append($col_2).append($col_3);
-    $nameContainer.append($row);
-
-    return $nameContainer;
-}
 
 var updateEntrantAttribute = function($attList, attData, attGroup) {
     $new_attribute = makeAttribute($attList, attData, attGroup);
@@ -338,8 +256,9 @@ var removeAttribute = function ($attList, dataId, dataIdField) {
     $att.remove();
 }
 
-var updateAttributeList = function ($attList, attArray, attGroup) {
-    $attList.empty();
+var updateAttributeList = function ($container, attArray, attGroup) {
+    var $tag_list = $container.find($('ul.select2-selection__rendered'));
+    $tag_list.empty();
     for ( var i=0; i < attArray.length; i++ ) {
         var att_data = attArray[i];
         $attList = updateEntrantAttribute(
@@ -358,7 +277,7 @@ var initializeForm = function(entData) {
     updateAttributeList($('#origins'), entData['origins'], 'origins');
     updateAttributeList($('#titles'), entData['titles'], 'titles');
     updateAttributeList(
-        $('#enslavements'), entData['enslavements'], 'enslavements');
+        $('#statuses'), entData['enslavements'], 'enslavements');
     updateAttributeList(
         $('#vocations'), entData['vocations'], 'vocations');
 }
@@ -371,6 +290,47 @@ var readEntrantData = function(entId) {
     });
 }
 
+var addNameInput = function($nameContainer, nameData, nameTypes) {
+    var $tr, $td1, $td2, $td3, $td4,
+        $input1, $input2, $select,
+        $button, $span;
+
+    $tr = $('<tr/>', { 'class': 'name-row'});
+    $td1 = $('<td/>');
+    $td2 = $('<td/>');
+    $td3 = $('<td/>');
+    $td4 = $('<td/>');
+    $input1 = $('<input/>',
+        { 'class': 'form-control name-first', 'type': 'text' });
+    $input2 = $('<input/>',
+        { 'class': 'form-control name-last', 'type': 'text' });
+    $select = $('<select/>',
+        { 'class': 'form-control'});
+
+    for (var i = 0; i < nameTypes.length; i++) {
+        var opt = nameTypes[i];
+        var $opt = $("<option/>", { 'value': opt.id ,
+                                        'text': opt.value });
+        if (opt.value === nameData['name_type']) {
+            $opt.prop('selected', true);
+        }
+        $select.append($opt);
+    }
+
+    $button = $('<button/>', { 'class': 'btn btn-danger del-name'});
+    $span = $('<span/>', {'class': 'fas fa-times-circle'});
+
+    $button.append($span);
+    $td1.append($input1);
+    $td2.append($input2);
+    $td3.append($select);
+    $td4.append($button);
+    $tr.append($td1).append($td2).append($td3).append($td4);
+    $nameContainer.append($tr);
+
+    return $nameContainer;
+}
+
 var getEntId = function () {
     var ent_id = "{{ ent.id or '' }}";
     return ent_id;
@@ -378,15 +338,23 @@ var getEntId = function () {
 
 $( document ).ready(function() {
     var ent_id = getEntId();
-    var $names_div = makeNameInput(
-        $('#names'), JSON.parse('{{ nametypes | tojson | safe}}'))
-    $( "#entrant_description" ).accordion({
-        collapsible: true,
-        header: "h3",
-        heightStyle: 'content',
-        active: false
-    });
+    var name_types = JSON.parse('{{ nametypes | tojson | safe}}');
+
     readEntrantData(ent_id);
+    $('#add-name').on('click', function(e) {
+        e.preventDefault();
+
+        var blank_name = { 'first': '', 'last': '',
+            'name_type': 'Given', 'id': '-1' };
+        addNameInput($('#names'), blank_name, name_types);
+    });
+    $('#names').on('click', '.del-name', function(e) {
+        e.preventDefault();
+        var $name_row = $( this ).closest('.name-row');
+        
+        console.log($name_row);
+        $name_row.remove();
+    });
 });
 </script>
 {% endblock %}

@@ -17,10 +17,13 @@
 </script>
 <script type="text/javascript">
     $(document).ready(function() {
-        $('.select2-tags').select2({
+        $('.steve-tags').select2({
             tags: true,
         });
-        $('.select2-dropdown').select2();
+        $('.steve-dropdown').select2({
+            tags: true,
+            width: '100%'
+        });
     });
 </script>
 {% endblock %}
