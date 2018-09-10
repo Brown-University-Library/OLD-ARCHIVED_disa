@@ -331,3 +331,52 @@ def update_record_data(recId):
     data['rec']['record_type'] = {'label': rec.record_type.name,
         'value': rec.record_type.name, 'id':rec.record_type.id }
     return jsonify(data)
+
+def update_entrant_name(data):
+    if data['id'] == 'name':
+        name = models.EntrantName()
+    else:
+        name = models.EntrantName.query.get(data['id'])
+    name.first = data['first']
+    name.last = data['last']
+    name.name_type_id = data['name_type']
+    return name   
+
+def get_or_create_entrant_attribute(data, attrModel):
+    if data['id'] == data['name']:
+        new_attr = attrModel(name=data['name'])
+        db.session.add(new_attr)
+        db.session.commit()
+        return new_attr
+    else:
+        existing = attrModel.query.get(data['id'])
+        return existing 
+
+@app.route('/data/entrants/', methods=['PUT'])
+@app.route('/data/entrants/<entId>', methods=['PUT'])
+def update_entrant(entId):
+    data = request.get_json()
+    ent = models.Entrant.query.get(entId)
+    ent.names = [ update_entrant_name(n) for n in data['names'] ]
+    ent.age = data['age']
+    ent.sex = data['sex'] 
+    ent.primary_name = ent.names[0]
+    ent.races = [ get_or_create_entrant_attribute(a, models.Race)
+        for a in data['races'] ]
+    ent.tribes = [ get_or_create_entrant_attribute(a, models.Tribe)
+        for a in data['tribes'] ]
+    ent.origins = [ get_or_create_entrant_attribute(a, models.Location)
+        for a in data['origins'] ]
+    ent.titles = [ get_or_create_entrant_attribute(a, models.Title)
+        for a in data['titles'] ]
+    ent.enslavements = [ get_or_create_entrant_attribute(
+        a, models.EnslavementType)
+            for a in data['statuses'] ]
+    ent.vocations = [ get_or_create_entrant_attribute(
+        a, models.Vocation)
+            for a in data['vocations'] ]
+    db.session.add(ent)
+    db.session.commit()
+
+    return jsonify(
+        { 'redirect': url_for('edit_record', recId=ent.record_id) })

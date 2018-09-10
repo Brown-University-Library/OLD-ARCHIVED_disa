@@ -353,10 +353,10 @@ var readEntrantData = function(entId, nameTypes) {
 }
 
 var updateEntrantDetails = function(entId, dataObj) {
-    var ent_data_api = "{{ url_for('update_record_data', entId=None )}}" + entId;
+    var ent_data_api = "{{ url_for('update_entrant', entId=None )}}" + entId;
     $.ajax({
         type: "PUT",
-        url: rec_data_api,
+        url: ent_data_api,
         contentType: "application/json",
         data: JSON.stringify(dataObj),
         success: function(data) {
@@ -387,7 +387,7 @@ $( document ).ready(function() {
     $('#entrant_form').on('click', '#details_update', function(e) {
         e.preventDefault();
         var data = getFormData($('#entrant_form'));
-        console.log(data);
+        updateEntrantDetails(ent_id, data);
     });
 });
 </script>
