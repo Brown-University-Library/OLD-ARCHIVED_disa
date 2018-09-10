@@ -72,32 +72,12 @@ label.radio-inline {
                     </tr>
                 </thead>
                 <tbody id="names">
-                    <tr data-name-id="1" class="name-row">
-                        <td>
-                            <input type="text" class="form-control" />
-                        </td>
-                        <td><input type="text" class="form-control" /></td>
-                        <td>
-                            <select class="form-control steve-dropdown">
-                            {% for opt in nametypes %}
-                                <option value="{{opt.id}}">{{opt.value}}</option>
-                            {% endfor %}
-                            </select>
-                        </td>
-                        <td>
-                            <button class="btn btn-danger name-btn">
-                                <span class="fas fa-times-circle"></span>
-                            </button>
-                        </td>
-                    </tr>
                 </tbody>
             </table>
             <div class="row">
                 <div class='col-md-6'>
                     <button class="btn btn-primary" id="add-name">Add Name</button>
                 </div>
-            </div>
-            <div id="names">
             </div>
             <hr/>
             <div class="form-group">
@@ -134,7 +114,7 @@ label.radio-inline {
                 <div class="row">
                     <div class='col-md-6'>
                         <label>Race</label>
-                        <select class="form-control steve-tags" multiple="multiple">
+                        <select  id="races" class="form-control steve-tags" multiple="multiple">
                         {% for opt in races %}
                             <option value="{{opt.id}}">{{opt.value}}</option>
                         {% endfor %}
@@ -144,7 +124,7 @@ label.radio-inline {
                 <div class="row">
                     <div class='col-md-6'>
                         <label>Tribe</label>
-                        <select class="form-control steve-tags" multiple="multiple">
+                        <select id="tribes" class="form-control steve-tags" multiple="multiple">
                         {% for opt in tribes %}
                             <option value="{{opt.id}}">{{opt.value}}</option>
                         {% endfor %}
@@ -154,7 +134,7 @@ label.radio-inline {
                 <div class="row">
                     <div class='col-md-6'>
                         <label>Origin</label>
-                        <select class="form-control steve-tags" multiple="multiple">
+                        <select id="origins" class="form-control steve-tags" multiple="multiple">
                         {% for opt in origins %}
                             <option value="{{opt.id}}">{{opt.value}}</option>
                         {% endfor %}
@@ -164,7 +144,7 @@ label.radio-inline {
                 <div class="row">
                     <div class='col-md-6'>
                         <label>Status</label>
-                        <select class="form-control steve-tags" multiple="multiple">
+                        <select id="enslavements" class="form-control steve-tags" multiple="multiple">
                         {% for opt in enslavements %}
                             <option value="{{opt.id}}">{{opt.value}}</option>
                         {% endfor %}
@@ -174,7 +154,7 @@ label.radio-inline {
                 <div class="row">
                     <div class='col-md-6'>
                         <label>Title</label>
-                        <select class="form-control steve-tags" multiple="multiple">
+                        <select id="titles" class="form-control steve-tags" multiple="multiple">
                         {% for opt in titles %}
                             <option value="{{opt.id}}">{{opt.value}}</option>
                         {% endfor %}
@@ -184,7 +164,7 @@ label.radio-inline {
                 <div class="row">
                     <div class='col-md-6'>
                         <label>Vocation</label>
-                        <select class="form-control steve-tags" multiple="multiple">
+                        <select id="vocations" class="form-control steve-tags" multiple="multiple">
                         {% for opt in vocations %}
                             <option value="{{opt.id}}">{{opt.value}}</option>
                         {% endfor %}
@@ -217,59 +197,28 @@ var updateRadio = function($radioSelect, val) {
     }
 }
 
-
-
-var updateEntrantAttribute = function($attList, attData, attGroup) {
-    $new_attribute = makeAttribute($attList, attData, attGroup);
-    $attList.append($new_attribute);
-    return $attList;
-}
-
-var makeAttribute = function ($attList, data, attGroup) {
-    var $li, $span, $button,
-        $icon;
-    const data_id_field = `data-${attGroup}-id`;
-    $li = $('<li/>', { 
-        'class': `entrant_${attGroup} list-inline-item attr-item`,
-        });
-    $li.attr(data_id_field, data.id);
-    $span = $('<span/>', { 'text' : data.value,
-                        'class': `${attGroup}-name attr-label` });
-    $button = $('<button/>', { 'class': `del-btn` });
-    $icon = $('<span/>', { 'class': 'fas fa-times-circle' });
-
-    $button.append($icon);
-    $button.on('click', function(e) {
-        e.preventDefault();
-        removeAttribute($attList,
-            $li.attr(data_id_field), data_id_field);
-    })
-
-    $li.append($span).append($button);
-    return $li;
-}
-
-var removeAttribute = function ($attList, dataId, dataIdField) {
-    var $att;
-
-    $att = $attList.find(`li[${dataIdField}='${dataId}']`).last();
-    $att.remove();
-}
-
 var updateAttributeList = function ($container, attArray, attGroup) {
-    var $tag_list = $container.find($('ul.select2-selection__rendered'));
-    $tag_list.empty();
-    for ( var i=0; i < attArray.length; i++ ) {
-        var att_data = attArray[i];
-        $attList = updateEntrantAttribute(
-            $attList, att_data, attGroup);
+    var attribute_ids = [];
+    for (var x=0; x < attArray.length; x++) {
+        attribute_ids.push(attArray[x].id);
     }
+    $container.val(attribute_ids);
+    $container.trigger('change');
 }
 
-var initializeForm = function(entData) {
+var initializeForm = function(entData, nameTypes) {
     if ( $.isEmptyObject(entData) ) {
+        var blank_name = { 'first': '', 'last': '',
+            'name_type': 'Given', 'id': '-1' };
+        addNameInput($('#names'), blank_name, nameTypes);
+        disableNameDeletion($('#names'));
         return;
     }
+    for (var i=0; i < entData['names'].length; i++ ) {
+        addNameInput(
+            $('#names'), entData['names'][i], nameTypes );
+    }
+    disableNameDeletion($('#names'));
     $('#entrant_age').val(entData['age']);
     updateRadio($('#gender_select'), entData['sex']);
     updateAttributeList($('#races'), entData['races'], 'races');
@@ -282,11 +231,11 @@ var initializeForm = function(entData) {
         $('#vocations'), entData['vocations'], 'vocations');
 }
 
-var readEntrantData = function(entId) {
+var readEntrantData = function(entId, nameTypes) {
     var ent_data_api = "{{ url_for('read_entrant_data', entId=None ) }}" + entId;
     var out = null;
     $.get(ent_data_api, function(data) {
-        initializeForm(data['ent']);
+        initializeForm(data['ent'], nameTypes);
     });
 }
 
@@ -300,17 +249,21 @@ var addNameInput = function($nameContainer, nameData, nameTypes) {
     $td2 = $('<td/>');
     $td3 = $('<td/>');
     $td4 = $('<td/>');
-    $input1 = $('<input/>',
-        { 'class': 'form-control name-first', 'type': 'text' });
-    $input2 = $('<input/>',
-        { 'class': 'form-control name-last', 'type': 'text' });
+    $input1 = $('<input/>', {
+        'class': 'form-control name-first',
+        'type': 'text',
+        'value': nameData['first'] });
+    $input2 = $('<input/>', {
+        'class': 'form-control name-last',
+        'type': 'text',
+        'value': nameData['last'] });
     $select = $('<select/>',
         { 'class': 'form-control'});
 
     for (var i = 0; i < nameTypes.length; i++) {
         var opt = nameTypes[i];
         var $opt = $("<option/>", { 'value': opt.id ,
-                                        'text': opt.value });
+                                    'text': opt.value });
         if (opt.value === nameData['name_type']) {
             $opt.prop('selected', true);
         }
@@ -328,7 +281,18 @@ var addNameInput = function($nameContainer, nameData, nameTypes) {
     $tr.append($td1).append($td2).append($td3).append($td4);
     $nameContainer.append($tr);
 
+    disableNameDeletion($nameContainer);
     return $nameContainer;
+}
+
+var disableNameDeletion = function($container) {
+    var $rows = $container.find('.name-row');
+    if ($rows.length == 1) {
+        $rows.find('button').prop('disabled', true);
+    } else {
+        $rows.find('button').prop('disabled', false);
+    }
+    return;
 }
 
 var getEntId = function () {
@@ -340,7 +304,7 @@ $( document ).ready(function() {
     var ent_id = getEntId();
     var name_types = JSON.parse('{{ nametypes | tojson | safe}}');
 
-    readEntrantData(ent_id);
+    readEntrantData(ent_id, name_types);
     $('#add-name').on('click', function(e) {
         e.preventDefault();
 
@@ -352,8 +316,8 @@ $( document ).ready(function() {
         e.preventDefault();
         var $name_row = $( this ).closest('.name-row');
         
-        console.log($name_row);
         $name_row.remove();
+        disableNameDeletion($('#names'));
     });
 });
 </script>

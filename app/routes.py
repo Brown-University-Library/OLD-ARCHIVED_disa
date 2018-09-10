@@ -218,6 +218,10 @@ def read_entrant_data(entId=None):
         return jsonify(data)
     ent = models.Entrant.query.get(entId)
     data['ent']['id'] = ent.id
+    data['ent']['names'] = [
+        { 'first': n.first, 'last': n.last,
+            'name_type': n.name_type.name,
+            'id': n.id } for n in ent.names ]
     data['ent']['age'] = ent.age
     data['ent']['sex'] = ent.sex
     data['ent']['races'] = [ 
