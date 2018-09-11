@@ -208,7 +208,7 @@ var updateAttributeList = function ($container, attArray, attGroup) {
 var initializeForm = function(entData, nameTypes) {
     if ( $.isEmptyObject(entData) ) {
         var blank_name = { 'first': '', 'last': '',
-            'name_type': 'Given', 'id': '-1' };
+            'name_type': 'Given', 'id': 'name' };
         addNameInput($('#names'), blank_name, nameTypes);
         disableNameDeletion($('#names'));
         return;
@@ -374,7 +374,7 @@ $( document ).ready(function() {
         e.preventDefault();
 
         var blank_name = { 'first': '', 'last': '',
-            'name_type': 'Given', 'id': '-1' };
+            'name_type': 'Given', 'id': 'name' };
         addNameInput($('#names'), blank_name, name_types);
     });
     $('#names').on('click', '.del-name', function(e) {
