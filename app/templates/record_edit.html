@@ -16,6 +16,10 @@
     border: none;
 }
 
+.entrant-ctl {
+    margin-right: 5px;
+}
+
 </style>
 {% endblock %}
 
@@ -64,9 +68,9 @@
         <table class="table">
             <thead>
                 <tr>
-                  <th scope="col" style="width: 30%">First</th>
-                  <th scope="col" style="width: 30%">Last</th>
-                  <th scope="col" style="width: 30%">Description</th>
+                  <th scope="col" style="width:25%">First</th>
+                  <th scope="col" style="width:25%">Last</th>
+                  <th scope="col" style="width:25%">Description</th>
                   <th scope="col"></th>
                 </tr>
             </thead>
@@ -232,20 +236,20 @@ var setFormHeader = function (recData) {
     }
 }
 
-var initializeForm = function (data, tags) {
+var initializeForm = function (data, tags, edit_url) {
     setFormHeader(data['rec']);
     setInputValues(data['rec']);
     for (var i=0; i < data['entrants'].length; i++ ) {
         addEntrantInput(
-            $('#entrants'), data['entrants'][i], tags, true );
+            $('#entrants'), data['entrants'][i], tags, false, edit_url );
     }   
 }
 
-var readRecordData = function(recId, roles) {
+var readRecordData = function(recId, roles, edit_url) {
     var rec_data_api = "{{ url_for('read_record_data', recId=None ) }}" + recId;
     var out = null;
     $.get(rec_data_api, function(data) {
-        initializeForm(data, roles);
+        initializeForm(data, roles, edit_url);
     });
 }
 
@@ -269,7 +273,7 @@ var updateRecordData = function(recId, docId) {
     });
 }
 
-var addEntrantInput = function($container, entData, tags, disabled=false) {
+var addEntrantInput = function($container, entData, tags, editable=true, editUrl) {
     var $tr, $td1, $td2, $td3, $td4,
         $input1, $input2, $select,
         $button, $span;
@@ -298,10 +302,6 @@ var addEntrantInput = function($container, entData, tags, disabled=false) {
         $select.append($opt);
     }
 
-    $button = $('<button/>', { 'class': 'btn btn-danger del-entrant'});
-    $span = $('<span/>', {'class': 'fas fa-times-circle'});
-
-    $button.append($span);
     $td1.append($input1);
     $td2.append($input2);
     $td3.append($select);
@@ -317,10 +317,31 @@ var addEntrantInput = function($container, entData, tags, disabled=false) {
     $select.val(entData['roles']);
     $select.trigger('change');
 
-    if (disabled) {
+    if (editable) {
+        $save_btn = $('<button/>', { 'class': 'btn btn-success del-entrant entrant-ctl'});
+        $save_span = $('<span/>', {'class': 'fas fa-check-circle'});
+        
+        $del_btn = $('<button/>', { 'class': 'btn btn-danger del-entrant entrant-ctl'});
+        $del_span = $('<span/>', {'class': 'fas fa-times-circle'});
+        
+        $save_btn.append($save_span);
+        $del_btn.append($del_span);
+
+        $td4.append($save_btn).append($del_btn);      
+    } else {
         $input1.prop('disabled', true);
         $input2.prop('disabled', true);
         $select.prop('disabled', true);
+
+        $details_btn = $('<a/>', { 'class': 'btn btn-secondary details-entrant entrant-ctl',
+            'text': 'Details',
+            'href': `${editUrl}/${entData['id']}` });
+        $merge_btn = $('<button/>', { 'class': 'btn btn-warning merge-entrant entrant-ctl',
+            'text': 'Merge'});
+        $edit_btn = $('<button/>', { 'class': 'btn btn-primary edit-entrant entrant-ctl',
+            'text': 'Edit'});
+
+        $td4.append($edit_btn).append($details_btn).append($merge_btn);
     }
 
     return $container;
@@ -345,6 +366,7 @@ var addEntrantInput = function($container, entData, tags, disabled=false) {
 $( document ).ready(function() {
     var doc_id = getDocumentId();
     var rec_id = getRecId();
+    var details_url = "{{ url_for('edit_entrant', entId=None)}}";
     var roles = JSON.parse('{{ roles | tojson | safe}}');
     $('#recordtype_autocomplete').autocomplete({
         source: JSON.parse('{{ rec_types | tojson | safe}}'),
@@ -408,7 +430,7 @@ $( document ).ready(function() {
         var data = getFormData($('#entrant_form'));
         updateEntrantDetails(ent_id, data);
     });
-    readRecordData(rec_id, roles);
+    readRecordData(rec_id, roles, details_url);
 });
 </script>
 {% endblock %}
