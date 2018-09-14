@@ -59,21 +59,24 @@
             <button type="submit" class="btn btn-primary" id="rec_update">Update</button>
         </form>
     </div>
-    {% if rec %}
     <h2>People</h2>
-        {% if rec.entrants|length != 0 %}
-        <ul>
-        {% for ent in rec.entrants %}
-            <li><a href="{{ url_for('edit_entrant', rec=rec.id, entId=ent.id)}}">{{ ent.primary_name.first }} {{ent.primary_name.last}}</a></li>
-        {% endfor %}
-        </ul>
-        {% else %}
-            <p>No individuals associated with this item</p>
-        {% endif %}
+    <div id="entrant_component">
+        <table class="table">
+            <thead>
+                <tr>
+                  <th scope="col" style="width: 30%">First</th>
+                  <th scope="col" style="width: 30%">Last</th>
+                  <th scope="col" style="width: 30%">Description</th>
+                  <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody id="entrants">
+            </tbody>
+        </table>
         <div id="new_person_button" class="d-flex flex-row-reverse">
-            <a class="btn btn-primary" href="{{ url_for('edit_entrant', rec=rec.id)}}">Add a person</a>
+            <button class="btn btn-primary" id="add-person">Add Person</button>
         </div>
-    {% endif %}
+    </div>
 </div>
 {% endblock %}
 
@@ -229,16 +232,20 @@ var setFormHeader = function (recData) {
     }
 }
 
-var initializeForm = function (data) {
+var initializeForm = function (data, tags) {
     setFormHeader(data['rec']);
-    setInputValues(data['rec']);    
+    setInputValues(data['rec']);
+    for (var i=0; i < data['entrants'].length; i++ ) {
+        addEntrantInput(
+            $('#entrants'), data['entrants'][i], tags, true );
+    }   
 }
 
-var readRecordData = function(recId) {
+var readRecordData = function(recId, roles) {
     var rec_data_api = "{{ url_for('read_record_data', recId=None ) }}" + recId;
     var out = null;
     $.get(rec_data_api, function(data) {
-        initializeForm(data);
+        initializeForm(data, roles);
     });
 }
 
@@ -262,9 +269,83 @@ var updateRecordData = function(recId, docId) {
     });
 }
 
+var addEntrantInput = function($container, entData, tags, disabled=false) {
+    var $tr, $td1, $td2, $td3, $td4,
+        $input1, $input2, $select,
+        $button, $span;
+
+    $tr = $('<tr/>', { 'class': 'entrant-row',
+        'data-ent-id': entData['id']});
+    $td1 = $('<td/>');
+    $td2 = $('<td/>');
+    $td3 = $('<td/>');
+    $td4 = $('<td/>');
+    $input1 = $('<input/>', {
+        'class': 'form-control name-first',
+        'type': 'text',
+        'value': entData['first'] });
+    $input2 = $('<input/>', {
+        'class': 'form-control name-last',
+        'type': 'text',
+        'value': entData['last'] });
+    $select = $('<select/>',
+        { 'class': 'form-control role-tags'});
+
+    for (var i = 0; i < tags.length; i++) {
+        var opt = tags[i];
+        var $opt = $("<option/>", { 'value': opt.id ,
+                                    'text': opt.value });
+        $select.append($opt);
+    }
+
+    $button = $('<button/>', { 'class': 'btn btn-danger del-entrant'});
+    $span = $('<span/>', {'class': 'fas fa-times-circle'});
+
+    $button.append($span);
+    $td1.append($input1);
+    $td2.append($input2);
+    $td3.append($select);
+    $td4.append($button);
+    $tr.append($td1).append($td2).append($td3).append($td4);
+    $container.append($tr);
+
+    $select.prop("multiple", true);
+    $select.select2({
+        tags: true,
+    });
+
+    $select.val(entData['roles']);
+    $select.trigger('change');
+
+    if (disabled) {
+        $input1.prop('disabled', true);
+        $input2.prop('disabled', true);
+        $select.prop('disabled', true);
+    }
+
+    return $container;
+}
+
+// var getEntrantData = function($container) {
+//     var name_data = [];
+//     $rows = $container.find('.name-row');
+//     $rows.each( function(idx) {
+//         var $row = $( this );
+//         var data = {};
+//         data['id'] = $row.attr('data-name-id');
+//         data['first'] = $row.find('.name-first').val();
+//         data['last'] = $row.find('.name-last').val();
+//         data['name_type'] = $row.find('.name-type').val();
+//         name_data.push(data);
+//     });
+
+//     return name_data;
+// }
+
 $( document ).ready(function() {
     var doc_id = getDocumentId();
     var rec_id = getRecId();
+    var roles = JSON.parse('{{ roles | tojson | safe}}');
     $('#recordtype_autocomplete').autocomplete({
         source: JSON.parse('{{ rec_types | tojson | safe}}'),
         minLength: 0,
@@ -322,7 +403,12 @@ $( document ).ready(function() {
           e.preventDefault();
          updateRecordData(rec_id, doc_id);
     });
-    readRecordData(rec_id);
+    $('#entrant_component').on('click', '#add-person', function(e) {
+        e.preventDefault();
+        var data = getFormData($('#entrant_form'));
+        updateEntrantDetails(ent_id, data);
+    });
+    readRecordData(rec_id, roles);
 });
 </script>
 {% endblock %}

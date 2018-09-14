@@ -74,6 +74,8 @@ def edit_record(recId=None):
         for loc in models.Location.query.all()]
     rec_types = [ { 'id': rt.id, 'value': rt.name, 'name': rt.name }
         for rt in models.RecordType.query.all() ]
+    roles = [ { 'id': role.id, 'value': role.name, 'name': role.name }
+        for role in models.Role.query.all() ]
     if not recId:
         doc_id = request.args.get('doc')
         doc = models.Document.query.get(doc_id)
@@ -83,7 +85,7 @@ def edit_record(recId=None):
     rec = models.Record.query.get(recId)
     return render_template(
         'record_edit.html', rec=rec, doc=rec.document,
-            rec_types=rec_types, locs=locs)
+            rec_types=rec_types, locs=locs, roles=roles)
 
 @app.route('/editor/person')
 @app.route('/editor/person/<entId>')
@@ -206,6 +208,14 @@ def read_record_data(recId=None):
     data['rec']['comments'] = rec.comments
     data['rec']['record_type'] = {'label': rec.record_type.name,
         'value': rec.record_type.name, 'id':rec.record_type.id }
+    data['entrants'] = [ 
+        {
+            'first': ent.primary_name.first,
+            'last': ent.primary_name.last,
+            'id': ent.id,
+            'roles': [ role.id for role in ent.roles ]
+        }
+            for ent in rec.entrants ]
     data['rec']['header'] = '{} {}'.format(
         rec.record_type.name, rec.citation or '').strip()
     return jsonify(data)
