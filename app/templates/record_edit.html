@@ -236,13 +236,14 @@ var setFormHeader = function (recData) {
     }
 }
 
-var initializeForm = function (data, tags, edit_url) {
+var initializeForm = function (data, tags, editUrl) {
     setFormHeader(data['rec']);
     setInputValues(data['rec']);
     for (var i=0; i < data['entrants'].length; i++ ) {
         addEntrantInput(
-            $('#entrants'), data['entrants'][i], tags, false, edit_url );
-    }   
+            $('#entrants'), data['entrants'][i], tags );
+    }
+    initiateEntrantWorkflow( $('#entrant_component'), editUrl );
 }
 
 var readRecordData = function(recId, roles, edit_url) {
@@ -273,7 +274,7 @@ var updateRecordData = function(recId, docId) {
     });
 }
 
-var addEntrantInput = function($container, entData, tags, editable=true, editUrl) {
+var addEntrantInput = function($container, entData, tags) {
     var $tr, $td1, $td2, $td3, $td4,
         $input1, $input2, $select,
         $button, $span;
@@ -283,17 +284,17 @@ var addEntrantInput = function($container, entData, tags, editable=true, editUrl
     $td1 = $('<td/>');
     $td2 = $('<td/>');
     $td3 = $('<td/>');
-    $td4 = $('<td/>');
+    $td4 = $('<td/>', { 'class': 'entrant-controls'});
     $input1 = $('<input/>', {
-        'class': 'form-control name-first',
+        'class': 'form-control entrant-input name-first',
         'type': 'text',
         'value': entData['first'] });
     $input2 = $('<input/>', {
-        'class': 'form-control name-last',
+        'class': 'form-control entrant-input name-last',
         'type': 'text',
         'value': entData['last'] });
     $select = $('<select/>',
-        { 'class': 'form-control role-tags'});
+        { 'class': 'form-control entrant-input role-tags'});
 
     for (var i = 0; i < tags.length; i++) {
         var opt = tags[i];
@@ -317,34 +318,107 @@ var addEntrantInput = function($container, entData, tags, editable=true, editUrl
     $select.val(entData['roles']);
     $select.trigger('change');
 
-    if (editable) {
-        $save_btn = $('<button/>', { 'class': 'btn btn-success del-entrant entrant-ctl'});
-        $save_span = $('<span/>', {'class': 'fas fa-check-circle'});
+    // if (editable) {
+    //     $save_btn = $('<button/>', { 'class': 'btn btn-success del-entrant entrant-ctl'});
+    //     $save_span = $('<span/>', {'class': 'fas fa-check-circle'});
         
-        $del_btn = $('<button/>', { 'class': 'btn btn-danger del-entrant entrant-ctl'});
-        $del_span = $('<span/>', {'class': 'fas fa-times-circle'});
+    //     $del_btn = $('<button/>', { 'class': 'btn btn-danger del-entrant entrant-ctl'});
+    //     $del_span = $('<span/>', {'class': 'fas fa-times-circle'});
         
-        $save_btn.append($save_span);
-        $del_btn.append($del_span);
+    //     $save_btn.append($save_span);
+    //     $del_btn.append($del_span);
 
-        $td4.append($save_btn).append($del_btn);      
-    } else {
-        $input1.prop('disabled', true);
-        $input2.prop('disabled', true);
-        $select.prop('disabled', true);
+    //     $td4.append($save_btn).append($del_btn);      
+    // } else {
+    //     $input1.prop('disabled', true);
+    //     $input2.prop('disabled', true);
+    //     $select.prop('disabled', true);
 
-        $details_btn = $('<a/>', { 'class': 'btn btn-secondary details-entrant entrant-ctl',
-            'text': 'Details',
-            'href': `${editUrl}/${entData['id']}` });
-        $merge_btn = $('<button/>', { 'class': 'btn btn-warning merge-entrant entrant-ctl',
-            'text': 'Merge'});
-        $edit_btn = $('<button/>', { 'class': 'btn btn-primary edit-entrant entrant-ctl',
-            'text': 'Edit'});
+    //     $details_btn = $('<a/>', { 'class': 'btn btn-secondary details-entrant entrant-ctl',
+    //         'text': 'Details',
+    //         'href': `${editUrl}/${entData['id']}` });
+    //     $merge_btn = $('<button/>', { 'class': 'btn btn-warning merge-entrant entrant-ctl',
+    //         'text': 'Merge'});
+    //     $edit_btn = $('<button/>', { 'class': 'btn btn-primary edit-entrant entrant-ctl',
+    //         'text': 'Edit'});
 
-        $td4.append($edit_btn).append($details_btn).append($merge_btn);
+    //     $td4.append($edit_btn).append($details_btn).append($merge_btn);
+    // }
+
+    return $container;
+}
+
+var makeEntrantEditable = function ($container, entId) {
+    $active = $container.find($(`.entrant-row[data-ent-id=${entId}]`));
+
+    $save_btn = $('<button/>', { 'class': 'btn btn-primary del-entrant entrant-ctl'});
+    $save_span = $('<span/>', {'class': 'fas fa-check-circle'});
+        
+    $del_btn = $('<button/>', { 'class': 'btn btn-danger del-entrant entrant-ctl'});
+    $del_span = $('<span/>', {'class': 'fas fa-times-circle'});
+        
+    $save_btn.append($save_span);
+    $del_btn.append($del_span);
+    
+    $active.find($('.form-control')).prop('disabled', false);
+    $active.find($('.entrant-controls')).append($save_btn).append($del_btn);
+    
+    if (entId !== 'new') {
+        $cancel_btn = $('<button/>', { 'class': 'btn btn-secondary cancel-entrant entrant-ctl'});
+        $cancel_span = $('<span/>', {'class': 'fas fa-undo'});
+
+        $cancel_btn.append($cancel_span);
+
+        $active.find($('.entrant-controls')).append($cancel_btn)
     }
 
     return $container;
+}
+
+var initiateEntrantWorkflow = function ($container, editUrl) {
+    var $rows = $container.find('.entrant-row');
+    var $btn = $container.find('#add-person');
+    $rows.each( function( idx ) {
+        var ent_id = $(this).attr('data-ent-id');
+        var $details_btn = $('<a/>', { 'class': 'btn btn-secondary details-entrant entrant-ctl',
+            'text': 'Details',
+            'href': `${editUrl}/${ent_id}` });
+        var $merge_btn = $('<button/>', { 'class': 'btn btn-warning merge-entrant entrant-ctl',
+            'text': 'Merge'});
+        var $edit_btn = $('<button/>', { 'class': 'btn btn-primary edit-entrant entrant-ctl',
+            'text': 'Edit'});
+        $row = deactivateEntrantInput( $(this) );
+        $row.find($('.entrant-controls')).append($details_btn)
+            .append($merge_btn).append($edit_btn);
+    });
+    activateButton( $btn );
+}
+
+var deactivateEntrantInput = function ($row) {
+    $row.find($('.entrant-input')).each( function(idx) {
+        $( this ).prop('disabled', true);
+    });
+    $row.find($('.entrant-controls')).empty();
+    return $row;  
+}
+
+var activateButton = function ( $button ) {
+    $button.prop('disabled', false);
+}
+
+var deactivateButton = function ( $button ) {
+    $button.prop('disabled', true);
+}
+
+var deactivateEntrantEditing = function ($container) {
+    var $rows = $container.find('.entrant-row');
+    var $btn = $container.find('#add-person');
+    $rows.each( function( idx ) {
+        deactivateEntrantInput( $(this) );
+    });
+    deactivateButton( $btn );
+
+    return $container
 }
 
 // var getEntrantData = function($container) {
@@ -427,9 +501,28 @@ $( document ).ready(function() {
     });
     $('#entrant_component').on('click', '#add-person', function(e) {
         e.preventDefault();
-        var data = getFormData($('#entrant_form'));
-        updateEntrantDetails(ent_id, data);
+        var data = { 'id': 'new', 'first': '', 'last': '', 'roles': [] };
+        addEntrantInput( $('#entrants'), data, roles);
+        deactivateEntrantEditing( $('#entrant_component') );
+        makeEntrantEditable( $('#entrants'), 'new');
     });
+    $('#entrant_component').on('click', '.edit-entrant', function(e) {
+        e.preventDefault();
+
+        var ent_id = $( this ).closest('.entrant-row').attr('data-ent-id');
+        deactivateEntrantEditing( $('#entrant_component') );
+        makeEntrantEditable( $('#entrants'), ent_id);
+    });
+    $('#entrant_component').on('click', '.cancel-entrant', function(e) {
+        e.preventDefault();
+
+        initiateEntrantWorkflow( $('#entrant_component') );
+    });
+    // $('#entrant_component').on('click', '#add-person', function(e) {
+    //     e.preventDefault();
+    //     var data = getFormData($('#entrant_form'));
+    //     updateEntrantDetails(ent_id, data);
+    // });
     readRecordData(rec_id, roles, details_url);
 });
 </script>
