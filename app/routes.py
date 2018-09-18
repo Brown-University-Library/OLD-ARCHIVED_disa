@@ -81,7 +81,7 @@ def edit_record(recId=None):
         doc = models.Document.query.get(doc_id)
         return render_template(
             'record_edit.html', rec=None, doc=doc,
-            rec_types=rec_types, locs=locs)
+            rec_types=rec_types, locs=locs, roles=roles)
     rec = models.Record.query.get(recId)
     return render_template(
         'record_edit.html', rec=rec, doc=rec.document,
@@ -363,10 +363,14 @@ def get_or_create_entrant_attribute(data, attrModel):
         return existing 
 
 @app.route('/data/entrants/', methods=['PUT'])
-@app.route('/data/entrants/<entId>', methods=['PUT'])
+@app.route('/data/entrants/<entId>', methods=['PUT', 'DELETE'])
 def update_entrant(entId):
-    data = request.get_json()
     ent = models.Entrant.query.get(entId)
+    if request.method == 'DELETE':
+        db.session.delete(ent)
+        db.session.commit()
+        return jsonify( { 'id': entId } )
+    data = request.get_json()
     ent.names = [ update_entrant_name(n) for n in data['names'] ]
     ent.age = data['age']
     ent.sex = data['sex'] 

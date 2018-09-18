@@ -318,43 +318,17 @@ var addEntrantInput = function($container, entData, tags) {
     $select.val(entData['roles']);
     $select.trigger('change');
 
-    // if (editable) {
-    //     $save_btn = $('<button/>', { 'class': 'btn btn-success del-entrant entrant-ctl'});
-    //     $save_span = $('<span/>', {'class': 'fas fa-check-circle'});
-        
-    //     $del_btn = $('<button/>', { 'class': 'btn btn-danger del-entrant entrant-ctl'});
-    //     $del_span = $('<span/>', {'class': 'fas fa-times-circle'});
-        
-    //     $save_btn.append($save_span);
-    //     $del_btn.append($del_span);
-
-    //     $td4.append($save_btn).append($del_btn);      
-    // } else {
-    //     $input1.prop('disabled', true);
-    //     $input2.prop('disabled', true);
-    //     $select.prop('disabled', true);
-
-    //     $details_btn = $('<a/>', { 'class': 'btn btn-secondary details-entrant entrant-ctl',
-    //         'text': 'Details',
-    //         'href': `${editUrl}/${entData['id']}` });
-    //     $merge_btn = $('<button/>', { 'class': 'btn btn-warning merge-entrant entrant-ctl',
-    //         'text': 'Merge'});
-    //     $edit_btn = $('<button/>', { 'class': 'btn btn-primary edit-entrant entrant-ctl',
-    //         'text': 'Edit'});
-
-    //     $td4.append($edit_btn).append($details_btn).append($merge_btn);
-    // }
-
     return $container;
 }
 
 var makeEntrantEditable = function ($container, entId) {
     $active = $container.find($(`.entrant-row[data-ent-id=${entId}]`));
 
-    $save_btn = $('<button/>', { 'class': 'btn btn-primary del-entrant entrant-ctl'});
+    $save_btn = $('<button/>', { 'class': 'btn btn-primary save-entrant entrant-ctl'});
     $save_span = $('<span/>', {'class': 'fas fa-check-circle'});
         
-    $del_btn = $('<button/>', { 'class': 'btn btn-danger del-entrant entrant-ctl'});
+    $del_btn = $('<button/>', { 'class': 'btn btn-danger del-entrant entrant-ctl',
+        'del-entrant-id': entId });
     $del_span = $('<span/>', {'class': 'fas fa-times-circle'});
         
     $save_btn.append($save_span);
@@ -408,6 +382,24 @@ var activateButton = function ( $button ) {
 
 var deactivateButton = function ( $button ) {
     $button.prop('disabled', true);
+}
+
+var deleteEntrant = function($container, entId, editUrl ) {
+    var ent_data_api = "{{ url_for('update_entrant', entId=None )}}" + entId;
+    $.ajax({
+        type: "DELETE",
+        url: ent_data_api,
+        contentType: "application/json",
+        success: function(data) {
+            deleteEntrantRow($container, data['id'], editUrl);
+        }
+    });
+}
+
+var deleteEntrantRow = function ($container, entId, editUrl ) {
+    $container.find(`.entrant-row[data-ent-id=${entId}]`).remove();
+    initiateEntrantWorkflow($container, editUrl);
+    return $container;
 }
 
 var deactivateEntrantEditing = function ($container) {
@@ -517,6 +509,17 @@ $( document ).ready(function() {
         e.preventDefault();
 
         initiateEntrantWorkflow( $('#entrant_component') );
+    });
+    $('#entrant_component').on('click', '.del-entrant', function(e) {
+        e.preventDefault();
+        var ent_id = $( this ).attr('del-entrant-id');
+
+        if (ent_id === 'new') {
+            deleteEntrantRow( $('#entrant_component'), ent_id, details_url );
+            return;
+        }
+        deleteEntrant( $('#entrant_component'), ent_id, details_url );
+        return;
     });
     // $('#entrant_component').on('click', '#add-person', function(e) {
     //     e.preventDefault();
