@@ -337,7 +337,7 @@ var getFormData = function( $container ) {
     data['sex'] = getGenderData($('#gender_select'));
     data['races'] = getAttributeData($('#races'));
     data['tribes'] = getAttributeData($('#tribes'));
-    data['origins'] = getAttributeData($('#origines'));
+    data['origins'] = getAttributeData($('#origins'));
     data['statuses'] = getAttributeData($('#statuses'));
     data['titles'] = getAttributeData($('#titles'));
     data['vocations'] = getAttributeData($('#vocations'));
@@ -353,7 +353,7 @@ var readEntrantData = function(entId, nameTypes) {
 }
 
 var updateEntrantDetails = function(entId, dataObj) {
-    var ent_data_api = "{{ url_for('update_entrant', entId=None )}}" + entId;
+    var ent_data_api = "{{ url_for('update_entrant_details', entId=None )}}" + entId;
     $.ajax({
         type: "PUT",
         url: ent_data_api,

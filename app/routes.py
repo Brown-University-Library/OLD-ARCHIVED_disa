@@ -210,6 +210,7 @@ def read_record_data(recId=None):
         'value': rec.record_type.name, 'id':rec.record_type.id }
     data['entrants'] = [ 
         {
+            'name_id': ent.primary_name.id,
             'first': ent.primary_name.first,
             'last': ent.primary_name.last,
             'id': ent.id,
@@ -349,7 +350,8 @@ def update_entrant_name(data):
         name = models.EntrantName.query.get(data['id'])
     name.first = data['first']
     name.last = data['last']
-    name.name_type_id = data['name_type']
+    given = models.NameType.query.filter_by(name='Given').first()
+    name.name_type_id = data.get('name_type', given.id)
     return name   
 
 def get_or_create_entrant_attribute(data, attrModel):
@@ -362,14 +364,38 @@ def get_or_create_entrant_attribute(data, attrModel):
         existing = attrModel.query.get(data['id'])
         return existing 
 
-@app.route('/data/entrants/', methods=['PUT'])
+@app.route('/data/entrants/', methods=['POST'])
 @app.route('/data/entrants/<entId>', methods=['PUT', 'DELETE'])
-def update_entrant(entId):
-    ent = models.Entrant.query.get(entId)
+def update_entrant(entId=None):
     if request.method == 'DELETE':
+        ent = models.Entrant.query.get(entId)
         db.session.delete(ent)
         db.session.commit()
         return jsonify( { 'id': entId } )
+    data = request.get_json()
+    if request.method == 'POST':
+        ent = models.Entrant(record_id=data['record_id'])
+    if request.method == 'PUT':
+        ent = models.Entrant.query.get(entId)
+    primary_name = update_entrant_name(data['name'])
+    ent.names.append(primary_name)
+    ent.primary_name = primary_name
+    ent.roles = [ get_or_create_entrant_attribute(a, models.Role)
+        for a in data['roles'] ]
+    db.session.add(ent)
+    db.session.commit()
+
+    return jsonify({
+        'name_id': ent.primary_name.id,
+        'first': ent.primary_name.first,
+        'last': ent.primary_name.last,
+        'id': ent.id,
+        'roles': [ role.id for role in ent.roles ] })
+
+@app.route('/data/entrants/details/', methods=['PUT'])
+@app.route('/data/entrants/details/<entId>', methods=['PUT'])
+def update_entrant_details(entId):
+    ent = models.Entrant.query.get(entId)
     data = request.get_json()
     ent.names = [ update_entrant_name(n) for n in data['names'] ]
     ent.age = data['age']

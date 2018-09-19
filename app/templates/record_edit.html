@@ -280,7 +280,8 @@ var addEntrantInput = function($container, entData, tags) {
         $button, $span;
 
     $tr = $('<tr/>', { 'class': 'entrant-row',
-        'data-ent-id': entData['id']});
+        'data-ent-id': entData['id'],
+        'data-name-id': entData['name_id']});
     $td1 = $('<td/>');
     $td2 = $('<td/>');
     $td3 = $('<td/>');
@@ -324,7 +325,8 @@ var addEntrantInput = function($container, entData, tags) {
 var makeEntrantEditable = function ($container, entId) {
     $active = $container.find($(`.entrant-row[data-ent-id=${entId}]`));
 
-    $save_btn = $('<button/>', { 'class': 'btn btn-primary save-entrant entrant-ctl'});
+    $save_btn = $('<button/>', { 'class': 'btn btn-primary save-entrant entrant-ctl',
+        'save-entrant-id': entId });
     $save_span = $('<span/>', {'class': 'fas fa-check-circle'});
         
     $del_btn = $('<button/>', { 'class': 'btn btn-danger del-entrant entrant-ctl',
@@ -396,6 +398,41 @@ var deleteEntrant = function($container, entId, editUrl ) {
     });
 }
 
+var updateEntrant = function($container, entId, entData, editUrl) {
+    var method,
+        ent_data_api = "{{ url_for('update_entrant', entId=None )}}";
+    if (entId === 'new') {
+        method = 'POST';
+    } else {
+        ent_data_api = ent_data_api + entId;
+        method = 'PUT';
+    }
+    $.ajax({
+        type: method,
+        url: ent_data_api,
+        data: JSON.stringify(entData),
+        contentType: "application/json",
+        success: function(data) {
+            updateEntrantRow($container, data, entId, editUrl);
+        }
+    });
+}
+
+var updateEntrantRow = function ($container, entData, entId, editUrl ) {
+    var $row, $select;
+    $row = $container.find(`.entrant-row[data-ent-id=${entId}]`);
+    $row.attr('data-ent-id', entData['id']);
+    $row.attr('data-name-id', entData['name_id'])
+    $row.find('.name-first').val(entData['first']);
+    $row.find('.name-last').val(entData['last']);
+    $select = $row.find('.role-tags');
+    $select.val(entData['roles']);
+    $select.trigger('change')
+
+    initiateEntrantWorkflow($container, editUrl);
+    return $container;
+}
+
 var deleteEntrantRow = function ($container, entId, editUrl ) {
     $container.find(`.entrant-row[data-ent-id=${entId}]`).remove();
     initiateEntrantWorkflow($container, editUrl);
@@ -413,21 +450,32 @@ var deactivateEntrantEditing = function ($container) {
     return $container
 }
 
-// var getEntrantData = function($container) {
-//     var name_data = [];
-//     $rows = $container.find('.name-row');
-//     $rows.each( function(idx) {
-//         var $row = $( this );
-//         var data = {};
-//         data['id'] = $row.attr('data-name-id');
-//         data['first'] = $row.find('.name-first').val();
-//         data['last'] = $row.find('.name-last').val();
-//         data['name_type'] = $row.find('.name-type').val();
-//         name_data.push(data);
-//     });
+var getAttributeData = function( $container ) {
+    var att_data = [];
+    $opts = $container.find(':selected');
+    $opts.each( function(idx) {
+        var $opt = $( this );
+        var data = {};
+        data['id'] = $opt.val();
+        data['name'] = $opt.text();
+        att_data.push(data);
+    });
 
-//     return name_data;
-// }
+    return att_data;
+}
+
+var getEntrantData = function($container, entId, recId) {
+    var $row = $container.find(`.entrant-row[data-ent-id=${entId}]`);
+    var data = { 'name': {} };
+    data['id'] = $row.attr('data-ent-id');
+    data['record_id'] = recId;
+    data['name']['id'] = $row.attr('data-name-id');
+    data['name']['first'] = $row.find('.name-first').val();
+    data['name']['last'] = $row.find('.name-last').val();
+    data['roles'] = getAttributeData($row.find('.role-tags'));
+
+    return data;
+}
 
 $( document ).ready(function() {
     var doc_id = getDocumentId();
@@ -493,7 +541,8 @@ $( document ).ready(function() {
     });
     $('#entrant_component').on('click', '#add-person', function(e) {
         e.preventDefault();
-        var data = { 'id': 'new', 'first': '', 'last': '', 'roles': [] };
+        var data = { 'id': 'new', 'first': '',
+            'last': '', 'roles': [], 'name_id': 'name' };
         addEntrantInput( $('#entrants'), data, roles);
         deactivateEntrantEditing( $('#entrant_component') );
         makeEntrantEditable( $('#entrants'), 'new');
@@ -521,11 +570,13 @@ $( document ).ready(function() {
         deleteEntrant( $('#entrant_component'), ent_id, details_url );
         return;
     });
-    // $('#entrant_component').on('click', '#add-person', function(e) {
-    //     e.preventDefault();
-    //     var data = getFormData($('#entrant_form'));
-    //     updateEntrantDetails(ent_id, data);
-    // });
+    $('#entrant_component').on('click', '.save-entrant', function(e) {
+        e.preventDefault();
+        var ent_id = $( this ).attr('save-entrant-id');
+
+        var data = getEntrantData($('#entrant_component'), ent_id, rec_id);
+        updateEntrant( $('#entrant_component'), ent_id, data, details_url );
+    });
     readRecordData(rec_id, roles, details_url);
 });
 </script>
