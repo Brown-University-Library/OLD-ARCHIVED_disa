@@ -427,6 +427,11 @@ def parse_person_descriptors(personObj, descField):
     out = ','.join(list(vals))
     return out if out else 'None'
 
+@app.route('/people/')
+def person_index():
+    enslaved = [ p for p in models.Person.filter_on_description('Enslaved') ]
+    return render_template('person_index.html', people=enslaved)
+
 @app.route('/people/<persId>')
 def get_person(persId):
     person = models.Person.query.get(persId)
@@ -443,3 +448,7 @@ def get_person(persId):
         refs = person.references,
         origins=origins, tribes=tribes, titles=titles,
         races=races, vocations=vocations, statuses=statuses)
+
+@app.route('/source/<srcId>')
+def get_source(srcId):
+    return 'Foo:' + srcId

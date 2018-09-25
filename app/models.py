@@ -285,6 +285,11 @@ class Person(db.Model):
     comments = db.Column(db.String(255))
     references = db.relationship('Entrant', backref='person', lazy=True)
 
+    @classmethod
+    def filter_on_description(cls, desc):
+        return cls.query.join(
+            cls.references).join(Entrant.roles).filter(Role.name==desc)
+
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
 

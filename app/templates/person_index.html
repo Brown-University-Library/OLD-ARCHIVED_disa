@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block header %}
+<link rel="stylesheet" href="{{ url_for('static', filename='lib/bootstrap-4.1.2-dist/css/bootstrap.min.css') }}">
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <h2>Enslaved</h2>
+  <div class="row">
+    <div class="col-md-6">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="people">
+          {% for pers in people %}
+          <tr>
+            <td>{{ pers.id }}</td>
+            <td>{{ pers.first_name }} {{ pers.last_name }}</td>
+            <td><a href="{{ url_for('get_person', persId=pers.id)}}">View</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

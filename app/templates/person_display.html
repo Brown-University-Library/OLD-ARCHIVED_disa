@@ -8,41 +8,63 @@
 .location:last-child:after {
   content: "";
 }
+.timeline caption {
+  caption-side: top;
+}
 </style>
 {% endblock %}
 {% block content %}
-<h2>{{ first_name }} {{ last_name }}</h2>
-<dl>
-  <dt>Origin</dt>
-  <dd>{{ origins }}</dd>
-  <dt>Tribe</dt>
-  <dd>{{ tribes }}</dd>
-  <dt>Race</dt>
-  <dd>{{ races }}</dd> 
-  <dt>Status</dt>
-  <dd>{{ statuses }}</dd> 
-  <dt>Title</dt>
-  <dd>{{ titles }}</dd>
-  <dt>Vocation</dt>
-  <dd>{{ vocations }}</dd> 
-</dl>
-<table class="table">
-    <tbody id="refs">
-      {% for ref in refs %}
-      <tr>
-        <td>
-        {% for role in ref.roles %}
-          <span>{{ role.name }}</span>
-        {% endfor %}
-        </td>
-        <td>
-          {% for loc in ref.record.locations | reverse %}
-          <span class="location">{{ loc.location.name }}</span>
+<div class="container-fluid">
+  <div>
+    <h2>{{ first_name }} {{ last_name }}</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-2">
+    <dl>
+      <dt>Origin</dt>
+      <dd>{{ origins }}</dd>
+      <dt>Tribe</dt>
+      <dd>{{ tribes }}</dd>
+      <dt>Race</dt>
+      <dd>{{ races }}</dd>
+    </dl>
+    </div>
+    <div class="col-md-2">
+    <dl> 
+      <dt>Status</dt>
+      <dd>{{ statuses }}</dd> 
+      <dt>Title</dt>
+      <dd>{{ titles }}</dd>
+      <dt>Vocation</dt>
+      <dd>{{ vocations }}</dd> 
+    </dl>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-8 offset-md-4">
+      <table class="table timeline">
+        <caption>Timeline</caption>
+        <tbody id="refs">
+          {% for ref in refs %}
+          <tr>
+            <td>{{ ref.record.date.strftime('%Y %B %d') }}</td>
+            <td>
+            {% for role in ref.roles %}
+              <span>{{ role.name }}</span>
+            {% endfor %}
+            </td>
+            <td>
+              {% for loc in ref.record.locations | reverse %}
+              <span class="location">{{ loc.location.name }}</span>
+              {% endfor %}
+            </td>
+            <td>
+              <a href="{{ url_for('get_source', srcId=ref.record_id) }}">View source</a>
+          </tr>
           {% endfor %}
-        </td>
-        <td>{{ ref.record.date.strftime('%Y %B %d') }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-</table>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 {% endblock %}
