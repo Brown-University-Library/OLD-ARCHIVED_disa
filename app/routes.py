@@ -420,3 +420,26 @@ def update_entrant_details(entId):
 
     return jsonify(
         { 'redirect': url_for('edit_record', recId=ent.record_id) })
+
+def parse_person_descriptors(personObj, descField):
+    vals = { desc.name for ref in personObj.references
+                for desc in getattr(ref, descField) }
+    out = ','.join(list(vals))
+    return out if out else 'None'
+
+@app.route('/people/<persId>')
+def get_person(persId):
+    person = models.Person.query.get(persId)
+    first = person.first_name
+    last = person.last_name
+    tribes = parse_person_descriptors(person, 'tribes')
+    origins = parse_person_descriptors(person, 'origins')
+    races = parse_person_descriptors(person, 'races')
+    statuses = parse_person_descriptors(person, 'enslavements')
+    vocations = parse_person_descriptors(person, 'vocations')
+    titles = parse_person_descriptors(person, 'titles')
+    return render_template('person_display.html',
+        first_name=first, last_name=last,
+        refs = person.references,
+        origins=origins, tribes=tribes, titles=titles,
+        races=races, vocations=vocations, statuses=statuses)

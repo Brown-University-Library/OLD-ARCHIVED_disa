@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block header %}
+<link rel="stylesheet" href="{{ url_for('static', filename='lib/bootstrap-4.1.2-dist/css/bootstrap.min.css') }}">
+<style>
+.location:after {
+  content: ", ";
+}
+.location:last-child:after {
+  content: "";
+}
+</style>
+{% endblock %}
+{% block content %}
+<h2>{{ first_name }} {{ last_name }}</h2>
+<dl>
+  <dt>Origin</dt>
+  <dd>{{ origins }}</dd>
+  <dt>Tribe</dt>
+  <dd>{{ tribes }}</dd>
+  <dt>Race</dt>
+  <dd>{{ races }}</dd> 
+  <dt>Status</dt>
+  <dd>{{ statuses }}</dd> 
+  <dt>Title</dt>
+  <dd>{{ titles }}</dd>
+  <dt>Vocation</dt>
+  <dd>{{ vocations }}</dd> 
+</dl>
+<table class="table">
+    <tbody id="refs">
+      {% for ref in refs %}
+      <tr>
+        <td>
+        {% for role in ref.roles %}
+          <span>{{ role.name }}</span>
+        {% endfor %}
+        </td>
+        <td>
+          {% for loc in ref.record.locations | reverse %}
+          <span class="location">{{ loc.location.name }}</span>
+          {% endfor %}
+        </td>
+        <td>{{ ref.record.date.strftime('%Y %B %d') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
