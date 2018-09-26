@@ -19,7 +19,7 @@
           {% for pers in people %}
           <tr>
             <td>{{ pers.id }}</td>
-            <td>{{ pers.first_name }} {{ pers.last_name }}</td>
+            <td>{{ "{0} {1}".format(pers.first_name, pers.last_name).strip() or "Unknown" }}</td>
             <td><a href="{{ url_for('get_person', persId=pers.id)}}">View</a></td>
           </tr>
           {% endfor %}
