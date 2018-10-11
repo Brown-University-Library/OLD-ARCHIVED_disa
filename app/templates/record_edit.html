@@ -65,6 +65,9 @@
     </div>
     <h2>People</h2>
     <div id="entrant_component">
+        {% if rec %}
+            <p><a href="{{ url_for('edit_relationships', recId=rec.id)}}">Manage relationships</a></p>
+        {% endif %}
         <table class="table">
             <thead>
                 <tr>

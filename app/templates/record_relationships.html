@@ -1,0 +1,72 @@
+{% extends "editor.html" %}
+
+{% block header %}
+{{ super() }}
+<style>
+#document_header {
+    font-size: 150%;
+}
+
+#locations {
+    margin-top: 5px;
+}
+
+.location-btn {
+    background-color: Transparent;
+    border: none;
+}
+
+.entrant-ctl {
+    margin-right: 5px;
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class='col-md-11'>
+            <h2 id="rec_header">{{ rec.record_type.name }}</h2>
+        </div>
+        <div class='col-md-1'>
+            <a href="{{ url_for('edit_record', recId=rec.id)}}">Back</a>
+        </div>
+    </div>
+    <h2>Relationships</h2>
+    <div id="entrant_component">
+        <table class="table">
+            <thead>
+                <tr>
+                  <th scope="col" style="width:25%"></th>
+                  <th scope="col" style="width:25%">Relationship</th>
+                  <th scope="col" style="width:25%">Person</th>
+                </tr>
+            </thead>
+            <tbody id="entrants">
+            {% for e in entrants %}
+                <tr>
+                    <td>{{ e.primary_name.first }}</td>
+                    <td colspan="2">
+                        <table>
+                        {% for r in e.as_subject %}
+                            <tr>
+                                <td>{{ r.related_as.name }}</td>
+                                <td>{{ r.obj.primary_name.first }}</td>
+                            </tr>
+                        {% endfor %}
+                        </table>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts%}
+{{ super() }}
+<script>
+</script>
+{% endblock %}

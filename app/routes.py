@@ -470,3 +470,9 @@ def get_person(persId):
 @app.route('/source/<srcId>')
 def get_source(srcId):
     return 'Foo:' + srcId
+
+@app.route('/record/relationships/<recId>')
+def edit_relationships(recId):
+    rec = models.Record.query.get(recId)
+    return render_template('record_relationships.html',
+        rec=rec, entrants=rec.entrants)
