@@ -192,6 +192,14 @@ class Entrant(db.Model):
         return '<Entrant {0}: {1} {2}>'.format(
             self.id, self.first_name, self.last_name)
 
+    def display_name(self):
+        display = "{0} {1}".format(
+            self.primary_name.first, self.primary_name.last).strip()
+        if display == "":
+            return "Unknown"
+        else:
+            return display
+
 class Title(db.Model):
     __tablename__ = 'titles'
 

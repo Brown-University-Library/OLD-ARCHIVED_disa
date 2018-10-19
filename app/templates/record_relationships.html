@@ -4,20 +4,20 @@
 {{ super() }}
 <style>
 #document_header {
-    font-size: 150%;
+  font-size: 150%;
 }
 
 #locations {
-    margin-top: 5px;
+  margin-top: 5px;
 }
 
 .location-btn {
-    background-color: Transparent;
-    border: none;
+  background-color: Transparent;
+  border: none;
 }
 
 .entrant-ctl {
-    margin-right: 5px;
+  margin-right: 5px;
 }
 
 </style>
@@ -25,48 +25,49 @@
 
 {% block content %}
 <div class="container">
-    <div class="row">
-        <div class='col-md-11'>
-            <h2 id="rec_header">{{ rec.record_type.name }}</h2>
-        </div>
-        <div class='col-md-1'>
-            <a href="{{ url_for('edit_record', recId=rec.id)}}">Back</a>
-        </div>
+  <div class="row">
+    <div class='col-md-11'>
+      <h2 id="rec_header">Relationships</h2>
     </div>
-    <h2>Relationships</h2>
-    <div id="entrant_component">
-        <table class="table">
-            <thead>
-                <tr>
-                  <th scope="col" style="width:25%"></th>
-                  <th scope="col" style="width:25%">Relationship</th>
-                  <th scope="col" style="width:25%">Person</th>
-                </tr>
-            </thead>
-            <tbody id="entrants">
-            {% for e in entrants %}
-                <tr>
-                    <td>{{ e.primary_name.first }}</td>
-                    <td colspan="2">
-                        <table>
-                        {% for r in e.as_subject %}
-                            <tr>
-                                <td>{{ r.related_as.name }}</td>
-                                <td>{{ r.obj.primary_name.first }}</td>
-                            </tr>
-                        {% endfor %}
-                        </table>
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+    <div class='col-md-1'>
+      <a href="{{ url_for('edit_record', recId=rec.id)}}">Back</a>
     </div>
-</div>
-{% endblock %}
+  </div>
+  <div id="entrant_component">
+    <table class="table">
+      <tbody id="entrants">
+        {% for e in entrants %}
+        <tr>
+          <td>{{ e.display_name() }}</td>
+          <td colspan="2">
+            <table>
+              {% for r in e.as_subject %}
+              <tr>
+                <td>
+                  <select>
+                    <option>{{ r.related_as.name }}</option>
+                  </select>
+                </td>
+                <td>
+                  <select>
+                    <option>{{ r.obj.display_name() }}</option>
+                  </select>
+                </td>
+              </tr>
+              {% endfor %}
+              </table>
+              <a href="">Add</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endblock %}
 
-{% block scripts%}
-{{ super() }}
-<script>
-</script>
-{% endblock %}
+  {% block scripts%}
+  {{ super() }}
+  <script>
+  </script>
+  {% endblock %}
