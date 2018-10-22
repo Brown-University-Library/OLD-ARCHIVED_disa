@@ -474,5 +474,15 @@ def get_source(srcId):
 @app.route('/record/relationships/<recId>')
 def edit_relationships(recId):
     rec = models.Record.query.get(recId)
-    return render_template('record_relationships.html',
+    # return render_template('record_relationships.html',
+    #     rec=rec, entrants=rec.entrants)
+    return render_template('relationship-stub.html',
         rec=rec, entrants=rec.entrants)
+
+@app.route('/data/relationships/<recId>')
+def relationships_data(recId):
+    rec = models.Record.query.get(recId)
+    data = {}
+    data['referents'] = { e.id: e.display_name() for e in rec.entrants }
+    data['relationships'] = { r.id: r.name for r in models.Role.query.all() }
+    return jsonify(data)

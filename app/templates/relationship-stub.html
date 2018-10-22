@@ -1,0 +1,51 @@
+{% extends "editor.html" %}
+
+{% block header %}
+{{ super() }}
+<style>
+#document_header {
+  font-size: 150%;
+}
+
+#locations {
+  margin-top: 5px;
+}
+
+.location-btn {
+  background-color: Transparent;
+  border: none;
+}
+
+.entrant-ctl {
+  margin-right: 5px;
+}
+
+</style>
+
+<script src="{{ url_for('static', filename='js/editor.js') }}"></script>
+<script src="{{ url_for('static', filename='js/editor.relationships.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class='col-md-11'>
+      <h2 id="rec_header">Relationships</h2>
+    </div>
+    <div class='col-md-1'>
+      <a href="{{ url_for('edit_record', recId=rec.id)}}">Back</a>
+    </div>
+  </div>
+  <div data-section-id="{{ rec.id }}" id='relationship-editor'>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts%}
+{{ super() }}
+<script>
+  $( function() { 
+    editor.initModule( $('#relationship-editor') );
+  } );
+</script>
+{% endblock %}
