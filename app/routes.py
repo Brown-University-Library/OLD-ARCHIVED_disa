@@ -483,6 +483,14 @@ def edit_relationships(recId):
 def relationships_data(recId):
     rec = models.Record.query.get(recId)
     data = {}
-    data['referents'] = { e.id: e.display_name() for e in rec.entrants }
+    data['referents'] = [ { 'id': e.id, 'name': e.display_name() }
+        for e in rec.entrants ]
+    data['referent_relationships'] = [
+        {   'sbj': r.subject_id,
+            'prop': r.role_id,
+            'val': r.object_id }
+        for e in rec.entrants
+            for r in e.as_subject
+    ]
     data['relationships'] = { r.id: r.name for r in models.Role.query.all() }
     return jsonify(data)
