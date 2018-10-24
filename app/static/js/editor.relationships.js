@@ -46,8 +46,8 @@ editor.relationships = (function( $container ) {
 
     loadData = function ( data ) {
       // stateMap.ref_rels = data['referent_relationships'];
-      stateMap.referents = data['referents'];
-      stateMap.rels = data['relationships'];
+      stateMap.referents = data.referents;
+      stateMap.rels = data.relationships;
       // stateMap.rel_invrs = data['inverse_relationships'];
 
       console.log(stateMap);
@@ -61,7 +61,7 @@ editor.relationships = (function( $container ) {
 
         $.ajax({
           dataType: "json",
-          url: 'localhost:5000/data/relationships/' + stateMap.section_id,
+          url: '/data/relationships/' + stateMap.section_id,
           success: function( data ) {
             loadData( data );
           }
