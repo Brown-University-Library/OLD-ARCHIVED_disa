@@ -16,10 +16,12 @@ editor.relationships = (function( $container ) {
 
     stateMap = {
       $root: undefined,
-      ref_rels: [],
+      refs : [],
       rels : [],
-      rel_invrs: {},
-      referents : {}
+      ref_map : {},
+      rel_map : {},
+      ref_rels: [],
+      rel_invrs: {}
     };
 
     jqueryMap = {};
@@ -38,32 +40,14 @@ editor.relationships = (function( $container ) {
     }
 
     setListeners = function() {
-      // $( jqueryMap.$root ).on('dataLoaded', function (e) {
-      //   for ()
-      // });
       $( jqueryMap.$root ).on('click', '.add-relationship', function(e) {
         e.preventDefault();
         console.log( $(this).closest('person-row').attr('data-person-id') );
       });
     }
 
-    cellMaker = function ( val ) {
-      return $('<span/>',
-        { 'class'     : 'matrix-val',
-          'data-val'  : val,
-          'text'      : val,
-        });
-    }
-
-    colMaker = function ( val ) {
-      return $('<li/>',
-        { 'class'     : 'matrix-prop',
-          'data-prop' : val,
-          'text'      : val,
-        });
-    }
-
-    updateMatrixData = function ( dataObj, domMap ) {
+    updateMatrixData = function ( dataObj, domMap,
+      refMap, relMap ) {
       var $matrix = domMap.$matrix;
 
       $row = $('<tr/>', {
@@ -72,55 +56,30 @@ editor.relationships = (function( $container ) {
         'data-prop'  : dataObj.prop,
         'data-val'  : dataObj.val
       });
-      $td_sbj = $('<td/>', {'text': dataObj.sbj });
-      $td_prop = $('<td/>', {'text': dataObj.prop });
-      $td_val = $('<td/>', {'text': dataObj.val });
+      $td_sbj = $('<td/>', {'text': refMap[dataObj.sbj] });
+      $td_prop = $('<td/>', {'text': relMap[dataObj.prop] });
+      $td_val = $('<td/>', {'text': refMap[dataObj.val] });
       
       $row.append($td_sbj).append($td_prop).append($td_val);
       $matrix.append($row);
-      
+
       return true;
     } 
 
     refreshMatrixData = function () {
       stateMap.ref_rels.forEach( function(rel) {
-        updateMatrixData(rel, jqueryMap);
+        updateMatrixData(rel, jqueryMap,
+          stateMap.ref_map, stateMap.rel_map);
       });
     }
-
-    writeMatrixRow = function ( rowSbj, domMap ) {
-      var $row, $list, $td_sbj,
-        $td_props, $props_list,
-
-        $matrix = domMap.$matrix;
-
-      $row = $('<tr/>',
-        { 'class'     : 'matrix-row',
-          'data-sbj'  : rowSbj.id,
-        });
-      $td_sbj = $('<td/>', { 'text': rowSbj.name })
-      $td_props = $('<td/>');
-      $props_list = $('<ul/>', {'class': 'props'});
-
-      $td_props.append($props_list);
-      $row.append($td_sbj).append($td_props);
-      $matrix.append($row);
-    }
-
-    initializeMatrix = function() {
-      stateMap.referents.forEach( function (ref) {
-        writeMatrixRow( ref, jqueryMap );
-      });
-      refreshMatrixData();
-    } 
 
     loadData = function ( data ) {
       stateMap.ref_rels = data.referent_relationships;
-      stateMap.referents = data.referents;
+      stateMap.refs = data.referents;
       stateMap.rels = data.relationships;
-      // stateMap.rel_invrs = data['inverse_relationships'];
+      stateMap.ref_map = data.referent_lookup;
+      stateMap.rel_map = data.relationship_lookup;
 
-      // initializeMatrix();
       refreshMatrixData();
     }
 

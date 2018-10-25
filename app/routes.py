@@ -485,6 +485,12 @@ def relationships_data(recId):
     data = {}
     data['referents'] = [ { 'id': e.id, 'name': e.display_name() }
         for e in rec.entrants ]
+    data['referent_lookup'] = { r['id']: r['name']
+        for r in data['referents'] }
+    data['relationships'] = [ { 'id': r.id, 'name': r.name }
+        for r in models.Role.query.all() ]
+    data['relationship_lookup'] = { r['id']: r['name']
+        for r in data['relationships'] }
     data['referent_relationships'] = [
         {   'sbj': r.subject_id,
             'prop': r.role_id,
@@ -492,5 +498,4 @@ def relationships_data(recId):
         for e in rec.entrants
             for r in e.as_subject
     ]
-    data['relationships'] = { r.id: r.name for r in models.Role.query.all() }
     return jsonify(data)
