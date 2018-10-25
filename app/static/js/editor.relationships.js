@@ -8,7 +8,7 @@ editor.relationships = (function( $container ) {
 
     configMap = {
       main_html : String()
-        + '<table>'
+        + '<table class="table">'
           + '<tbody id="matrix">'
           + '</tbody>'
         + '</table>'
@@ -66,20 +66,19 @@ editor.relationships = (function( $container ) {
     updateMatrixData = function ( dataObj, domMap ) {
       var $matrix = domMap.$matrix;
 
-      $row = $matrix.find(`.matrix-row[data-sbj=${dataObj.sbj}]`);
-      $col = $row.find('.props');
-      $arr = $col.find(`.matrix-prop[data-prop=${dataObj.prop}]`);
-      if ($arr.length == 0) {
-        console.log($col);
-        console.log(colMaker(dataObj.prop) );
-        $col.append( colMaker(dataObj.prop) );
-      }
-      $cells = $col.find('.vals');
-      $cell = $cells.find(`.matrix-val[data-val=${dataObj.val}]`);
-      if ($cell.length == 0) {
-        $cells.append( cellMaker(dataObj.val) );
-      }
-
+      $row = $('<tr/>', {
+        'class'     : 'matrix-row',
+        'data-sbj'  : dataObj.sbj,
+        'data-prop'  : dataObj.prop,
+        'data-val'  : dataObj.val
+      });
+      $td_sbj = $('<td/>', {'text': dataObj.sbj });
+      $td_prop = $('<td/>', {'text': dataObj.prop });
+      $td_val = $('<td/>', {'text': dataObj.val });
+      
+      $row.append($td_sbj).append($td_prop).append($td_val);
+      $matrix.append($row);
+      
       return true;
     } 
 
@@ -121,7 +120,8 @@ editor.relationships = (function( $container ) {
       stateMap.rels = data.relationships;
       // stateMap.rel_invrs = data['inverse_relationships'];
 
-      initializeMatrix();
+      // initializeMatrix();
+      refreshMatrixData();
     }
 
     initModule = function( $container ) {
