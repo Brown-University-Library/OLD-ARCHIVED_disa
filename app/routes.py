@@ -427,7 +427,7 @@ def parse_person_relations(personObj):
                 for r in e.as_subject ]
     grouped = collections.defaultdict(list)
     for r in rels:
-        grouped[ r[0].name ].append(
+        grouped[ r[0].name_as_relationship ].append(
             { 'id': r[1].person_id,
             'name': parse_person_name(r[1].person) } )
     out = [ { 'type': k, 'related': v } for k,v in grouped.items() ]
@@ -487,7 +487,7 @@ def relationships_data(recId):
         for e in rec.entrants ]
     data['referent_lookup'] = { r['id']: r['name']
         for r in data['referents'] }
-    data['relationships'] = [ { 'id': r.id, 'name': r.name }
+    data['relationships'] = [ { 'id': r.id, 'name': r.name_as_relationship }
         for r in models.Role.query.all() ]
     data['relationship_lookup'] = { r['id']: r['name']
         for r in data['relationships'] }
