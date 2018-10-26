@@ -144,14 +144,12 @@ def read_document_data(docId=None):
 def create_document():
     data = request.get_json()
     if data['citation'] == '':
-        return {}
+        data['citation'] = 'Document'
     doc_types = [ { 'id': dt.id, 'name': dt.name }
         for dt in models.DocumentType.query.all() ]
-    unspec = [ dt['id'] for dt in doc_types
-        if dt['name'] == 'unspecified' ][0]
     date = data['date'] or '1/1/2001'
     data['date'] = datetime.datetime.strptime(date, '%m/%d/%Y')
-    data['document_type_id'] = data['document_type_id'] or unspec
+    data['document_type_id'] = data['document_type_id']
     doc = models.Document(**data)
     db.session.add(doc)
     db.session.commit()
@@ -293,7 +291,6 @@ def process_record_locations(locData, recObj):
 @app.route('/data/records/', methods=['POST'])
 def create_record():
     data = request.get_json()
-    print(data['document_id'])
     doc = models.Document.query.get(data['document_id'])
     if data['date']:
         date = datetime.datetime.strptime(data['date'], '%m/%d/%Y')
