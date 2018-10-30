@@ -480,19 +480,19 @@ def edit_relationships(recId):
 def relationships_data(recId):
     rec = models.Record.query.get(recId)
     data = {}
-    data['referents'] = [ { 'id': e.id, 'name': e.display_name() }
+    data['nodes'] = [ { 'id': e.id, 'name': e.display_name() }
         for e in rec.entrants ]
-    data['referent_lookup'] = { r['id']: r['name']
-        for r in data['referents'] }
-    data['relationships'] = [ { 'id': r.id, 'name': r.name_as_relationship }
+    data['node_lookup'] = { r['id']: r['name']
+        for r in data['nodes'] }
+    data['edges'] = [ { 'id': r.id, 'name': r.name_as_relationship }
         for r in models.Role.query.all() ]
-    data['relationship_lookup'] = { r['id']: r['name']
-        for r in data['relationships'] }
-    data['referent_relationships'] = [
+    data['edge_lookup'] = { r['id']: r['name']
+        for r in data['edges'] }
+    data['data'] = [
         {   'sbj': r.subject_id,
             'prop': r.role_id,
             'val': r.object_id }
         for e in rec.entrants
             for r in e.as_subject
     ]
-    return jsonify(data)
+    return jsonify({ 'graph': data })
