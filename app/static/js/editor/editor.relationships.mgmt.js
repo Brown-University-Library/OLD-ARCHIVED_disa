@@ -25,6 +25,7 @@ class RelationshipMgmt {
       case "click":
         if (target.classList.contains('add-rel')) {
           var obj = this._adder.getData();
+          obj['section'] = this._section;
           this._source.addRelationship(this._section, obj);
         } else if (target.classList.contains('del-rel')) {
           var rel_id = parseInt(target.getAttribute('data-rel-id'));

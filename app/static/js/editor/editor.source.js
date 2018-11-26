@@ -11,7 +11,7 @@ class DISASource {
 
   getREST( endpoint, callback ) {
     $.ajax({
-      method: "GET",
+      type: "GET",
       dataType: "json",
       url: endpoint,
       success: function( data ) {
@@ -22,8 +22,9 @@ class DISASource {
 
   postREST( endpoint, payload, callback ) {
     $.ajax({
-      method: "POST",
-      data: payload,
+      type: "POST",
+      data: JSON.stringify(payload),
+      contentType: "application/json",
       dataType: "json",
       url: endpoint,
       success: function( data ) {
@@ -34,7 +35,7 @@ class DISASource {
 
   delREST( endpoint, callback ) {
     $.ajax({
-      method: "DELETE",
+      type: "DELETE",
       dataType: "json",
       url: endpoint,
       success: function( data ) {
@@ -50,7 +51,7 @@ class DISASource {
   }
 
   addRelationship(sectionId, obj) {
-    let endpoint = this._base + `/data/sections/${sectionId}/relationships/`;
+    let endpoint = this._base + `/data/relationships/`;
     let callback = this._apps['rel-mgmt'].setUp;
     this.postREST(endpoint, obj, callback);
   }
