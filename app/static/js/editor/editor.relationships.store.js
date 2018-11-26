@@ -30,16 +30,23 @@ class RelationshipStore {
   }
 
   load( data ) {
-    var curr_sbj, curr_rel;
+    var curr_sbj, curr_rel,
+      stripe_toggle;
 
     this._$root.empty();
     this._data = data.sort(this.compareData);
 
+    stripe_toggle = false;
     for (var i=0; i < this._data.length; i++) {
-      let obj = this._data[i];
-      let rel_id = obj.id;
-      let rel_data = obj.data;
-      let $row = this.makeRow(rel_data, rel_id,
+      var obj, rel_id, rel_data, $row;
+      
+      obj = this._data[i];
+      rel_id = obj.id;
+      rel_data = obj.data;
+      if (curr_sbj !== rel_data.sbj.id) {
+        stripe_toggle = !stripe_toggle;
+      }
+      $row = this.makeRow(rel_data, rel_id, stripe_toggle,
         (rel_data.sbj.id===curr_sbj), (rel_data.rel.id===curr_rel));
       this._$root.append($row);
       curr_sbj = rel_data.sbj.id;
@@ -47,11 +54,12 @@ class RelationshipStore {
     }
   }
 
-  makeRow( data, relId, sbjIsRepeat, relIsRepeat ) {
+  makeRow( data, relId, rowStripe, sbjIsRepeat, relIsRepeat ) {
     var
       $row, $td_sbj, $td_rel, $td_obj,
       $td_del, $button, $span;
     $row = $('<tr/>', {'class': 'relationship-row'});
+    $row.addClass( rowStripe ? 'rel-row-1' : 'rel-row-2');
     $td_sbj = $('<td/>').append(
       $('<span/>', { 'text': data.sbj.name,
         'class' : sbjIsRepeat ? 'repeated' : '' }) );
@@ -78,11 +86,11 @@ class RelationshipStore {
     
     switch(event.type) {
       case "mouseover":
-        let row = $(target).closest('.relationship-row');
+        var row = $(target).closest('.relationship-row');
         row.find('.repeated').addClass('show-repeated');
         return;
       case "mouseout":
-        let row = $(target).closest('.relationship-row');
+        var row = $(target).closest('.relationship-row');
         row.find('.repeated').removeClass('show-repeated');
         return;
       default:
