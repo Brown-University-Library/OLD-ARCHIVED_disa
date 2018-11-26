@@ -33,9 +33,11 @@ class DISASource {
     });
   }
 
-  delREST( endpoint, callback ) {
+  delREST( endpoint, payload, callback ) {
     $.ajax({
       type: "DELETE",
+      data: JSON.stringify(payload),
+      contentType: "application/json",
       dataType: "json",
       url: endpoint,
       success: function( data ) {
@@ -50,15 +52,15 @@ class DISASource {
     this.getREST(endpoint, callback);
   }
 
-  addRelationship(sectionId, obj) {
+  addRelationship(obj) {
     let endpoint = this._base + `/data/relationships/`;
     let callback = this._apps['rel-mgmt'].setUp;
     this.postREST(endpoint, obj, callback);
   }
 
-  deleteRelationship(relId) {
+  deleteRelationship(sectionId, relId) {
     let endpoint = this._base + `/data/relationships/${relId}`;
     let callback = this._apps['rel-mgmt'].setUp;
-    this.delREST(endpoint, callback);
+    this.delREST(endpoint, { 'section': sectionId }, callback);
   }
 }

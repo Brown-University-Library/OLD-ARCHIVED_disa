@@ -514,4 +514,16 @@ def create_relationship():
         db.session.add(relt)
         db.session.commit()
     return redirect(
-        url_for('relationships_by_section', secId = data['section']) )
+        url_for('relationships_by_section', secId = data['section']),
+        code=303 )
+
+@app.route('/data/relationships/<relId>', methods=['DELETE'])
+def delete_relationship(relId):
+    data = request.get_json()
+    existing = models.EntrantRelationship.query.get(relId)
+    if existing:
+        db.session.delete(existing)
+        db.session.commit()
+    return redirect(
+        url_for('relationships_by_section', secId = data['section']),
+        code=303 )    
