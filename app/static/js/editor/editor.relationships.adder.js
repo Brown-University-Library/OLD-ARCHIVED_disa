@@ -41,10 +41,10 @@ class RelationshipAdder {
   }
 
   load(personObjs, relationshipObjs) {
-    this._ctrl_sbj.append(this.makeOptions(personObjs));
+    this._ctrl_sbj.empty().append(this.makeOptions(personObjs));
     this._ctrl_sbj.children().eq(0).prop("selected", true);
-    this._ctrl_prop.append(this.makeOptions(relationshipObjs));
-    this._ctrl_val.append(this.makeOptions(personObjs));
+    this._ctrl_prop.empty().append(this.makeOptions(relationshipObjs));
+    this._ctrl_val.empty().append(this.makeOptions(personObjs));
     this._ctrl_val.children().eq(1).prop("selected", true);
 
     this.setData();
