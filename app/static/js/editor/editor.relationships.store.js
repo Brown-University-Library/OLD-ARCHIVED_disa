@@ -51,13 +51,14 @@ class RelationshipStore {
       $td_del, $button, $span;
     $row = $('<tr/>');
     $td_sbj = $('<td/>', { 'text': sbjIsRepeat ? '' : data.sbj.name });
-    $td_rel = $('<td/>', { 'text': relIsRepeat ? '' : data.rel.name });
+    $td_rel = $('<td/>', {
+      'text': (sbjIsRepeat && relIsRepeat) ? '' : data.rel.name });
     $td_obj = $('<td/>', { 'text': data.obj.name });
     $td_del = $('<td/>');
     $button = $('<button/>',
       { 'class': 'btn btn-danger del-rel',
         'data-rel-id': relId });
-    $span = $('<span/>', {'class': 'fas fa-times-circle', 'html' : '\&times\;'});
+    $span = $('<span/>', {'class': 'fas fa-times-circle'});
     $row.append($td_sbj).append($td_rel).append($td_obj).append(
       $td_del.append($button.append($span)));
     return $row;

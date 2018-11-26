@@ -1,12 +1,10 @@
 class RelationshipAdder {
   constructor($elem) {
     this._$root = $elem;
-    this._ctrl_sbj = $('<select/>');
-    this._ctrl_prop = $('<select/>');
-    this._ctrl_val = $('<select/>');
-    this._ctrl_add = $('<button/>',
-      {'html' : '\&plus\;',
-      'class': 'add-rel'});
+    this._ctrl_sbj = $('<select/>', {'class' : 'form-control'});
+    this._ctrl_prop = $('<select/>', {'class' : 'form-control'});
+    this._ctrl_val = $('<select/>', {'class' : 'form-control'});
+    this._ctrl_add = $('<button/>', {'class': 'btn btn-primary add-rel'});
     this._sbj = '';
     this._prop = '';
     this._val = '';
@@ -17,14 +15,15 @@ class RelationshipAdder {
   }
 
   initialize() {
-    var $tr,
+    var $tr, $span,
       $td_sbj, $td_rel, $td_obj, $td_add,
       $sel_sbj, $sel_rel, $sel_obj, $button;
     $tr = $('<tr/>');
+    $span = $('<span/>', {'class': 'fas fa-plus-circle'});
     $td_sbj = $('<td/>').append(this._ctrl_sbj);
     $td_rel = $('<td/>').append(this._ctrl_prop);
     $td_obj = $('<td/>').append(this._ctrl_val);
-    $td_add = $('<td/>').append(this._ctrl_add);
+    $td_add = $('<td/>').append(this._ctrl_add.append($span));
     $tr.append($td_sbj).append($td_rel).append($td_obj).append($td_add);
     this._$root.append($tr);
   }
