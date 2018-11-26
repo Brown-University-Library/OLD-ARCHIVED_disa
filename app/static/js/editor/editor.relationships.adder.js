@@ -82,6 +82,7 @@ class RelationshipAdder {
         this.setData();
         this.flipOption(event.target);
         this.setData();
+        return;
       default:
         return;
     }

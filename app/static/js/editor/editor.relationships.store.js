@@ -3,6 +3,8 @@ class RelationshipStore {
   constructor($elem) {
     this._$root = $elem;
     this._data = [];
+    this._$root[0].addEventListener('mouseover', this);
+    this._$root[0].addEventListener('mouseout', this);
   }
 
   compareData(d1, d2) {
@@ -49,14 +51,17 @@ class RelationshipStore {
     var
       $row, $td_sbj, $td_rel, $td_obj,
       $td_del, $button, $span;
-    $row = $('<tr/>');
-    $td_sbj = $('<td/>', { 'text': sbjIsRepeat ? '' : data.sbj.name });
-    $td_rel = $('<td/>', {
-      'text': (sbjIsRepeat && relIsRepeat) ? '' : data.rel.name });
+    $row = $('<tr/>', {'class': 'relationship-row'});
+    $td_sbj = $('<td/>').append(
+      $('<span/>', { 'text': data.sbj.name,
+        'class' : sbjIsRepeat ? 'repeated' : '' }) );
+    $td_rel = $('<td/>').append(
+      $('<span/>', { 'text': data.rel.name,
+        'class' : (sbjIsRepeat && relIsRepeat) ? 'repeated' : '' }) );
     $td_obj = $('<td/>', { 'text': data.obj.name });
     $td_del = $('<td/>');
     $button = $('<button/>',
-      { 'class': 'btn btn-danger del-rel',
+      { 'class': 'btn btn-danger del-rel repeated',
         'data-rel-id': relId });
     $span = $('<span/>', {'class': 'fas fa-times-circle'});
     $row.append($td_sbj).append($td_rel).append($td_obj).append(
@@ -66,5 +71,22 @@ class RelationshipStore {
 
   getRow( idx ) {
     return this._data[idx];
+  }
+
+  handleEvent(event) {
+    let target = event.target;
+    
+    switch(event.type) {
+      case "mouseover":
+        let row = $(target).closest('.relationship-row');
+        row.find('.repeated').addClass('show-repeated');
+        return;
+      case "mouseout":
+        let row = $(target).closest('.relationship-row');
+        row.find('.repeated').removeClass('show-repeated');
+        return;
+      default:
+        return;
+    }
   }
 }

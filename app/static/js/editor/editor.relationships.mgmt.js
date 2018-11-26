@@ -31,6 +31,7 @@ class RelationshipMgmt {
           var rel_id = parseInt(target.getAttribute('data-rel-id'));
           this._source.deleteRelationship(this._section, rel_id);
         }
+        return;
       default:
         return;
     }
