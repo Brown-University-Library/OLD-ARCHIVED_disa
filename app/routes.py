@@ -473,26 +473,30 @@ def edit_relationships(recId):
     rec = models.Record.query.get(recId)
     # return render_template('record_relationships.html',
     #     rec=rec, entrants=rec.entrants)
-    return render_template('relationship-stub.html',
-        rec=rec, entrants=rec.entrants)
+    return render_template('relationship-stub.html', sec=rec)
 
-@app.route('/data/relationships/<recId>')
-def relationships_data(recId):
-    rec = models.Record.query.get(recId)
-    data = {}
-    data['nodes'] = [ { 'id': e.id, 'name': e.display_name() }
+@app.route('/data/sections/<secId>/relationships/')
+def relationships_data(secId):
+    rec = models.Record.query.get(secId)
+    entrants = [ { 'id': e.id, 'name': e.display_name() }
         for e in rec.entrants ]
-    data['node_lookup'] = { r['id']: r['name']
-        for r in data['nodes'] }
-    data['edges'] = [ { 'id': r.id, 'name': r.name_as_relationship }
+    relationships = [ { 'id': r.id, 'name': r.name_as_relationship }
         for r in models.Role.query.all() ]
-    data['edge_lookup'] = { r['id']: r['name']
-        for r in data['edges'] }
-    data['data'] = [
-        {   'sbj': r.subject_id,
-            'prop': r.role_id,
-            'val': r.object_id }
+    ent_map = { e['id']: e['name'] for e in entrants }
+    rel_map = { r['id']: r['name'] for r in relationships }
+    store = [
+        {
+        'id': r.id,
+        'data':
+            { 
+            'sbj': { 'name': ent_map[r.subject_id], 'id': r.subject_id },
+            'rel': { 'name': rel_map[r.role_id], 'id': r.role_id },
+            'obj': { 'name': ent_map[r.object_id], 'id': r.object_id }
+            }
+        }
         for e in rec.entrants
             for r in e.as_subject
     ]
-    return jsonify({ 'graph': data })
+    data = { 'store': store, 'people': entrants,
+        'relationships': relationships }
+    return jsonify(data)
