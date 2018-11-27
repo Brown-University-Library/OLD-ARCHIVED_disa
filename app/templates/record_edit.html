@@ -63,13 +63,12 @@
             <button type="submit" class="btn btn-primary" id="rec_update">Update</button>
         </form>
     </div>
+    {% if rec %}
     <h2>People</h2>
     <div id="entrant_component">
-        {% if rec %}
             <div class="d-flex flex-row-reverse">
               <p><a href="{{ url_for('edit_relationships', recId=rec.id)}}">Manage relationships</a></p>
             </div>
-        {% endif %}
         <table class="table">
             <thead>
                 <tr>
@@ -86,6 +85,7 @@
             <button class="btn btn-primary" id="add-person">Add Person</button>
         </div>
     </div>
+    {% endif %}
 </div>
 {% endblock %}
 

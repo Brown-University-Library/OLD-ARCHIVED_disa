@@ -193,7 +193,7 @@ def update_document_data(docId):
 @app.route('/data/records/', methods=['GET'])
 @app.route('/data/records/<recId>', methods=['GET'])
 def read_record_data(recId=None):
-    data = { 'rec': {} }
+    data = { 'rec': {}, 'entrants': [] }
     if recId == None:
         return jsonify(data)
     rec = models.Record.query.get(recId)
