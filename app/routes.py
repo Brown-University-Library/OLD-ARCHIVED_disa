@@ -471,9 +471,7 @@ def get_source(srcId):
 @app.route('/record/relationships/<recId>')
 def edit_relationships(recId):
     rec = models.Record.query.get(recId)
-    # return render_template('record_relationships.html',
-    #     rec=rec, entrants=rec.entrants)
-    return render_template('relationship-stub.html', sec=rec)
+    return render_template('record_relationships.html', sec=rec)
 
 @app.route('/data/sections/<secId>/relationships/')
 def relationships_by_section(secId):

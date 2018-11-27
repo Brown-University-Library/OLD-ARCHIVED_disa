@@ -3,24 +3,32 @@
 {% block header %}
 {{ super() }}
 <style>
-#document_header {
-  font-size: 150%;
+.relationship-row:hover {
+  background-color: #ffff99;
 }
 
-#locations {
-  margin-top: 5px;
+.rel-row-1 {
+  background-color: lightgray;
 }
 
-.location-btn {
-  background-color: Transparent;
-  border: none;
+.repeated {
+  visibility: hidden;
 }
 
-.entrant-ctl {
-  margin-right: 5px;
+.repeated.show-repeated {
+  visibility: visible;
+}
+
+tfoot.rel-adder {
+  border-top: 3px solid gray;
 }
 
 </style>
+
+<script src="{{ url_for('static', filename='js/editor/editor.source.js') }}"></script>
+<script src="{{ url_for('static', filename='js/editor/editor.relationships.adder.js') }}"></script>
+<script src="{{ url_for('static', filename='js/editor/editor.relationships.store.js') }}"></script>
+<script src="{{ url_for('static', filename='js/editor/editor.relationships.mgmt.js') }}"></script>
 {% endblock %}
 
 {% block content %}
@@ -30,44 +38,26 @@
       <h2 id="rec_header">Relationships</h2>
     </div>
     <div class='col-md-1'>
-      <a href="{{ url_for('edit_record', recId=rec.id)}}">Back</a>
+      <a href="{{ url_for('edit_record', recId=sec.id)}}">Back</a>
     </div>
   </div>
-  <div id="entrant_component">
-    <table class="table">
-      <tbody id="entrants">
-        {% for e in entrants %}
-        <tr>
-          <td>{{ e.display_name() }}</td>
-          <td colspan="2">
-            <table>
-              {% for r in e.as_subject %}
-              <tr>
-                <td>
-                  <select>
-                    <option>{{ r.related_as.name }}</option>
-                  </select>
-                </td>
-                <td>
-                  <select>
-                    <option>{{ r.obj.display_name() }}</option>
-                  </select>
-                </td>
-              </tr>
-              {% endfor %}
-              </table>
-              <a href="">Add</a>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-  {% endblock %}
+  <table id="rel-mgmt" class="table">
+    <tbody class="rel-store">
+    </tbody>
+    <tfoot class="rel-adder">
+    </tfoot>
+  </table>
+</div>
+{% endblock %}
 
-  {% block scripts%}
-  {{ super() }}
-  <script>
-  </script>
-  {% endblock %}
+{% block scripts%}
+{{ super() }}
+<script>
+  $( function() { 
+    var source = new DISASource("");
+    var mgmt = new RelationshipMgmt({{ sec.id }}, source, $('#rel-mgmt'));
+    source.registerApp('rel-mgmt', mgmt);
+    mgmt.load();
+  } );
+</script>
+{% endblock %}
