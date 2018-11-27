@@ -269,6 +269,14 @@ class EntrantRelationship(db.Model):
         primaryjoin=(role_id == Role.id),
         backref='describes')
 
+    def entailed_relationships(self):
+        implied = []
+        entailed = RoleRelationship.query.filter_by(role1=self.role_id).all()
+        for e in entailed:
+            implied.append(e.entail_relationships(
+                self.subject_id, self.object_id))
+        return implied
+
 class RoleRelationship(db.Model):
     __tablename__ = 'role_relationships'
 
@@ -279,11 +287,27 @@ class RoleRelationship(db.Model):
         db.ForeignKey('role_relationship_types.id'))
     alternate_text = db.Column(db.String(255))
 
+    def entail_role(self):
+        pass
+
+    def entail_relationships(self, sbjId, objId):
+        if self.related_as.name == 'inverse':
+            return EntrantRelationship(
+                subject_id=objId, role_id=self.role2, object_id=sbjId)
+        elif self.related_as.name == 'is_a':
+            return EntrantRelationship(
+                subject_id=sbjId, role_id=self.role2, object_id=objId)
+        else:
+            return
+
 class RoleRelationshipTypes(db.Model):
     __tablename__ = 'role_relationship_types'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
+    relationships = db.relationship(
+        'RoleRelationship', backref='related_as', lazy=True)
+
 
 class Person(db.Model):
     __tablename__ = 'people'

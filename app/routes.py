@@ -510,6 +510,13 @@ def create_relationship():
             subject_id=data['sbj'], role_id=data['rel'],
             object_id=data['obj'])
         db.session.add(relt)
+        implied = relt.entailed_relationships()
+        for i in implied:
+            existing = models.EntrantRelationship.query.filter_by(
+                subject_id=i.subject_id, role_id=i.role_id,
+                object_id=i.object_id).first()
+            if not existing:
+                db.session.add(i)
         db.session.commit()
     return redirect(
         url_for('relationships_by_section', secId = data['section']),
