@@ -9,38 +9,38 @@ def clear_data(tables=[]):
         models.has_tribe,
         models.has_origin,
         models.enslaved_as,
-        models.recordtype_roles,
-        models.documenttype_recordtypes
+        models.referencetype_roles,
+        models.citationtype_referencetypes
     ]
     disa_models = [
-        models.EntrantRelationship,
-        models.RecordLocation,
-        models.RecordEdit,
+        models.ReferentRelationship,
+        models.ReferenceLocation,
+        models.ReferenceEdit,
         models.Tribe,
         models.Race,
         models.Title,
         models.Vocation,
         models.EnslavementType,
-        models.EntrantName,
+        models.ReferentName,
         models.NameType,
-        models.Entrant,
+        models.Referent,
         models.Person,
         models.Role,
         models.Location,
-        models.Record,
-        models.RecordType,
-        models.Document,
-        models.DocumentType,
+        models.Reference,
+        models.ReferenceType,
+        models.Citation,
+        models.CitationType,
         models.User
     ]
-    model_map = { 'documents' : models.Document,
-        'records' : models.Record,
+    model_map = { 'citations' : models.Citation,
+        'references' : models.Reference,
         'locations' : models.Location,
-        'entrants' : models.Entrant,
+        'referents' : models.Referent,
         'roles' : models.Role,
         'people' : models.Person,
-        'record_types' : models.RecordType,
-        'document_types': models.DocumentType
+        'reference_types' : models.ReferenceType,
+        'citation_types': models.CitationType
     }
     if not tables:
         del_tables = disa_models

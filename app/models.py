@@ -113,7 +113,7 @@ class CitationField(db.Model):
     __tablename__ = 'citation_fields'
 
     id = db.Column(db.Integer, primary_key=True)
-    citation_id = db.Column(db.Integer, db.ForeignKey('citation.id'))
+    citation_id = db.Column(db.Integer, db.ForeignKey('citations.id'))
     field_id = db.Column(db.Integer, db.ForeignKey('zotero_fields.id'))
     field_data = db.Column(db.String(255))
     citation = db.relationship(Citation,
