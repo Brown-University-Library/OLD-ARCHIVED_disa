@@ -153,26 +153,27 @@ def load_multivalued_attributes():
         { 'name': 'Yiuby' },
         { 'name': 'Yulusky' }
     ]
-    record_types = [
-        {'name': 'Runaway Advertisement'},
-        {'name': 'Advertisement of Sale'},
+    reference_types = [
         {'name': 'Baptism'},
-        {'name': 'Runaway Capture Advertisement'},
-        {'name': 'Smallpox Inoculation Notice'},
-        {'name': 'Execution Notice'},
-        {'name': 'Probate'},
+        {'name': 'Runaway'},
+        {'name': 'Sale'},
+        {'name': 'Capture'},
+        {'name': 'Inoculation'},
+        {'name': 'Execution'},
         {'name': 'Manumission'},
-        {'name': 'Registry'},
-        {'name': 'News Story'},
-        {'name': 'Section'},
-        {'name': 'Listing'},
-        {'name': 'Letter'},
+        {'name': 'Entry'},
         {'name': 'Indenture'},
-        {'name': 'Court Document'},
         {'name': 'Account'},
         {'name': 'Note'},
+        {'name': 'Inventory'},
+        {'name': 'Reference'}
     ]
-    document_types = [
+    citation_types = [
+        {'name': 'Runaway Advertisement'},
+        {'name': 'Runaway Capture Advertisement'},
+        {'name': 'Advertisement of Sale'},
+        {'name': 'Smallpox Inoculation Notice'},
+        {'name': 'Execution Notice'},
         {'name': 'Book'},
         {'name': 'Census'},
         {'name': 'Court Document'},
@@ -180,13 +181,15 @@ def load_multivalued_attributes():
         {'name': 'Inventory'},
         {'name': 'Letter'},
         {'name': 'List'},
-        {'name': 'Newsletter'},
-        {'name': 'Newspaper'},
+        {'name': 'Registry'},
+        {'name': 'Newspaper Article'},
         {'name': 'Probate Record'},
         {'name': 'Record'},
         {'name': 'Registry'},
         {'name': 'Town Record'},
-        {'name': 'Will'}
+        {'name': 'Will'},
+        {'name': 'Registry'},
+        {'name': 'Section'},
     ]
     name_types = [
         { 'name': 'Alias' },
@@ -198,17 +201,25 @@ def load_multivalued_attributes():
         { 'name': 'Given' },
         { 'name': 'Unknown' }
     ]
+    natl_ctx = [
+        { 'name': 'British' },
+        { 'name': 'American' },
+        { 'name': 'French' },
+        { 'name': 'Spanish' },
+        { 'name': 'Other'}
+    ]
     tables = [
         ( models.Role, roles ),
-        ( models.RecordType, record_types ),
-        ( models.DocumentType, document_types ),
+        ( models.ReferenceType, reference_types ),
+        ( models.CitationType, citation_types ),
         ( models.Race, races ),
         ( models.Vocation, vocations ),
         ( models.Tribe, tribes ),
         ( models.Title, titles ),
         ( models.NameType, name_types ),
         ( models.EnslavementType, enslavements ),
-        ( models.Location, origins )
+        ( models.Location, origins ),
+        ( models.NationalContext, natl_ctx)
     ]
     for pair in tables:
         table = pair[0]
@@ -219,19 +230,18 @@ def load_multivalued_attributes():
         db.session.commit()
 
 def load_many_to_many():
-    recordtype_roles = [
+    referencetype_roles = [
         ('Manumission', ['Owner','Emancipated']),
-        ('Runaway Advertisement', ['Owner','Escaped']),
-        ('Advertisement of Sale', ['Owner','Enslaved']),
+        ('Runaway', ['Owner','Escaped']),
+        ('Sale', ['Owner','Enslaved']),
         ('Baptism', ['Owner','Priest','Baptised']),
-        ('Runaway Capture Advertisement', ['Captor', 'Captured']),
-        ('Smallpox Inoculation Notice', ['Inoculated','Owner']),
-        ('Execution Notice', ['Executed']),
-        ('Probate', ['Owner','Enslaved'])
+        ('Capture', ['Captor', 'Captured']),
+        ('Inoculation', ['Inoculated','Owner']),
+        ('Execution', ['Executed']),
     ]
 
     many_to_many = [
-        (models.RecordType, models.Role, recordtype_roles,
+        (models.ReferenceType, models.Role, referencetype_roles,
             'name', 'name', 'roles')
     ]
 

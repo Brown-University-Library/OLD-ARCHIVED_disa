@@ -52,9 +52,9 @@ referencetype_roles = db.Table('referencetype_roles',
     db.Column('role', db.Integer, db.ForeignKey('roles.id'))
 )
 
-documenttype_referencetypes = db.Table('documenttype_referencetypes',
+citationtype_referencetypes = db.Table('citationtype_referencetypes',
     db.Column('id', db.Integer, primary_key=True),
-    db.Column('document_type', db.Integer, db.ForeignKey('document_types.id')),
+    db.Column('citation_type', db.Integer, db.ForeignKey('citation_types.id')),
     db.Column('reference_type', db.Integer, db.ForeignKey('reference_types.id')),
 )
 
@@ -65,33 +65,33 @@ zoterotype_fields = db.Table('zoterotype_fields',
 )
 
 
-class Document(db.Model):
-    __tablename__ = 'documents'
+class Citation(db.Model):
+    __tablename__ = 'citations'
 
     id = db.Column(db.Integer, primary_key=True)
-    document_type_id = db.Column(db.Integer, db.ForeignKey('document_types.id'),
+    citation_type_id = db.Column(db.Integer, db.ForeignKey('citation_types.id'),
         nullable=False)
-    date = db.Column(db.DateTime())
-    citation = db.Column(db.String(500))
+    display = db.Column(db.String(500))
     zotero_id = db.Column(db.String(255))
+    comments = db.Column(db.UnicodeText())
     acknowledgements = db.Column(db.String(255))
-    references = db.relationship('Reference', backref='document', lazy=True)
+    references = db.relationship('Reference', backref='citation', lazy=True)
 
     def __repr__(self):
-        return '<Document {0}>'.format(self.id)
+        return '<Citation {0}>'.format(self.id)
 
-class DocumentType(db.Model):
-    __tablename__ = 'document_types'
+class CitationType(db.Model):
+    __tablename__ = 'citation_types'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
     zotero_type_id = db.Column(db.Integer, db.ForeignKey('zotero_types.id'),
         nullable=False)
     reference_types = db.relationship(
-        'ReferenceType', secondary=documenttype_referencetypes,
-        back_populates='document_types')
-    documents = db.relationship('Document',
-        backref='document_type', lazy=True)
+        'ReferenceType', secondary=citationtype_referencetypes,
+        back_populates='citation_types')
+    citations = db.relationship('Citation',
+        backref='citation_type', lazy=True)
 
 class ZoteroType(db.Model):
     __tablename__ = 'zotero_types'
@@ -99,7 +99,7 @@ class ZoteroType(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     zotero_name = db.Column(db.String(255)) 
     display_name = db.Column(db.String(255))
-    documents = db.relationship('Document',
+    citations = db.relationship('Citation',
         backref='zotero_type', lazy=True)
 
 class ZoteroField(db.Model):
@@ -113,28 +113,29 @@ class CitationField(db.Model):
     __tablename__ = 'citation_fields'
 
     id = db.Column(db.Integer, primary_key=True)
-    document_id = db.Column(db.Integer, db.ForeignKey('document.id'))
+    citation_id = db.Column(db.Integer, db.ForeignKey('citation.id'))
     field_id = db.Column(db.Integer, db.ForeignKey('zotero_fields.id'))
     field_data = db.Column(db.String(255))
-    document = db.relationship(Document,
-        primaryjoin=(document_id == Document.id),
+    citation = db.relationship(Citation,
+        primaryjoin=(citation_id == Citation.id),
         backref='citation_data')
     fields = db.relationship(ZoteroField,
         primaryjoin=(field_id == ZoteroField.id),
-        backref='documents')
+        backref='citations')
 
 class Reference(db.Model):
     __tablename__ = 'references'
 
     id = db.Column(db.Integer, primary_key=True)
+    citation_id = db.Column(db.Integer, db.ForeignKey('citations.id'),
+        nullable=False)
     reference_type_id = db.Column(db.Integer, db.ForeignKey('reference_types.id'),
         nullable=False)
-    citation = db.Column(db.String(255))
-    date = db.Column(db.DateTime())
-    comments = db.Column(db.UnicodeText())
-    referents = db.relationship('Referent', backref='reference', lazy=True)
-    document_id = db.Column(db.Integer, db.ForeignKey('documents.id'),
+    national_context_id = db.Column(db.Integer, db.ForeignKey('national_context.id'),
         nullable=False)
+    date = db.Column(db.DateTime())
+    transcription = db.Column(db.UnicodeText())
+    referents = db.relationship('Referent', backref='reference', lazy=True)
 
     def __repr__(self):
         return '<Reference {0}>'.format(self.id)
@@ -149,8 +150,8 @@ class ReferenceType(db.Model):
     roles = db.relationship(
         'Role', secondary=referencetype_roles,
         back_populates='reference_types')
-    document_types = db.relationship(
-        'DocumentType', secondary=documenttype_referencetypes,
+    citation_types = db.relationship(
+        'CitationType', secondary=citationtype_referencetypes,
         back_populates='reference_types')
 
 class Location(db.Model):
@@ -177,6 +178,13 @@ class ReferenceLocation(db.Model):
     location = db.relationship(Location,
         primaryjoin=(location_id == Location.id),
         backref='references')
+
+class NationalContext(db.Model):
+    __tablename__ = 'national_context'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    references = db.relationship('Reference', backref='national_context', lazy=True)
 
 class NameType(db.Model):
     __tablename__ = 'name_types'
