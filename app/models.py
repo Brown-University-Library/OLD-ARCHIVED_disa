@@ -97,17 +97,23 @@ class ZoteroType(db.Model):
     __tablename__ = 'zotero_types'
 
     id = db.Column(db.Integer, primary_key=True)
-    zotero_name = db.Column(db.String(255)) 
-    display_name = db.Column(db.String(255))
-    citations = db.relationship('Citation',
+    name = db.Column(db.String(255)) 
+    creator_name = db.Column(db.String(255))
+    citation_types = db.relationship('CitationType',
         backref='zotero_type', lazy=True)
+    template_fields = db.relationship(
+        'ZoteroField', secondary=zoterotype_fields,
+        back_populates='templates')
 
 class ZoteroField(db.Model):
     __tablename__ = 'zotero_fields'
 
     id = db.Column(db.Integer, primary_key=True)
-    zotero_name = db.Column(db.String(255)) 
+    name = db.Column(db.String(255)) 
     display_name = db.Column(db.String(255))
+    templates = db.relationship(
+        'ZoteroType', secondary=zoterotype_fields,
+        back_populates='template_fields')
 
 class CitationField(db.Model):
     __tablename__ = 'citation_fields'

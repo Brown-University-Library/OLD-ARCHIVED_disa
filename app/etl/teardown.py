@@ -10,7 +10,8 @@ def clear_data(tables=[]):
         models.has_origin,
         models.enslaved_as,
         models.referencetype_roles,
-        models.citationtype_referencetypes
+        models.citationtype_referencetypes,
+        models.zoterotype_fields
     ]
     disa_models = [
         models.ReferentRelationship,
@@ -29,9 +30,12 @@ def clear_data(tables=[]):
         models.Location,
         models.Reference,
         models.ReferenceType,
+        models.CitationField,
         models.Citation,
         models.CitationType,
-        models.User
+        models.User,
+        models.ZoteroType,
+        models.ZoteroField
     ]
     model_map = { 'citations' : models.Citation,
         'references' : models.Reference,

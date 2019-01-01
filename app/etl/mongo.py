@@ -45,7 +45,7 @@ def load_data(datafile):
     with open(datafile, 'r') as f:
         data = json.load(f)
 
-    doc_types = models.DocumentType.query.all()
+    doc_types = models.CitationType.query.all()
     rec_types = models.ReferenceType.query.all()
     roles = models.Role.query.all()
     users = models.User.query.all()
@@ -255,10 +255,10 @@ def process_document(docData):
     if 'DISA' in citation:
         zotero, citation = extract_zotero_id(citation)
     citation = clean_citation(citation)
-    existing = models.Document.query.filter_by(display=citation).first()
+    existing = models.Citation.query.filter_by(display=citation).first()
     if existing:
         return existing
-    doc = models.Document()
+    doc = models.Citation()
     doc.display = citation
     doc.zotero_id = zotero
     doc.comments = docData['researcherNotes']
