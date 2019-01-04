@@ -2,11 +2,11 @@ from app import db, models
 from collections import defaultdict
 
 def extract_information():
-    records = models.Record.query.all()
+    records = models.Reference.query.all()
     for rec in records:
         converge_record_names(rec)
 
-    docs = models.Document.query.all()
+    docs = models.Citation.query.all()
     for doc in docs:
         converge_document_people(doc)
 
@@ -22,8 +22,8 @@ def converge_persons(peopleList):
 
 def converge_document_people(doc):
     to_converge = defaultdict(list)
-    for rec in doc.records:
-        for e in rec.entrants:
+    for rec in doc.references:
+        for e in rec.referents:
             person = e.person
             formatted_name = '{} {}'.format(
                 person.first_name.strip(),
@@ -51,7 +51,7 @@ def converge_entrants(entrantList):
 
 def converge_record_names(record):
     to_converge = defaultdict(list)
-    for e in record.entrants:
+    for e in record.referents:
         formatted_name = '{} {}'.format(
             e.primary_name.first.strip(),
             e.primary_name.last.strip() ).strip()

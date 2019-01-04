@@ -8,7 +8,7 @@ def merge_entrant_attributes(attList):
     return ','.join([ att.name for att in attList ])
 
 def process_reference(entrant):
-    rec = entrant.record
+    rec = entrant.reference
     locs = [ (loc.location_rank, loc.location.name)
                 for loc in rec.locations ]
     ref_data = {
@@ -19,7 +19,7 @@ def process_reference(entrant):
             'day': rec.date.day
         },
         'locations': [ l[1] for l in sorted(locs, reverse=True) ],
-        'comments': rec.comments
+        'comments': rec.transcription
     }
     ref_data['description'] = {
         'tribe': merge_entrant_attributes(entrant.tribes),
@@ -40,7 +40,7 @@ def process_reference(entrant):
 
         role = er.related_as.name
         if role == 'child':
-            invs = models.EntrantRelationship.query.filter_by(
+            invs = models.ReferentRelationship.query.filter_by(
                 subject_id=obj.id, object_id=entrant.id).all()
             inv = [ i for i in invs if i.related_as.name in {'mother', 'father'}]
             if len(inv) > 0:
@@ -112,8 +112,8 @@ def json_for_browse():
         data['transcription'] = ''
         first_date = datetime.datetime(year=2018,day=1,month=1)
         for ref in p.references:
-            citation = ref.record.document.citation
-            new_date = ref.record.date
+            citation = ref.reference.citation.display
+            new_date = ref.reference.date
             if new_date < first_date:
                 first_date = new_date
             existing_ref_data = data['documents'][citation]

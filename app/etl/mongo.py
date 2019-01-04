@@ -74,6 +74,7 @@ def load_data(datafile):
         doc.citation_type = process_document_type(
             mongo_dict['document']['sourceType'],
             mongo_dict['document']['recordType'], doc_types)
+        doc.comments = mongo_dict['researcherNotes']
         db.session.add(doc)
         db.session.commit()
 
@@ -83,8 +84,8 @@ def load_data(datafile):
         rec.national_context = process_national_context(
             mongo_dict['document'], natl_ctx)
         rec.reference_type = process_record_type(
-            mongo_dict['document']['recordType'],
-            mongo_dict['document']['sourceType'], rec_types)
+            mongo_dict['document']['sourceType'],
+            mongo_dict['document']['recordType'], rec_types)
         rec.citation = doc
         db.session.add(rec)
         db.session.commit()
@@ -261,7 +262,6 @@ def process_document(docData):
     doc = models.Citation()
     doc.display = citation
     doc.zotero_id = zotero
-    doc.comments = docData['researcherNotes']
     return doc
 
 def process_date(dateData):
@@ -591,6 +591,7 @@ def process_record_type(recTypeStr, docTypeStr, objs):
     if ( recTypeStr, docTypeStr ) in pairs:
         recTypeStr = pairs[( recTypeStr, docTypeStr )]
     else:
+        print(recTypeStr, docTypeStr)
         raise
     return filter_collection(recTypeStr, objs)
 

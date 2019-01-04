@@ -17,6 +17,7 @@ def clear_data(tables=[]):
         models.ReferentRelationship,
         models.ReferenceLocation,
         models.ReferenceEdit,
+        models.NationalContext,
         models.Tribe,
         models.Race,
         models.Title,
