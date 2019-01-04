@@ -32,6 +32,10 @@
                 <input class="form-control" type="text" id="document_date" />
             </div>
             <div class="form-group row">
+                <label for="comments">Comments</label>
+                <textarea class="form-control" id="comments"></textarea>
+            </div>
+            <div class="form-group row">
                 <label for="acknowledgements">Acknowledgements</label>
                 <textarea class="form-control" id="acknowledgements"></textarea>
             </div>
@@ -41,7 +45,7 @@
 
     {% if doc %}
     <h2>Items</h2>
-        {% if doc.records|length != 0 %}
+        {% if doc.references|length != 0 %}
         <table class="table">
             <thead>
                 <tr>
@@ -51,11 +55,11 @@
                 </tr>
             </thead>
             <tbody>
-            {% for item in doc.records %}
+            {% for item in doc.references %}
                 <tr>
                     <th scope="row">{{ item.id }}</th>
                     <td>
-                        <a href="{{ url_for('edit_record', recId=item.id) }}">{{ item.record_type.name }}</a>
+                        <a href="{{ url_for('edit_record', recId=item.id) }}">{{ item.reference_type.name }}</a>
                     </td>
                     <td>{{ item.date.strftime("%Y-%m-%d") }}</td>
                 </tr>
@@ -86,6 +90,7 @@ var setInputValues = function(docData) {
     $('#zotero').val(docData['zotero_id']);
     $('#document_type').val(docData['document_type_id']).attr('selected', true);
     $('#document_date').val(docData['date']);
+    $('#comments').text(docData['comments']);    
     $('#acknowledgements').text(docData['acknowledgements']);
 }
 
@@ -95,6 +100,7 @@ var collectInputValues = function() {
     data['zotero_id'] = $('#zotero').val();
     data['document_type_id'] = Number($('#document_type').val());
     data['date'] = $('#document_date').val();
+    data['comments'] = $('#comments').val();
     data['acknowledgements'] = $('#acknowledgements').val();
     return data;
 }

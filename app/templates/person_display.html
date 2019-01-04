@@ -71,19 +71,19 @@
         <tbody id="refs">
           {% for ref in refs %}
           <tr>
-            <td>{{ ref.record.date.strftime('%Y %B %d') }}</td>
+            <td>{{ ref.reference.date.strftime('%Y %B %d') }}</td>
             <td>
             {% for role in ref.roles %}
               <span>{{ role.name }}</span>
             {% endfor %}
             </td>
             <td>
-              {% for loc in ref.record.locations | reverse %}
+              {% for loc in ref.reference.locations | reverse %}
               <span class="location">{{ loc.location.name }}</span>
               {% endfor %}
             </td>
             <td>
-              <a href="{{ url_for('get_source', srcId=ref.record_id) }}">View source</a>
+              <a href="{{ url_for('get_source', srcId=ref.reference_id) }}">View source</a>
           </tr>
           {% endfor %}
         </tbody>

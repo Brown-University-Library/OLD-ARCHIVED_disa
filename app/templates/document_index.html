@@ -30,9 +30,9 @@
                 <tr>
                     <th scope="row">{{ doc.id }}</th>
                     <td>
-                        <a href="{{ url_for('edit_document', docId=doc.id) }}">{{ doc.citation }}</a>
+                        <a href="{{ url_for('edit_document', docId=doc.id) }}">{{ doc.display }}</a>
                     </td>
-                    <td>{{ doc.records|length }}</td>
+                    <td>{{ doc.references|length }}</td>
                     <td>{{ date.strftime('%Y-%m-%d') }}</td>
                 </tr>
             {% endfor %}
@@ -56,9 +56,9 @@
                 <tr>
                     <th scope="row">{{ doc.id }}</th>
                     <td>
-                        <a href="{{ url_for('edit_document', docId=doc.id) }}">{{ doc.citation }}</a>
+                        <a href="{{ url_for('edit_document', docId=doc.id) }}">{{ doc.display }}</a>
                     </td>
-                    <td>{{ doc.records|length }}</td>
+                    <td>{{ doc.references|length }}</td>
                     <td>{{ date.strftime('%Y-%m-%d') }}</td>
                 </tr>
             {% endfor %}

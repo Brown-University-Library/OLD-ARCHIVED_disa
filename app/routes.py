@@ -132,10 +132,11 @@ def read_document_data(docId=None):
         return jsonify(data)
     doc = models.Citation.query.get(docId)
     data['doc']['id'] = doc.id
-    data['doc']['date'] = '{}/{}/{}'.format(doc.date.month,
-        doc.date.day, doc.date.year)
-    data['doc']['citation'] = doc.citation
+    # data['doc']['date'] = '{}/{}/{}'.format(doc.date.month,
+    #     doc.date.day, doc.date.year)
+    data['doc']['citation'] = doc.display
     data['doc']['zotero_id'] = doc.zotero_id    
+    data['doc']['comments'] = doc.comments
     data['doc']['acknowledgements'] = doc.acknowledgements
     data['doc']['document_type_id'] = doc.citation_type_id
     return jsonify(data)
@@ -174,6 +175,7 @@ def update_document_data(docId):
     doc.date = data['date']
     doc.citation_type_id = data['document_type_id']
     doc.zotero_id = data['zotero_id']
+    doc.comments = data['comments']
     doc.acknowledgements = data['acknowledgements']
     db.session.add(doc)
     db.session.commit()
@@ -186,6 +188,7 @@ def update_document_data(docId):
         doc.date.day, doc.date.year)
     data['doc']['citation'] = doc.citation
     data['doc']['zotero_id'] = doc.zotero_id
+    data['doc']['comments'] = doc.comments
     data['doc']['acknowledgements'] = doc.acknowledgements
     data['doc']['document_type_id'] = doc.citation_type_id
     return jsonify(data)
@@ -200,11 +203,10 @@ def read_record_data(recId=None):
     data['rec']['id'] = rec.id
     data['rec']['date'] = '{}/{}/{}'.format(rec.date.month,
         rec.date.day, rec.date.year)
-    data['rec']['citation'] = rec.citation
     data['rec']['locations'] = [ 
         { 'label':l.location.name, 'value':l.location.name,
             'id': l.location.id } for l in rec.locations ]
-    data['rec']['comments'] = rec.comments
+    data['rec']['transcription'] = rec.transcription
     data['rec']['record_type'] = {'label': rec.reference_type.name,
         'value': rec.reference_type.name, 'id':rec.reference_type.id }
     data['entrants'] = [ 
@@ -216,8 +218,8 @@ def read_record_data(recId=None):
             'roles': [ role.id for role in ent.roles ]
         }
             for ent in rec.referents ]
-    data['rec']['header'] = '{} {}'.format(
-        rec.reference_type.name, rec.citation or '').strip()
+    data['rec']['header'] = '{}'.format(
+        rec.reference_type.name or '').strip()
     return jsonify(data)
 
 @app.route('/data/entrants/', methods=['GET'])
