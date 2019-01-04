@@ -47,8 +47,8 @@ def sort_documents(wrappedDocs):
 @login_required
 def editor_index():
     all_docs = [ (doc, edit.user_id, edit.datetime)
-                     for doc in models.Document.query.all()
-                        for rec in doc.records
+                     for doc in models.Citation.query.all()
+                        for rec in doc.references
                             for edit in rec.edits
                                 ]
     user_docs = [ wrapped for wrapped in all_docs
@@ -64,7 +64,7 @@ def editor_index():
 def edit_document(docId=None):
     if not docId:
         return render_template('document_edit.html', doc=None)
-    doc = models.Document.query.get(docId)
+    doc = models.Citation.query.get(docId)
     return render_template('document_edit.html', doc=doc)
 
 @app.route('/editor/records')
@@ -74,18 +74,18 @@ def edit_record(recId=None):
     locs = [ { 'id': loc.id, 'value': loc.name,'label': loc.name }
         for loc in models.Location.query.all()]
     rec_types = [ { 'id': rt.id, 'value': rt.name, 'name': rt.name }
-        for rt in models.RecordType.query.all() ]
+        for rt in models.ReferenceType.query.all() ]
     roles = [ { 'id': role.id, 'value': role.name, 'name': role.name }
         for role in models.Role.query.all() ]
     if not recId:
         doc_id = request.args.get('doc')
-        doc = models.Document.query.get(doc_id)
+        doc = models.Citation.query.get(doc_id)
         return render_template(
             'record_edit.html', rec=None, doc=doc,
             rec_types=rec_types, locs=locs, roles=roles)
-    rec = models.Record.query.get(recId)
+    rec = models.Reference.query.get(recId)
     return render_template(
-        'record_edit.html', rec=rec, doc=rec.document,
+        'record_edit.html', rec=rec, doc=rec.citation,
             rec_types=rec_types, locs=locs, roles=roles)
 
 @app.route('/editor/person')
@@ -111,12 +111,12 @@ def edit_entrant(entId=None):
         for loc in models.EnslavementType.query.all()]
     if not entId:
         rec_id = request.args.get('rec')
-        rec = models.Record.query.get(rec_id)
+        rec = models.Reference.query.get(rec_id)
         return render_template(
             'entrant_edit.html', roles=roles, rec=rec, ent=None)
-    ent = models.Entrant.query.get(entId)
+    ent = models.Referent.query.get(entId)
     return render_template(
-        'entrant_edit.html', rec=ent.record, ent=ent,
+        'entrant_edit.html', rec=ent.reference, ent=ent,
         nametypes=nametypes,
         roles=roles, origins=origins, races=races, tribes=tribes,
         vocations=vocations, enslavements=enslavements,
@@ -127,30 +127,30 @@ def edit_entrant(entId=None):
 def read_document_data(docId=None):
     data = { 'doc': {} }
     data['doc_types'] = [ { 'id': dt.id, 'name': dt.name }
-        for dt in models.DocumentType.query.all() ]
+        for dt in models.CitationType.query.all() ]
     if docId == None:
         return jsonify(data)
-    doc = models.Document.query.get(docId)
+    doc = models.Citation.query.get(docId)
     data['doc']['id'] = doc.id
     data['doc']['date'] = '{}/{}/{}'.format(doc.date.month,
         doc.date.day, doc.date.year)
     data['doc']['citation'] = doc.citation
     data['doc']['zotero_id'] = doc.zotero_id    
     data['doc']['acknowledgements'] = doc.acknowledgements
-    data['doc']['document_type_id'] = doc.document_type_id
+    data['doc']['document_type_id'] = doc.citation_type_id
     return jsonify(data)
 
 @app.route('/data/documents/', methods=['POST'])
 def create_document():
     data = request.get_json()
     if data['citation'] == '':
-        data['citation'] = 'Document'
+        data['citation'] = 'Citation'
     doc_types = [ { 'id': dt.id, 'name': dt.name }
-        for dt in models.DocumentType.query.all() ]
+        for dt in models.CitationType.query.all() ]
     date = data['date'] or '1/1/2001'
     data['date'] = datetime.datetime.strptime(date, '%m/%d/%Y')
     data['document_type_id'] = data['document_type_id']
-    doc = models.Document(**data)
+    doc = models.Citation(**data)
     db.session.add(doc)
     db.session.commit()
     return jsonify(
@@ -163,16 +163,16 @@ def update_document_data(docId):
     if docId is None or data['citation'] == '':
         return jsonify({})
     doc_types = [ { 'id': dt.id, 'name': dt.name }
-        for dt in models.DocumentType.query.all() ]
+        for dt in models.CitationType.query.all() ]
     unspec = [ dt['id'] for dt in doc_types
         if dt['name'] == 'unspecified' ][0]
     date = data['date'] or '1/1/2001'
     data['date'] = datetime.datetime.strptime(date, '%m/%d/%Y')
     data['document_type_id'] = data['document_type_id'] or unspec
-    doc = models.Document.query.get(docId)
+    doc = models.Citation.query.get(docId)
     doc.citation = data['citation']
     doc.date = data['date']
-    doc.document_type_id = data['document_type_id']
+    doc.citation_type_id = data['document_type_id']
     doc.zotero_id = data['zotero_id']
     doc.acknowledgements = data['acknowledgements']
     db.session.add(doc)
@@ -180,14 +180,14 @@ def update_document_data(docId):
 
     data = { 'doc': {} }
     data['doc_types'] = [ { 'id': dt.id, 'name': dt.name }
-        for dt in models.DocumentType.query.all() ]
+        for dt in models.CitationType.query.all() ]
     data['doc']['id'] = doc.id
     data['doc']['date'] = '{}/{}/{}'.format(doc.date.month,
         doc.date.day, doc.date.year)
     data['doc']['citation'] = doc.citation
     data['doc']['zotero_id'] = doc.zotero_id
     data['doc']['acknowledgements'] = doc.acknowledgements
-    data['doc']['document_type_id'] = doc.document_type_id
+    data['doc']['document_type_id'] = doc.citation_type_id
     return jsonify(data)
 
 @app.route('/data/records/', methods=['GET'])
@@ -196,7 +196,7 @@ def read_record_data(recId=None):
     data = { 'rec': {}, 'entrants': [] }
     if recId == None:
         return jsonify(data)
-    rec = models.Record.query.get(recId)
+    rec = models.Reference.query.get(recId)
     data['rec']['id'] = rec.id
     data['rec']['date'] = '{}/{}/{}'.format(rec.date.month,
         rec.date.day, rec.date.year)
@@ -205,8 +205,8 @@ def read_record_data(recId=None):
         { 'label':l.location.name, 'value':l.location.name,
             'id': l.location.id } for l in rec.locations ]
     data['rec']['comments'] = rec.comments
-    data['rec']['record_type'] = {'label': rec.record_type.name,
-        'value': rec.record_type.name, 'id':rec.record_type.id }
+    data['rec']['record_type'] = {'label': rec.reference_type.name,
+        'value': rec.reference_type.name, 'id':rec.reference_type.id }
     data['entrants'] = [ 
         {
             'name_id': ent.primary_name.id,
@@ -215,9 +215,9 @@ def read_record_data(recId=None):
             'id': ent.id,
             'roles': [ role.id for role in ent.roles ]
         }
-            for ent in rec.entrants ]
+            for ent in rec.referents ]
     data['rec']['header'] = '{} {}'.format(
-        rec.record_type.name, rec.citation or '').strip()
+        rec.reference_type.name, rec.citation or '').strip()
     return jsonify(data)
 
 @app.route('/data/entrants/', methods=['GET'])
@@ -226,7 +226,7 @@ def read_entrant_data(entId=None):
     data = { 'ent': {} }
     if entId == None:
         return jsonify(data)
-    ent = models.Entrant.query.get(entId)
+    ent = models.Referent.query.get(entId)
     data['ent']['id'] = ent.id
     data['ent']['names'] = [
         { 'first': n.first, 'last': n.last,
@@ -279,8 +279,8 @@ def process_record_locations(locData, recObj):
             location = models.Location.query.get(loc['id'])
         locations.append(location)
     for loc in locations:
-        rec_loc = models.RecordLocation()
-        rec_loc.record = recObj
+        rec_loc = models.ReferenceLocation()
+        rec_loc.reference = recObj
         rec_loc.location = loc
         rec_loc.location_rank = locations.index(loc)
         db.session.add(rec_loc)
@@ -291,15 +291,15 @@ def process_record_locations(locData, recObj):
 @app.route('/data/records/', methods=['POST'])
 def create_record():
     data = request.get_json()
-    doc = models.Document.query.get(data['document_id'])
+    doc = models.Citation.query.get(data['document_id'])
     if data['date']:
         date = datetime.datetime.strptime(data['date'], '%m/%d/%Y')
     else:
         date = doc.date
-    record_type = get_or_create_type(data['record_type'], models.RecordType)
-    rec = models.Record(citation=data['citation'],
-        comments=data['comments'], date=date, document_id=doc.id,
-        record_type_id=record_type.id)
+    record_type = get_or_create_type(data['record_type'], models.ReferenceType)
+    rec = models.Reference(citation=data['citation'],
+        comments=data['comments'], date=date, citation_id=doc.id,
+        reference_type_id=reference_type.id)
     db.session.add(rec)
     db.session.commit()
     rec = process_record_locations(data['locations'], rec)
@@ -312,7 +312,7 @@ def update_record_data(recId):
     data = request.get_json()
     if recId is None:
         return jsonify({})
-    rec = models.Record.query.get(recId)
+    rec = models.Reference.query.get(recId)
     rec.locations = []
     db.session.commit()
     rec = process_record_locations(data['locations'], rec)
@@ -320,11 +320,11 @@ def update_record_data(recId):
         date = datetime.datetime.strptime(data['date'], '%m/%d/%Y')
     else:
         date = doc.date
-    record_type = get_or_create_type(data['record_type'], models.RecordType)
+    record_type = get_or_create_type(data['record_type'], models.ReferenceType)
     rec.citation = data['citation']
     rec.comments = data['comments']
     rec.date = date
-    rec.record_type_id = record_type.id
+    rec.reference_type_id = reference_type.id
     db.session.add(rec)
     db.session.commit()
 
@@ -337,15 +337,15 @@ def update_record_data(recId):
     data['rec']['locations'] = [ 
         { 'label':l.location.name, 'value':l.location.name,
             'id': l.location.id } for l in rec.locations ]
-    data['rec']['record_type'] = {'label': rec.record_type.name,
-        'value': rec.record_type.name, 'id':rec.record_type.id }
+    data['rec']['record_type'] = {'label': rec.reference_type.name,
+        'value': rec.reference_type.name, 'id':rec.reference_type.id }
     return jsonify(data)
 
 def update_entrant_name(data):
     if data['id'] == 'name':
-        name = models.EntrantName()
+        name = models.ReferentName()
     else:
-        name = models.EntrantName.query.get(data['id'])
+        name = models.ReferentName.query.get(data['id'])
     name.first = data['first']
     name.last = data['last']
     given = models.NameType.query.filter_by(name='Given').first()
@@ -366,15 +366,15 @@ def get_or_create_entrant_attribute(data, attrModel):
 @app.route('/data/entrants/<entId>', methods=['PUT', 'DELETE'])
 def update_entrant(entId=None):
     if request.method == 'DELETE':
-        ent = models.Entrant.query.get(entId)
+        ent = models.Referent.query.get(entId)
         db.session.delete(ent)
         db.session.commit()
         return jsonify( { 'id': entId } )
     data = request.get_json()
     if request.method == 'POST':
-        ent = models.Entrant(record_id=data['record_id'])
+        ent = models.Referent(reference_id=data['record_id'])
     if request.method == 'PUT':
-        ent = models.Entrant.query.get(entId)
+        ent = models.Referent.query.get(entId)
     primary_name = update_entrant_name(data['name'])
     ent.names.append(primary_name)
     ent.primary_name = primary_name
@@ -393,7 +393,7 @@ def update_entrant(entId=None):
 @app.route('/data/entrants/details/', methods=['PUT'])
 @app.route('/data/entrants/details/<entId>', methods=['PUT'])
 def update_entrant_details(entId):
-    ent = models.Entrant.query.get(entId)
+    ent = models.Referent.query.get(entId)
     data = request.get_json()
     ent.names = [ update_entrant_name(n) for n in data['names'] ]
     ent.age = data['age']
@@ -417,7 +417,7 @@ def update_entrant_details(entId):
     db.session.commit()
 
     return jsonify(
-        { 'redirect': url_for('edit_record', recId=ent.record_id) })
+        { 'redirect': url_for('edit_record', recId=ent.reference_id) })
 
 def parse_person_relations(personObj):
     rels = [ (r.related_as, r.obj) for e in personObj.references
@@ -470,14 +470,14 @@ def get_source(srcId):
 
 @app.route('/record/relationships/<recId>')
 def edit_relationships(recId):
-    rec = models.Record.query.get(recId)
+    rec = models.Reference.query.get(recId)
     return render_template('record_relationships.html', sec=rec)
 
 @app.route('/data/sections/<secId>/relationships/')
 def relationships_by_section(secId):
-    rec = models.Record.query.get(secId)
+    rec = models.Reference.query.get(secId)
     entrants = [ { 'id': e.id, 'name': e.display_name() }
-        for e in rec.entrants ]
+        for e in rec.referents ]
     relationships = [ { 'id': r.id, 'name': r.name_as_relationship }
         for r in models.Role.query.all() ]
     ent_map = { e['id']: e['name'] for e in entrants }
@@ -492,7 +492,7 @@ def relationships_by_section(secId):
             'obj': { 'name': ent_map[r.object_id], 'id': r.object_id }
             }
         }
-        for e in rec.entrants
+        for e in rec.referents
             for r in e.as_subject
     ]
     data = { 'store': store, 'people': entrants,
@@ -502,17 +502,17 @@ def relationships_by_section(secId):
 @app.route('/data/relationships/', methods=['POST'])
 def create_relationship():
     data = request.get_json()
-    existing = models.EntrantRelationship.query.filter_by(
+    existing = models.ReferentRelationship.query.filter_by(
         subject_id=data['sbj'], role_id=data['rel'],
         object_id=data['obj']).first()
     if not existing:
-        relt = models.EntrantRelationship(
+        relt = models.ReferentRelationship(
             subject_id=data['sbj'], role_id=data['rel'],
             object_id=data['obj'])
         db.session.add(relt)
         implied = relt.entailed_relationships()
         for i in implied:
-            existing = models.EntrantRelationship.query.filter_by(
+            existing = models.ReferentRelationship.query.filter_by(
                 subject_id=i.subject_id, role_id=i.role_id,
                 object_id=i.object_id).first()
             if not existing:
@@ -525,7 +525,7 @@ def create_relationship():
 @app.route('/data/relationships/<relId>', methods=['DELETE'])
 def delete_relationship(relId):
     data = request.get_json()
-    existing = models.EntrantRelationship.query.get(relId)
+    existing = models.ReferentRelationship.query.get(relId)
     if existing:
         db.session.delete(existing)
         db.session.commit()
