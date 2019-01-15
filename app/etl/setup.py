@@ -332,6 +332,20 @@ def load_multivalued_attributes():
         { 'name': 'websiteType' }
     ]
 
+    location_types = [
+        {'name': 'Colony/State'},
+        {'name': 'String Location'},
+        {'name': 'Locale'},
+        {'name': 'City'},
+        {'name': 'Colony'},
+        {'name': 'State'},
+        {'name': 'Town'},
+        {'name': 'County'},
+        {'name': 'Region'},
+        {'name': 'Church'},
+        {'name': 'Ship'}
+    ]
+
     tables = [
         ( models.Role, roles ),
         ( models.ReferenceType, reference_types ),
@@ -344,7 +358,8 @@ def load_multivalued_attributes():
         ( models.Location, origins ),
         ( models.NationalContext, natl_ctx ),
         ( models.ZoteroType, zotero_types ),
-        ( models.ZoteroField, zotero_fields )
+        ( models.ZoteroField, zotero_fields ),
+        ( models.LocationType, location_types ),
     ]
     for pair in tables:
         table = pair[0]

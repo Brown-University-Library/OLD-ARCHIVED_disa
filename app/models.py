@@ -177,6 +177,7 @@ class ReferenceLocation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     reference_id = db.Column(db.Integer, db.ForeignKey('references.id'))
     location_id = db.Column(db.Integer, db.ForeignKey('locations.id'))
+    location_type_id = db.Column(db.Integer, db.ForeignKey('location_types.id'))
     location_rank = db.Column(db.Integer)
     reference = db.relationship(Reference,
         primaryjoin=(reference_id == Reference.id),
@@ -184,6 +185,14 @@ class ReferenceLocation(db.Model):
     location = db.relationship(Location,
         primaryjoin=(location_id == Location.id),
         backref='references')
+
+class LocationType(db.Model):
+    __tablename__ = 'location_types'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    locations = db.relationship(
+        'ReferenceLocation', backref='location_type', lazy=True)
 
 class NationalContext(db.Model):
     __tablename__ = 'national_context'

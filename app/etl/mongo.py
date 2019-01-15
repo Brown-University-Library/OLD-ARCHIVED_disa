@@ -101,12 +101,13 @@ def load_data(datafile):
 
         locs = process_location(mongo_dict['document'])
         for loc in locs:
-            db.session.add(loc)
+            db.session.add(loc[0])
         db.session.commit()
         for loc in locs:
             rec_loc = models.ReferenceLocation()
             rec_loc.reference = rec
-            rec_loc.location = loc
+            rec_loc.location = loc[0]
+            rec_loc.location_type = loc[1]
             rec_loc.location_rank = locs.index(loc)
             db.session.add(rec_loc)
         db.session.commit()
@@ -650,19 +651,26 @@ def prep_location_text(loc):
 def process_location(docData):
     location_names = []
     location_keys = [ 'colonyState', 'stringLocation', 'locale']
+    loc_key_map = {
+        'colonyState' : 'Colony/State',
+        'stringLocation' : 'String Location',
+        'locale' : 'Locale'
+    }
     for loc_key in location_keys:
         loc_text = docData.get(loc_key, None)
         if loc_text:
+            loc_type_text = loc_key_map[loc_key]
+            loc_type = models.LocationType.query.filter_by(name=loc_type_text).first()
             prepped = prep_location_text(loc_text)
             for p in prepped:
                 if p not in location_names:
-                    location_names.append(p)
+                    location_names.append((p, loc_type))
     locations = []
     for loc in location_names:
-        location = models.Location.query.filter_by(name=loc).first()
+        location = models.Location.query.filter_by(name=loc[0]).first()
         if not location:
-            location = models.Location(name=loc)
-        locations.append(location)
+            location = models.Location(name=loc[0])
+        locations.append( (location, loc[1]) )
     return locations
 
 def process_administrative_metadata(metaData, users):
