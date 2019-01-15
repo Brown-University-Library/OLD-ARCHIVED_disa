@@ -75,17 +75,19 @@ def edit_record(recId=None):
         for loc in models.Location.query.all()]
     rec_types = [ { 'id': rt.id, 'value': rt.name, 'name': rt.name }
         for rt in models.ReferenceType.query.all() ]
+    natl_ctxs = [ { 'id': rt.id, 'value': rt.name, 'name': rt.name }
+        for rt in models.NationalContext.query.all() ]
     roles = [ { 'id': role.id, 'value': role.name, 'name': role.name }
         for role in models.Role.query.all() ]
     if not recId:
         doc_id = request.args.get('doc')
         doc = models.Citation.query.get(doc_id)
         return render_template(
-            'record_edit.html', rec=None, doc=doc,
+            'record_edit.html', rec=None, doc=doc, natl_ctxs=natl_ctxs,
             rec_types=rec_types, locs=locs, roles=roles)
     rec = models.Reference.query.get(recId)
     return render_template(
-        'record_edit.html', rec=rec, doc=rec.citation,
+        'record_edit.html', rec=rec, doc=rec.citation, natl_ctxs=natl_ctxs,
             rec_types=rec_types, locs=locs, roles=roles)
 
 @app.route('/editor/person')
@@ -203,9 +205,10 @@ def read_record_data(recId=None):
     data['rec']['id'] = rec.id
     data['rec']['date'] = '{}/{}/{}'.format(rec.date.month,
         rec.date.day, rec.date.year)
-    data['rec']['locations'] = [ 
-        { 'label':l.location.name, 'value':l.location.name,
-            'id': l.location.id } for l in rec.locations ]
+    data['rec']['national_context'] = rec.national_context.id
+    # data['rec']['locations'] = [ 
+    #     { 'label':l.location.name, 'value':l.location.name,
+    #         'id': l.location.id } for l in rec.locations ]
     data['rec']['transcription'] = rec.transcription
     data['rec']['record_type'] = {'label': rec.reference_type.name,
         'value': rec.reference_type.name, 'id':rec.reference_type.id }
@@ -533,4 +536,32 @@ def delete_relationship(relId):
         db.session.commit()
     return redirect(
         url_for('relationships_by_section', secId = data['section']),
-        code=303 )    
+        code=303 )
+
+@app.route('/data/sections/<secId>/locations/')
+def locations_by_section(secId):
+    rec = models.Reference.query.get(secId)
+    locations = [
+        { 'id': l.id, 'name': l.location.name,
+            'loc_id': l.location.id, 'loc_type_id': l.location_type.id }
+        for l in rec.locations ]
+    location_types = { lt.id: {'id': lt.id, 'name': lt.name }
+        for lt in models.LocationType.query.all() }
+    locations_by_type = {}
+    for lt_id in location_types:
+        query = db.session.query(
+            models.ReferenceLocation.location_id,
+            models.Location.name,
+            models.ReferenceLocation.location_type_id,
+            models.LocationType.name).\
+            join("location").join("location_type").\
+            filter(models.ReferenceLocation.location_type_id == lt_id).\
+            distinct().all()
+        res = [ { 'loc_id': r[0], 'label': r[1], 'loc_type_id': r[2],
+                    'category': r[3] } for r in query ]
+        locations_by_type[lt_id] = res
+    data = { 'reference_locations': locations,
+        'location_types': location_types,
+        'locations_by_type': locations_by_type }
+    print(data)
+    return jsonify(data)

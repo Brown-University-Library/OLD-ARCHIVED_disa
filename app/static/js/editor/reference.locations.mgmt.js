@@ -16,6 +16,7 @@ class LocationMgmt {
     this._loc_type_map = {};
     this._$root[0].addEventListener('click', this);
     this._$root[0].addEventListener('change', this);
+    this.loadData = this.loadData.bind(this);
   }
 
   load() {
@@ -112,7 +113,7 @@ class LocationMgmt {
         'value': locName });
     $td_type = $('<td/>');
     $select_type = $('<select/>',
-      { 'class': 'select-loc-type',
+      { 'class': 'select-loc-type form-control',
         'data-loc-idx': locIdx });
     $td_del = $('<td/>');
     $td_up = $('<td/>');

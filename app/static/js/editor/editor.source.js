@@ -65,7 +65,7 @@ class DISASource {
   }
 
   getLocations(sectionId) {
-    var endpoint = this._base + `/data/locations/${sectionId}`;
+    var endpoint = this._base + `/data/sections/${sectionId}/locations/`;
     let callback = this._apps['loc-mgmt'].loadData
     this.getREST(endpoint, callback);
   }

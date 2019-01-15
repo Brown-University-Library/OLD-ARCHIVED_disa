@@ -2,6 +2,8 @@
 <!-- https://stackoverflow.com/questions/14942379/jquery-ui-autocomplete-how-to-allow-free-text-->
 {% block header %}
 {{ super() }}
+<script src="{{ url_for('static', filename='js/editor/editor.source.js') }}"></script>
+<script src="{{ url_for('static', filename='js/editor/reference.locations.mgmt.js') }}"></script>
 <style>
 #document_header {
     font-size: 150%;
@@ -20,6 +22,22 @@
     margin-right: 5px;
 }
 
+.loc-up {
+  margin-left: 10px;
+}
+.del-loc {
+  margin-left: 20px;
+}
+.no-loc {
+  opacity: 0.1;
+}
+.ui-autocomplete-category {
+  font-weight: bold;
+  padding: .2em .4em;
+  margin: .8em 0 .2em;
+  line-height: 1.5;
+}
+ 
 </style>
 {% endblock %}
 
@@ -40,13 +58,15 @@
                 <label for="recordtype_autocomplete">Type</label> 
                 <input class="form-control" data-rectype-id="" type="text" id="recordtype_autocomplete"/>
             </div>
+            <div class="form-group row">
+                <label for="national_context">National Context</label> 
+                <select class="form-control" id="national_context">
+                </select>
+            </div>
             <div class="form-group">
-                <div class="row">
-                    <label for="location_autocomplete">Location</label>
-                    <input class="form-control" type="text" id="location_autocomplete" />
-                </div>
-                <ul class="list-inline" id="locations">
-                </ul>
+                <label for="loc-mgmt">Location</label>
+                <table id="loc-mgmt">
+                </table>
             </div>
             <div class="form-group row">
                 <label for="record_date">Date</label>
@@ -98,69 +118,69 @@ var getRecId = function () {
     return rec_id;
 }
 
-var makeLocation = function (locData) {
-    var $li, $span, $button,
-        $icon;
-    $li = $('<li/>', { 
-        'class': 'record_location list-inline-item',
-        'data-loc-id': locData.id });
-    $span = $('<span/>', { 'text' : locData.value,
-                        'class': 'loc-name' });
-    $button = $('<button/>', { 'class': 'location-btn' });
-    $icon = $('<span/>', { 'class': 'fas fa-times-circle' });
+// var makeLocation = function (locData) {
+//     var $li, $span, $button,
+//         $icon;
+//     $li = $('<li/>', { 
+//         'class': 'record_location list-inline-item',
+//         'data-loc-id': locData.id });
+//     $span = $('<span/>', { 'text' : locData.value,
+//                         'class': 'loc-name' });
+//     $button = $('<button/>', { 'class': 'location-btn' });
+//     $icon = $('<span/>', { 'class': 'fas fa-times-circle' });
 
-    $button.append($icon);
-    $button.on('click', function(e) {
-        e.preventDefault();
-        removeLocation($li.attr('data-loc-id'));
-    })
+//     $button.append($icon);
+//     $button.on('click', function(e) {
+//         e.preventDefault();
+//         removeLocation($li.attr('data-loc-id'));
+//     })
 
-    $li.append($span).append($button);
-    return $li;
-}
+//     $li.append($span).append($button);
+//     return $li;
+// }
 
-var addLocationPointer = function ($loc) {
-    var $ptr;
+// var addLocationPointer = function ($loc) {
+//     var $ptr;
 
-    $ptr = $('<span/>', {'text' : '>', 'class' :'loc-ptr'});
-    $loc.append($ptr);
-    return $loc;
-}
+//     $ptr = $('<span/>', {'text' : '>', 'class' :'loc-ptr'});
+//     $loc.append($ptr);
+//     return $loc;
+// }
 
-var removeLocationPointer = function ($loc) {
-    $loc.find('.loc-ptr').remove();
-}
+// var removeLocationPointer = function ($loc) {
+//     $loc.find('.loc-ptr').remove();
+// }
 
-var addLocation = function ($locList, locData, last=false) {
-    $new_loc = makeLocation(locData);
-    if (last === true) {
-        addLocationPointer($locList.children().last());
-    }
-    $locList.append($new_loc);
-    return $locList;
-}
+// var addLocation = function ($locList, locData, last=false) {
+//     $new_loc = makeLocation(locData);
+//     if (last === true) {
+//         addLocationPointer($locList.children().last());
+//     }
+//     $locList.append($new_loc);
+//     return $locList;
+// }
 
-var removeLocation = function (locId) {
-    var $loc_list, $loc, $nxt_to_last;
+// var removeLocation = function (locId) {
+//     var $loc_list, $loc, $nxt_to_last;
 
-    $loc_list = $('#locations');
-    $loc = $loc_list.find(`li[data-loc-id='${locId}']`).last();
-    if ($loc.siblings().length > 0) {
-        if ( $loc.is(':last-child') ) {
-            $nxt_to_last = $loc.prev();
-            removeLocationPointer($nxt_to_last);
-        }
-    } 
-    $loc.remove();
-}
+//     $loc_list = $('#locations');
+//     $loc = $loc_list.find(`li[data-loc-id='${locId}']`).last();
+//     if ($loc.siblings().length > 0) {
+//         if ( $loc.is(':last-child') ) {
+//             $nxt_to_last = $loc.prev();
+//             removeLocationPointer($nxt_to_last);
+//         }
+//     } 
+//     $loc.remove();
+// }
 
-var updateLocationsList = function ($locList, locsArray) {
-    $locList.empty();
-    for ( var i=0; i < locsArray.length; i++ ) {
-        var loc_data = locsArray[i];
-        $locList = addLocation($locList, loc_data, true)
-    }
-}
+// var updateLocationsList = function ($locList, locsArray) {
+//     $locList.empty();
+//     for ( var i=0; i < locsArray.length; i++ ) {
+//         var loc_data = locsArray[i];
+//         $locList = addLocation($locList, loc_data, true)
+//     }
+// }
 
 var setInputValues = function(recData) {
     if ( $.isEmptyObject(recData) ) {
@@ -168,8 +188,9 @@ var setInputValues = function(recData) {
     }
     $('#record_date').val(recData['date']);
     $('#transcription').text(recData['transcription']);
-    updateLocationsList($('#locations'), recData['locations']);
+    // updateLocationsList($('#locations'), recData['locations']);
     updateRecordType($('#recordtype_autocomplete'), recData['record_type']);
+    updateRecordType($('#national_context'), recData['national_context']);
 }
 
 var updateRecordType = function ($input, data) {
@@ -182,18 +203,28 @@ var updateRecordType = function ($input, data) {
     }
 }
 
-var collectLocations = function() {
-    var locArray = [];
-    $("#locations").children().each( function( idx ) {
-        var locData = {}
-        locData['id'] = Number( $(this).attr('data-loc-id') );
-        var loc_name = $(this).find('.loc-name').text()
-        locData['label'] = loc_name;
-        locData['value'] = loc_name;
-        locArray.push(locData);
-    });
-    return locArray;
+var updateNationalContext = function ($input, data) {
+    if ( $.isEmptyObject(data) ) {
+        $input.attr('data-natl-ctx-id', '');
+        $input.val = '';
+    } else {
+        $input.attr('data-natl-ctx-id', data.id);
+        $input.val(data.value);
+    }
 }
+
+// var collectLocations = function() {
+//     var locArray = [];
+//     $("#locations").children().each( function( idx ) {
+//         var locData = {}
+//         locData['id'] = Number( $(this).attr('data-loc-id') );
+//         var loc_name = $(this).find('.loc-name').text()
+//         locData['label'] = loc_name;
+//         locData['value'] = loc_name;
+//         locArray.push(locData);
+//     });
+//     return locArray;
+// }
 
 var collectInputValues = function(docId) {
     var data = {};
@@ -203,7 +234,7 @@ var collectInputValues = function(docId) {
         'value': $('#recordtype_autocomplete').val(),
         'label': $('#recordtype_autocomplete').val()
     }
-    data['locations'] = collectLocations();
+    // data['locations'] = collectLocations();
     data['date'] = $('#record_date').val();
     data['document_id'] = Number(docId);
     return data;
@@ -217,6 +248,17 @@ var addTypeOptions = function(opts) {
         var opt_elem = $("<option/>", { 'value': opt.id ,
                                         'text': opt.name });
         rtype_select.append(opt_elem);
+    }
+}
+
+var addNationalContextOptions = function(opts) {
+    var natl_ctx_select = $('#national_context');
+    natl_ctx_select.empty(); 
+    for (var i = 0; i < opts.length; i++) {
+        var opt = opts[i];
+        var opt_elem = $("<option/>", { 'value': opt.id ,
+                                        'text': opt.name });
+        natl_ctx_select.append(opt_elem);
     }
 }
 
@@ -476,6 +518,10 @@ var getEntrantData = function($container, entId, recId) {
 $( document ).ready(function() {
     var doc_id = getDocumentId();
     var rec_id = getRecId();
+    var source = new DISASource("");
+    var mgmt = new LocationMgmt(rec_id, source, $('#loc-mgmt'));
+    source.registerApp('loc-mgmt', mgmt);
+    mgmt.load();
     var details_url = "{{ url_for('edit_entrant', entId=None)}}";
     var roles = JSON.parse('{{ roles | tojson | safe}}');
     $('#recordtype_autocomplete').autocomplete({
@@ -497,29 +543,30 @@ $( document ).ready(function() {
             updateRecordType($('#recordtype_autocomplete'), ui.item);
         }
     });
-    $('#location_autocomplete').autocomplete({
-        source: JSON.parse('{{ locs | tojson | safe}}'),
-        minLength: 2,
-        delay: 10,
-        autoFocus: true,
-        response: function (event, ui) {
+    addNationalContextOptions(JSON.parse('{{ natl_ctxs | tojson | safe}}'));
+    // $('#location_autocomplete').autocomplete({
+    //     source: JSON.parse('{{ locs | tojson | safe}}'),
+    //     minLength: 2,
+    //     delay: 10,
+    //     autoFocus: true,
+    //     response: function (event, ui) {
 
-            if (ui.content.length == 0) {
-                ui.content.push({
-                    label: $(this).val(),
-                    value: $(this).val(),
-                    id: -1
-                });
-            }
-        },
-        select: function( event, ui ) {
-            event.preventDefault()
-            $("#location_autocomplete").val(ui.item.value)
-            addLocation($('#locations'), ui.item, true);
-            $("#location_autocomplete").val('');
-            return false;
-        }
-    });
+    //         if (ui.content.length == 0) {
+    //             ui.content.push({
+    //                 label: $(this).val(),
+    //                 value: $(this).val(),
+    //                 id: -1
+    //             });
+    //         }
+    //     },
+    //     select: function( event, ui ) {
+    //         event.preventDefault()
+    //         $("#location_autocomplete").val(ui.item.value)
+    //         addLocation($('#locations'), ui.item, true);
+    //         $("#location_autocomplete").val('');
+    //         return false;
+    //     }
+    // });
     // $( "#record_form" ).accordion({
     //     collapsible: true,
     //     header: "h2",
