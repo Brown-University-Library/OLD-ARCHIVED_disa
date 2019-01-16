@@ -275,6 +275,8 @@ def process_record_locations(locData, recObj):
             location = models.Location(name=loc['value'])
             db.session.add(location)
             db.session.commit()
+        elif loc['id'] == "" or loc['id'] == 0:
+            continue
         else:
             location = models.Location.query.get(loc['id'])
         locations.append(location)
@@ -339,6 +341,15 @@ def update_record_data(recId):
             'id': l.location.id } for l in rec.locations ]
     data['rec']['record_type'] = {'label': rec.record_type.name,
         'value': rec.record_type.name, 'id':rec.record_type.id }
+    data['entrants'] = [ 
+        {
+            'name_id': ent.primary_name.id,
+            'first': ent.primary_name.first,
+            'last': ent.primary_name.last,
+            'id': ent.id,
+            'roles': [ role.id for role in ent.roles ]
+        }
+            for ent in rec.entrants ]
     return jsonify(data)
 
 def update_entrant_name(data):

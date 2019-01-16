@@ -40,13 +40,21 @@
                 <label for="recordtype_autocomplete">Type</label> 
                 <input class="form-control" data-rectype-id="" type="text" id="recordtype_autocomplete"/>
             </div>
-            <div class="form-group">
-                <div class="row">
-                    <label for="location_autocomplete">Event location</label>
-                    <input class="form-control" type="text" id="location_autocomplete" />
-                </div>
-                <ul class="list-inline" id="locations">
-                </ul>
+            <div class="form-group row">
+                <label for="natl_ctx_autocomplete">National Context</label> 
+                <input class="form-control location-input" type="text" id="natl_ctx_autocomplete" data-loc-id=""/>
+            </div>
+            <div class="form-group row">
+                <label for="col_state_autocomplete">Colony/State</label>
+                <input class="form-control location-input" type="text" id="col_state_autocomplete" data-loc-id=""/>
+            </div>
+            <div class="form-group row">
+                <label for="town_autocomplete">Town</label>
+                <input class="form-control location-input" type="text" id="town_autocomplete" data-loc-id=""/>
+            </div>
+            <div class="form-group row">
+                <label for="addl_loc_autocomplete">Additional location</label>
+                <input class="form-control location-input" type="text" id="addl_loc_autocomplete" data-loc-id=""/>
             </div>
             <div class="form-group row">
                 <label for="record_date">Event date</label>
@@ -57,7 +65,7 @@
                 <textarea class="form-control" id="citation"></textarea>
             </div>
             <div class="form-group row">
-                <label for="comments">Comments/Transcription</label>
+                <label for="comments">Transcription</label>
                 <textarea class="form-control" id="comments"></textarea>
             </div>
             <button type="submit" class="btn btn-primary" id="rec_update">Update</button>
@@ -166,6 +174,25 @@ var updateLocationsList = function ($locList, locsArray) {
     }
 }
 
+var updateLocationInputs = function (locsArray) {
+    var natl_ctx, col_state,
+        town, addl_loc,
+        loc_inputs;
+    natl_ctx = $('#natl_ctx_autocomplete');
+    col_state = $('#col_state_autocomplete');
+    town = $('#town_autocomplete');
+    addl_loc = $('#addl_loc_autocomplete');
+    loc_inputs = [natl_ctx, col_state, town, addl_loc];
+    for ( var i=0; i < locsArray.length; i++ ) {
+        var loc_data, loc_input;
+        
+        loc_data = locsArray[i];
+        loc_input = loc_inputs[i];
+        loc_input.val(loc_data.value);
+        loc_input.attr('data-loc-id', loc_data.id);
+    }
+}
+
 var setInputValues = function(recData) {
     if ( $.isEmptyObject(recData) ) {
         return;
@@ -173,7 +200,7 @@ var setInputValues = function(recData) {
     $('#citation').text(recData['citation']);;
     $('#record_date').val(recData['date']);
     $('#comments').text(recData['comments']);
-    updateLocationsList($('#locations'), recData['locations']);
+    updateLocationInputs(recData['locations']);
     updateRecordType($('#recordtype_autocomplete'), recData['record_type']);
 }
 
@@ -187,12 +214,25 @@ var updateRecordType = function ($input, data) {
     }
 }
 
+var updateLocationInput = function ($input, data) {
+    if ( $.isEmptyObject(data) ) {
+        $input.attr('data-loc-id', '');
+        $input.val = '';
+    } else {
+        $input.attr('data-loc-id', data.id);
+        $input.val(data.value);
+    }
+}
+
 var collectLocations = function() {
     var locArray = [];
-    $("#locations").children().each( function( idx ) {
+    $(".location-input").each( function( idx ) {
         var locData = {}
         locData['id'] = Number( $(this).attr('data-loc-id') );
-        var loc_name = $(this).find('.loc-name').text()
+        var loc_name = $(this).val();
+        if (loc_name && locData['id'] == 0) {
+            locData['id'] = -1;
+        }
         locData['label'] = loc_name;
         locData['value'] = loc_name;
         locArray.push(locData);
@@ -261,6 +301,8 @@ var readRecordData = function(recId, roles, edit_url) {
 
 var updateRecordData = function(recId, docId) {
     var rec_data_api = "{{ url_for('update_record_data', recId=None )}}" + recId;
+    var details_url = "{{ url_for('edit_entrant', entId=None)}}";
+    var roles = JSON.parse('{{ roles | tojson | safe}}')
     var data = collectInputValues(docId);
     var method = (recId ? "PUT" : "POST");
     $.ajax({
@@ -272,7 +314,7 @@ var updateRecordData = function(recId, docId) {
             if ( method === 'POST' ) {
                 window.location.href = data.redirect;
             } else {
-                initializeForm(data);
+                initializeForm(data, roles, details_url);
                 $('#record_form').accordion('option','active', false );
             }
         }
@@ -506,7 +548,7 @@ $( document ).ready(function() {
             updateRecordType($('#recordtype_autocomplete'), ui.item);
         }
     });
-    $('#location_autocomplete').autocomplete({
+    $('#natl_ctx_autocomplete').autocomplete({
         source: JSON.parse('{{ locs | tojson | safe}}'),
         minLength: 2,
         delay: 10,
@@ -521,12 +563,65 @@ $( document ).ready(function() {
                 });
             }
         },
-        select: function( event, ui ) {
-            event.preventDefault()
-            $("#location_autocomplete").val(ui.item.value)
-            addLocation($('#locations'), ui.item, true);
-            $("#location_autocomplete").val('');
-            return false;
+        select: function (event, ui) {
+            updateLocationInput($('#natl_ctx_autocomplete'), ui.item);
+        }
+    });
+    $('#col_state_autocomplete').autocomplete({
+        source: JSON.parse('{{ locs | tojson | safe}}'),
+        minLength: 2,
+        delay: 10,
+        autoFocus: true,
+        response: function (event, ui) {
+
+            if (ui.content.length == 0) {
+                ui.content.push({
+                    label: $(this).val(),
+                    value: $(this).val(),
+                    id: -1
+                });
+            }
+        },
+        select: function (event, ui) {
+            updateLocationInput($('#col_state_autocomplete'), ui.item);
+        }
+    });
+    $('#town_autocomplete').autocomplete({
+        source: JSON.parse('{{ locs | tojson | safe}}'),
+        minLength: 2,
+        delay: 10,
+        autoFocus: true,
+        response: function (event, ui) {
+
+            if (ui.content.length == 0) {
+                ui.content.push({
+                    label: $(this).val(),
+                    value: $(this).val(),
+                    id: -1
+                });
+            }
+        },
+        select: function (event, ui) {
+            updateLocationInput($('#town_autocomplete'), ui.item);
+        }
+    });
+    $('#addl_loc_autocomplete').autocomplete({
+        source: JSON.parse('{{ locs | tojson | safe}}'),
+        minLength: 2,
+        delay: 10,
+        autoFocus: true,
+        response: function (event, ui) {
+
+            if (ui.content.length == 0) {
+                ui.content.push({
+                    label: $(this).val(),
+                    value: $(this).val(),
+                    id: -1
+                });
+            }
+        },
+        select: function (event, ui) {
+            updateLocationInput($('#addl_loc_autocomplete'), ui.item);
         }
     });
     $( "#record_form" ).accordion({
