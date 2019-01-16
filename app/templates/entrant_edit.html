@@ -260,9 +260,24 @@ var updateRadio = function($radioSelect, val) {
 }
 
 var updateAttributeList = function ($container, attArray, attGroup) {
-    var attribute_ids = [];
+    var existing_vals, attribute_ids;
+
+    existing_vals = [];
+    $container.children('option').each(function(i) {
+        existing_vals.push($(this).text());
+    });
+    attribute_ids = [];
     for (var x=0; x < attArray.length; x++) {
-        attribute_ids.push(attArray[x].id);
+        var att_id, att_value;
+
+        att_id = attArray[x].id;
+        att_value = attArray[x].value;
+        attribute_ids.push(att_id);
+        if (!existing_vals.includes(att_value)) {
+            var $opt = $("<option/>", { 'value': att_id ,
+                'text': att_value });
+            $container.append($opt);
+        }
     }
     $container.val(attribute_ids);
     $container.trigger('change');
