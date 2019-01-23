@@ -82,16 +82,17 @@ label.radio-inline {
             <hr/>
             <div class="form-group">
                 <div class="row">
-                    <div class="col-md-3">
-                        <label for="entrant_age">Age</label>
-                        <input class="form-control" type="text" id="entrant_age" />
+                    <div class="col-md-10">
+                        <label for="entrant_age">Age<br />
+                            <em class="small">List the age of the person if provided on the document (e.g. “young girl,” “32,” etc.)</em></label>
+                        <input class="form-control col-md-3" type="text" id="entrant_age" />
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-8">
                         <label>Gender</label>
                         <div class="row">
-                            <div class="col-md-6" id="gender_select">
+                            <div class="col-md-8" id="gender_select">
                                 <label class="radio-inline">
                                   <input type="radio" name="entrant_gender" id="gender_male" value="Male">
                                   Male
@@ -112,9 +113,11 @@ label.radio-inline {
             <hr/>
             <div class='form-group'>
                 <div class="row">
-                    <div class='col-md-6'>
-                        <label>Race</label>
-                        <select  id="races" class="form-control steve-tags" multiple="multiple">
+                    <div class='col-md-10'>
+                        <label>Race<br/>
+                            <em class="small">List the race of the individual as described on the document (e.g. “indigenous”). Click box to see other example entries.</em>
+                        </label>
+                        <select  id="races" class="col-md-8 form-control steve-tags" multiple="multiple">
                             <option value='7'>Indian</option>
                             <option value='8'>Indian Mulatto</option>
                             <option value='9'>Indio</option>
@@ -126,15 +129,17 @@ label.radio-inline {
                         <!--
                         {% for opt in races %}
                             <option value="{{opt.id}}">{{opt.value}}</option>
-                        {% endfor %} 
+                        {% endfor %}
                         -->
                         </select>
                     </div>
                 </div>
                 <div class="row">
-                    <div class='col-md-6'>
-                        <label>Tribe</label>
-                        <select id="tribes" class="form-control steve-tags" multiple="multiple">
+                    <div class='col-md-10'>
+                        <label>Tribe<br/>
+                        <em class="small">List tribe information if available. Click box to see other example entries.</em>
+                        </label><br />
+                        <select id="tribes" class="col-md-8 form-control steve-tags" multiple="multiple">
                             <option value='2'>Bocotora</option>
                             <option value='4'>Eastern Pequot</option>
                             <option value='5'>Mashantucket Pequot</option>
@@ -153,9 +158,11 @@ label.radio-inline {
                     </div>
                 </div>
                 <div class="row">
-                    <div class='col-md-6'>
-                        <label>Origin</label>
-                        <select id="origins" class="form-control steve-tags" multiple="multiple">
+                    <div class='col-md-10'>
+                        <label>Origin<br/>
+                            <em class="small">If the document provides information regarding where the person was originally from, list that here (e.g. “Bermuda”)</em>
+                        </label><br />
+                        <select id="origins" class="col-md-8 form-control steve-tags" multiple="multiple">
                             <option value='2'>Bermuda</option>
                             <option value='4'>Casanave</option>
                             <option value='7'>Pueblo de Casanare</option>
@@ -169,9 +176,11 @@ label.radio-inline {
                     </div>
                 </div>
                 <div class="row">
-                    <div class='col-md-6'>
-                        <label>Status</label>
-                        <select id="enslavements" class="form-control steve-tags" multiple="multiple">
+                    <div class='col-md-10'>
+                        <label>Status<br/>
+                            <em class='small'>Provide additional information regarding the status of the individual here. For example, if you selected “enslaved” in the “type” box above, is there further information regarding whether this person was a servant? Click the box for more examples. </em>
+                        </label><br />
+                        <select id="enslavements" class="col-md-8 form-control steve-tags" multiple="multiple">
                             <option value='4'>Indentured Servant</option>
                             <option value='7'>Servant</option>
                             <option value='8'>Slave</option>
@@ -189,9 +198,11 @@ label.radio-inline {
                     </div>
                 </div>
                 <div class="row">
-                    <div class='col-md-6'>
-                        <label>Title</label>
-                        <select id="titles" class="form-control steve-tags" multiple="multiple">
+                    <div class='col-md-10'>
+                        <label>Title<br/>
+                            <em class="small">Provide the title of the person if applicable.</em>
+                        </label><br />
+                        <select id="titles" class="col-md-8 form-control steve-tags" multiple="multiple">
 
                             <option value='2'>Capt.</option>
                             <option value='3'>Captain</option>
@@ -210,9 +221,11 @@ label.radio-inline {
                     </div>
                 </div>
                 <div class="row">
-                    <div class='col-md-6'>
-                        <label>Vocation</label>
-                        <select id="vocations" class="form-control steve-tags" multiple="multiple">
+                    <div class='col-md-10'>
+                        <label>Vocation<br />
+                        <em class="small">Provide the vocation of the person if applicable. </em>
+                        </label><br />
+                        <select id="vocations" class="col-md-8 form-control steve-tags" multiple="multiple">
                         
                             <option value='1'>Baker</option>
                             <option value='7'>Cordwainer</option>

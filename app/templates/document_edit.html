@@ -15,24 +15,28 @@
         <h2 id="document_header"></h2>
         <form action="" method="">
             <div class="form-group row">
-                <label for="citation">Citation</label>
-                <textarea class="form-control" id="citation"></textarea>
+                <label for="citation">Citation<br />
+                <em class="small text-muted">Enter the document citation according to Chicago Style, 17th edition</em></label>
+                <textarea class="form-control" id="citation"  placeholder='Example: “Early American Newspapers, 1690-1922.” Readex, May 16, 2013. https://www.readex.com/content/early-american-newspapers-1690-1922.'></textarea>
             </div>
-            <div class="form-group row">
+            <div class="form-group row" hidden>
                 <label for="citation">Zotero ID</label>
                 <input type="text" class="form-control" id="zotero" />
             </div>
             <div class="form-group row">
-                <label for="document_type">Document type</label> 
+                <label for="document_type">Document type<br />
+                    <em class="small text-muted">Select the document type that most clearly describes the document you're adding</em></label>
                 <select class="form-control" id="document_type">
                 </select>
             </div>
             <div class="form-group row">
-                <label for="document_date">Document Date</label>
+                <label for="document_date">Document date<br />
+                <em class="small text-muted">Enter the publication date of the document (e.g. the date of the publication of the newspaper and not the date of the article)</em></label>
                 <input class="form-control" type="text" id="document_date" />
             </div>
             <div class="form-group row">
-                <label for="acknowledgements">Acknowledgements</label>
+                <label for="acknowledgements">Acknowledgements<br />
+                <em class="small text-muted">If you've received the document from an individual or organization for the purposes of this project, please acknowledge their contribution (e.g. "Thank you to the Jennifer Shaw family")</em></label>
                 <textarea class="form-control" id="acknowledgements"></textarea>
             </div>
             <button type="submit" class="btn btn-primary" id="doc_update">Update</button>
@@ -113,7 +117,10 @@ var addTypeOptions = function(opts) {
 var setFormHeader = function (docData) {
     var header = $('#document_header');
     if ( $.isEmptyObject(docData) ) {
-        header.text('Create new document');
+        header.text('Add a document');
+        header.append(`<div style="font-size: 50%"><em>Fill out this form only when entering a document for the first time. 
+            If your document has been already entered, find your document in the 
+            <a href="/editor">recent document list</a> and add an item.</em></div>`);
         $('#doc_update').text('Create');
     } else {
         header.text(docData['citation']);
