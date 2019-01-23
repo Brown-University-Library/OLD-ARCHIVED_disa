@@ -71,22 +71,42 @@ def edit_document(docId=None):
 @app.route('/editor/records/<recId>')
 @login_required
 def edit_record(recId=None):
-    locs = [ { 'id': loc.id, 'value': loc.name,'label': loc.name }
-        for loc in models.Location.query.all()]
+    locs = models.RecordLocation.query.all()
     rec_types = [ { 'id': rt.id, 'value': rt.name, 'name': rt.name }
         for rt in models.RecordType.query.all() ]
     roles = [ { 'id': role.id, 'value': role.name, 'name': role.name }
         for role in models.Role.query.all() ]
+    allowed_natns = { 'Britain', 'Spain', 'France', 'Honduras', 'United States' }
+    uniq_natl_ctx = { (l.location.name, l.location_id)
+        for l in locs if l.location_rank == 0 and l.location.name in allowed_natns }
+    uniq_cols = { (l.location.name, l.location_id)
+        for l in locs if l.location_rank == 1 }
+    uniq_town = { (l.location.name, l.location_id)
+        for l in locs if l.location_rank == 2 }
+    uniq_addl = { (l.location.name, l.location_id)
+        for l in locs if l.location_rank == 3 and l.location_id is not None}
+    natl_ctx = [ {'id': loc[1], 'value': loc[0],'label': loc[0] }
+        for loc in uniq_natl_ctx ]
+    col_state = [ {'id': loc[1], 'value': loc[0],'label': loc[0] }
+        for loc in uniq_cols ]
+    towns = [ {'id': loc[1], 'value': loc[0],'label': loc[0] }
+        for loc in uniq_town ]
+    addl_loc = [ {'id': loc[1], 'value': loc[0],'label': loc[0] }
+        for loc in uniq_addl ]
     if not recId:
         doc_id = request.args.get('doc')
         doc = models.Document.query.get(doc_id)
         return render_template(
             'record_edit.html', rec=None, doc=doc,
-            rec_types=rec_types, locs=locs, roles=roles)
+            rec_types=rec_types, roles=roles,
+            natl_ctx=natl_ctx, col_state=col_state,
+            towns=towns, addl_loc=addl_loc)
     rec = models.Record.query.get(recId)
     return render_template(
         'record_edit.html', rec=rec, doc=rec.document,
-            rec_types=rec_types, locs=locs, roles=roles)
+            rec_types=rec_types, roles=roles,
+            natl_ctx=natl_ctx, col_state=col_state,
+            towns=towns, addl_loc=addl_loc)
 
 @app.route('/editor/person')
 @app.route('/editor/person/<entId>')

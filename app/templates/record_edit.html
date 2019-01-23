@@ -549,7 +549,7 @@ $( document ).ready(function() {
         }
     });
     $('#natl_ctx_autocomplete').autocomplete({
-        source: JSON.parse('{{ locs | tojson | safe}}'),
+        source: JSON.parse('{{ natl_ctx | tojson | safe}}'),
         minLength: 2,
         delay: 10,
         autoFocus: true,
@@ -568,7 +568,7 @@ $( document ).ready(function() {
         }
     });
     $('#col_state_autocomplete').autocomplete({
-        source: JSON.parse('{{ locs | tojson | safe}}'),
+        source: JSON.parse('{{ col_state | tojson | safe}}'),
         minLength: 2,
         delay: 10,
         autoFocus: true,
@@ -587,7 +587,7 @@ $( document ).ready(function() {
         }
     });
     $('#town_autocomplete').autocomplete({
-        source: JSON.parse('{{ locs | tojson | safe}}'),
+        source: JSON.parse('{{ towns | tojson | safe}}'),
         minLength: 2,
         delay: 10,
         autoFocus: true,
@@ -606,7 +606,7 @@ $( document ).ready(function() {
         }
     });
     $('#addl_loc_autocomplete').autocomplete({
-        source: JSON.parse('{{ locs | tojson | safe}}'),
+        source: JSON.parse('{{ addl_loc | tojson | safe}}'),
         minLength: 2,
         delay: 10,
         autoFocus: true,
