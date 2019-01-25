@@ -128,9 +128,8 @@ var setInputValues = function(recData) {
     if ( $.isEmptyObject(recData) ) {
         return;
     }
-    $('#citation').text(recData['citation']);;
+    $('#transcription').text(recData['transcription']);;
     $('#record_date').val(recData['date']);
-    $('#comments').text(recData['comments']);
     updateLocationInputs(recData['locations']);
     updateRecordType($('#recordtype_autocomplete'), recData['record_type']);
     updateNationalContext($('#natl_ctx_autocomplete'), recData['national_context']);
@@ -174,6 +173,8 @@ var collectLocations = function() {
         var loc_name = $(this).val();
         if (loc_name && locData['id'] == 0) {
             locData['id'] = -1;
+        } else if (locData['id'] == 0) {
+            return true;
         }
         locData['label'] = loc_name;
         locData['value'] = loc_name;
@@ -193,7 +194,7 @@ var collectInputValues = function(docId) {
     data['national_context'] =  Number( $('#national_context').val() ),
     data['locations'] = collectLocations();
     data['date'] = $('#record_date').val();
-    data['document_id'] = Number(docId);
+    data['citation_id'] = Number(docId);
     return data;
 }
 
@@ -250,9 +251,7 @@ var readRecordData = function(recId, roles, edit_url) {
 }
 
 var updateRecordData = function(recId, docId) {
-    var rec_data_api = "{{ url_for('update_record_data', recId=None )}}" + recId;
-    var details_url = "{{ url_for('edit_entrant', entId=None)}}";
-    var roles = JSON.parse('{{ roles | tojson | safe}}')
+    var rec_data_api = "{{ url_for('update_reference_data', recId=None )}}" + recId;
     var data = collectInputValues(docId);
     var method = (recId ? "PUT" : "POST");
     $.ajax({
@@ -264,7 +263,7 @@ var updateRecordData = function(recId, docId) {
             if ( method === 'POST' ) {
                 window.location.href = data.redirect;
             } else {
-                initializeForm(data, roles, details_url);
+                setInputValues(data.rec);
                 $('#record_form').accordion('option','active', false );
             }
         }
@@ -501,7 +500,7 @@ $( document ).ready(function() {
     addNationalContextOptions(JSON.parse('{{ natl_ctxs | tojson | safe}}'));
     $('#col_state_autocomplete').autocomplete({
         source: JSON.parse('{{ col_state | tojson | safe}}'),
-        minLength: 2,
+        minLength: 1,
         delay: 10,
         autoFocus: true,
         response: function (event, ui) {
@@ -513,13 +512,13 @@ $( document ).ready(function() {
                 });
             }
         },
-        select: function (event, ui) {
+        change: function (event, ui) {
             updateLocationInput($('#col_state_autocomplete'), ui.item);
         }
     });
     $('#town_autocomplete').autocomplete({
         source: JSON.parse('{{ towns | tojson | safe}}'),
-        minLength: 2,
+        minLength: 1,
         delay: 10,
         autoFocus: true,
         response: function (event, ui) {
@@ -531,13 +530,13 @@ $( document ).ready(function() {
                 });
             }
         },
-        select: function (event, ui) {
+        change: function (event, ui) {
             updateLocationInput($('#town_autocomplete'), ui.item);
         }
     });
     $('#addl_loc_autocomplete').autocomplete({
         source: JSON.parse('{{ addl_loc | tojson | safe}}'),
-        minLength: 2,
+        minLength: 1,
         delay: 10,
         autoFocus: true,
         response: function (event, ui) {
@@ -549,7 +548,7 @@ $( document ).ready(function() {
                 });
             }
         },
-        select: function (event, ui) {
+        change: function (event, ui) {
             updateLocationInput($('#addl_loc_autocomplete'), ui.item);
         }
     });

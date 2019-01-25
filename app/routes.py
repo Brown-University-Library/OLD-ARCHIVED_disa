@@ -7,6 +7,12 @@ from app import app, db, models, forms
 import datetime
 import collections
 
+def stamp_edit(user, ref):
+    if user.is_authenticated:
+        edit = models.ReferenceEdit(reference_id=ref.id,
+            user_id=user.id, timestamp=datetime.datetime.utcnow())
+        db.session.add(edit)
+        db.session.commit()
 
 @app.route('/')
 def browse():
@@ -26,6 +32,7 @@ def login():
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('editor_index')
+        user.last_login = datetime.datetime.utcnow()
         return redirect(next_page)
     return render_template('login.html', title='Sign In', form=form)
 
@@ -46,7 +53,7 @@ def sort_documents(wrappedDocs):
 @app.route('/editor', methods=['GET'])
 @login_required
 def editor_index():
-    all_docs = [ (doc, edit.user_id, edit.datetime)
+    all_docs = [ (doc, edit.user_id, edit.timestamp)
                      for doc in models.Citation.query.all()
                         for rec in doc.references
                             for edit in rec.edits
@@ -326,38 +333,35 @@ def create_record():
         { 'redirect': url_for('edit_record', recId=rec.id) })
 
 @app.route('/data/records/', methods=['PUT'])
-@app.route('/data/records/<recId>', methods=['PUT'])
-def update_record_data(recId):
+@app.route('/data/records/<refId>', methods=['PUT'])
+@login_required
+def update_reference_data(refId):
     data = request.get_json()
-    if recId is None:
+    if refId is None:
         return jsonify({})
-    rec = models.Reference.query.get(recId)
-    rec.locations = []
-    db.session.commit()
-    rec = process_record_locations(data['locations'], rec)
+    ref = models.Reference.query.get(refId)
+    ref.locations = []
+    ref = process_record_locations(data['locations'], ref)
     if data['date']:
         date = datetime.datetime.strptime(data['date'], '%m/%d/%Y')
-    else:
-        date = doc.date
-    record_type = get_or_create_type(data['record_type'], models.ReferenceType)
-    rec.citation = data['citation']
-    rec.comments = data['comments']
-    rec.date = date
-    rec.reference_type_id = reference_type.id
-    db.session.add(rec)
+    reference_type = get_or_create_type(data['record_type'], models.ReferenceType)
+    ref.citation_id = data['citation_id']
+    ref.date = date
+    ref.reference_type_id = reference_type.id
+    db.session.add(ref)
     db.session.commit()
 
+    stamp_edit(current_user, ref)
     data = { 'rec': {} }
-    data['rec']['id'] = rec.id
-    data['rec']['date'] = '{}/{}/{}'.format(rec.date.month,
-        rec.date.day, rec.date.year)
-    data['rec']['citation'] = rec.citation
-    data['rec']['comments'] = rec.comments
+    data['rec']['id'] = ref.id
+    data['rec']['date'] = '{}/{}/{}'.format(ref.date.month,
+        ref.date.day, ref.date.year)
+    data['rec']['citation'] = ref.citation.id
     data['rec']['locations'] = [ 
         { 'label':l.location.name, 'value':l.location.name,
-            'id': l.location.id } for l in rec.locations ]
-    data['rec']['record_type'] = {'label': rec.reference_type.name,
-        'value': rec.reference_type.name, 'id':rec.reference_type.id }
+            'id': l.location.id } for l in ref.locations ]
+    data['rec']['record_type'] = {'label': ref.reference_type.name,
+        'value': ref.reference_type.name, 'id':ref.reference_type.id }
     return jsonify(data)
 
 def update_entrant_name(data):

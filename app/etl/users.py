@@ -1,4 +1,5 @@
 from app import db, models
+import datetime
 
 def load_existing_users():
     mongo_users = [
@@ -28,6 +29,7 @@ def load_existing_users():
         if existing:
             raise
         row = models.User(name=user['email'],
-            email=user['email'],role=user['role'])
+            email=user['email'],role=user['role'],
+            created=datetime.datetime.utcnow())
         db.session.add(row)
     db.session.commit()

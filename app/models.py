@@ -392,6 +392,8 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(64))
     name = db.Column(db.String(64))
     email = db.Column(db.String(120))
+    created = db.Column(db.DateTime())
+    last_login = db.Column(db.DateTime())
     password_hash = db.Column(db.String(128))
 
     def set_password(self, password):
@@ -410,7 +412,7 @@ class ReferenceEdit(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     reference_id = db.Column(db.Integer, db.ForeignKey('4_references.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('1_users.id'))
-    datetime = db.Column(db.DateTime())
+    timestamp = db.Column(db.DateTime())
     edited = db.relationship(Reference,
         primaryjoin=(reference_id == Reference.id),
         backref='edits')

@@ -93,7 +93,7 @@ def load_data(datafile):
         admin = process_administrative_metadata(
             mongo_dict['meta'], users)
         for amn in admin:
-            edit = models.ReferenceEdit(datetime=amn[1])
+            edit = models.ReferenceEdit(timestamp=amn[1])
             edit.edited_by = amn[0]
             edit.edited = rec
             db.session.add(edit)
