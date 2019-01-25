@@ -8,11 +8,10 @@ import datetime
 import collections
 
 def stamp_edit(user, ref):
-    if user.is_authenticated:
-        edit = models.ReferenceEdit(reference_id=ref.id,
-            user_id=user.id, timestamp=datetime.datetime.utcnow())
-        db.session.add(edit)
-        db.session.commit()
+    edit = models.ReferenceEdit(reference_id=ref.id,
+        user_id=user.id, timestamp=datetime.datetime.utcnow())
+    db.session.add(edit)
+    db.session.commit()
 
 @app.route('/')
 def browse():
@@ -33,6 +32,8 @@ def login():
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('editor_index')
         user.last_login = datetime.datetime.utcnow()
+        db.session.add(user)
+        db.session.commit()
         return redirect(next_page)
     return render_template('login.html', title='Sign In', form=form)
 
@@ -148,6 +149,7 @@ def edit_entrant(entId=None):
 
 @app.route('/data/documents/', methods=['GET'])
 @app.route('/data/documents/<docId>', methods=['GET'])
+@login_required
 def read_document_data(docId=None):
     data = { 'doc': {} }
     data['doc_types'] = [ { 'id': dt.id, 'name': dt.name }
@@ -166,6 +168,7 @@ def read_document_data(docId=None):
     return jsonify(data)
 
 @app.route('/data/documents/', methods=['POST'])
+@login_required
 def create_document():
     data = request.get_json()
     if data['citation'] == '':
@@ -183,6 +186,7 @@ def create_document():
 
 @app.route('/data/documents/', methods=['PUT'])
 @app.route('/data/documents/<docId>', methods=['PUT'])
+@login_required
 def update_document_data(docId):
     data = request.get_json()
     if docId is None or data['citation'] == '':
@@ -219,6 +223,7 @@ def update_document_data(docId):
 
 @app.route('/data/records/', methods=['GET'])
 @app.route('/data/records/<recId>', methods=['GET'])
+@login_required
 def read_record_data(recId=None):
     data = { 'rec': {}, 'entrants': [] }
     if recId == None:
@@ -248,6 +253,7 @@ def read_record_data(recId=None):
 
 @app.route('/data/entrants/', methods=['GET'])
 @app.route('/data/entrants/<entId>', methods=['GET'])
+@login_required
 def read_entrant_data(entId=None):
     data = { 'ent': {} }
     if entId == None:
@@ -315,6 +321,7 @@ def process_record_locations(locData, recObj):
 
 
 @app.route('/data/records/', methods=['POST'])
+@login_required
 def create_record():
     data = request.get_json()
     doc = models.Citation.query.get(data['document_id'])
@@ -387,6 +394,7 @@ def get_or_create_entrant_attribute(data, attrModel):
 
 @app.route('/data/entrants/', methods=['POST'])
 @app.route('/data/entrants/<entId>', methods=['PUT', 'DELETE'])
+@login_required
 def update_entrant(entId=None):
     if request.method == 'DELETE':
         ent = models.Referent.query.get(entId)
@@ -415,6 +423,7 @@ def update_entrant(entId=None):
 
 @app.route('/data/entrants/details/', methods=['PUT'])
 @app.route('/data/entrants/details/<entId>', methods=['PUT'])
+@login_required
 def update_entrant_details(entId):
     ent = models.Referent.query.get(entId)
     data = request.get_json()
@@ -492,39 +501,43 @@ def get_source(srcId):
     return 'Foo:' + srcId
 
 @app.route('/record/relationships/<recId>')
+@login_required
 def edit_relationships(recId):
     rec = models.Reference.query.get(recId)
     return render_template('record_relationships.html', sec=rec)
 
-@app.route('/data/sections/<secId>/relationships/')
-def relationships_by_section(secId):
-    rec = models.Reference.query.get(secId)
-    entrants = [ { 'id': e.id, 'name': e.display_name() }
-        for e in rec.referents ]
+@app.route('/data/sections/<refId>/relationships/')
+@login_required
+def relationships_by_reference(refId):
+    ref = models.Reference.query.get(refId)
+    referents = [ { 'id': e.id, 'name': e.display_name() }
+        for e in ref.referents ]
     relationships = [ { 'id': r.id, 'name': r.name_as_relationship }
         for r in models.Role.query.all() ]
-    ent_map = { e['id']: e['name'] for e in entrants }
+    rnt_map = { f['id']: f['name'] for f in referents }
     rel_map = { r['id']: r['name'] for r in relationships }
     store = [
         {
         'id': r.id,
         'data':
             { 
-            'sbj': { 'name': ent_map[r.subject_id], 'id': r.subject_id },
+            'sbj': { 'name': rnt_map[r.subject_id], 'id': r.subject_id },
             'rel': { 'name': rel_map[r.role_id], 'id': r.role_id },
-            'obj': { 'name': ent_map[r.object_id], 'id': r.object_id }
+            'obj': { 'name': rnt_map[r.object_id], 'id': r.object_id }
             }
         }
-        for e in rec.referents
-            for r in e.as_subject
+        for f in ref.referents
+            for r in f.as_subject
     ]
-    data = { 'store': store, 'people': entrants,
+    data = { 'store': store, 'people': referents,
         'relationships': relationships }
     return jsonify(data)
 
 @app.route('/data/relationships/', methods=['POST'])
+@login_required
 def create_relationship():
     data = request.get_json()
+    ref = models.Reference.query.get(data['section'])
     existing = models.ReferentRelationship.query.filter_by(
         subject_id=data['sbj'], role_id=data['rel'],
         object_id=data['obj']).first()
@@ -541,17 +554,21 @@ def create_relationship():
             if not existing:
                 db.session.add(i)
         db.session.commit()
+        stamp_edit(current_user, ref)
     return redirect(
-        url_for('relationships_by_section', secId = data['section']),
+        url_for('relationships_by_reference', refId = ref.id),
         code=303 )
 
 @app.route('/data/relationships/<relId>', methods=['DELETE'])
+@login_required
 def delete_relationship(relId):
     data = request.get_json()
+    ref = models.Reference.query.get(data['section'])
     existing = models.ReferentRelationship.query.get(relId)
     if existing:
         db.session.delete(existing)
         db.session.commit()
+        stamp_edit(current_user, ref)
     return redirect(
-        url_for('relationships_by_section', secId = data['section']),
+        url_for('relationships_by_reference', refId = ref.id),
         code=303 )    
