@@ -143,6 +143,10 @@ class Reference(db.Model):
     transcription = db.Column(db.UnicodeText())
     referents = db.relationship('Referent', backref='reference', lazy=True)
 
+    def last_edit(self):
+        edits = sorted([ (e.timestamp, e) for e in self.edits ], reverse=True)
+        return edits[0][1]
+
     def __repr__(self):
         return '<Reference {0}>'.format(self.id)
 
@@ -400,7 +404,10 @@ class User(UserMixin, db.Model):
         self.password_hash = security.generate_password_hash(password)
 
     def check_password(self, password):
-        return security.check_password_hash(self.password_hash, password)
+        try:
+            return security.check_password_hash(self.password_hash, password)
+        except:
+            return None
 
 @login.user_loader
 def load_user(id):
