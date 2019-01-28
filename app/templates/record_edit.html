@@ -384,7 +384,7 @@ var deactivateButton = function ( $button ) {
 }
 
 var deleteEntrant = function($container, entId, editUrl ) {
-    var ent_data_api = "{{ url_for('update_entrant', entId=None )}}" + entId;
+    var ent_data_api = "{{ url_for('update_referent', rntId=None )}}" + entId;
     $.ajax({
         type: "DELETE",
         url: ent_data_api,
@@ -397,7 +397,7 @@ var deleteEntrant = function($container, entId, editUrl ) {
 
 var updateEntrant = function($container, entId, entData, editUrl) {
     var method,
-        ent_data_api = "{{ url_for('update_entrant', entId=None )}}";
+        ent_data_api = "{{ url_for('update_referent', rntId=None )}}";
     if (entId === 'new') {
         method = 'POST';
     } else {

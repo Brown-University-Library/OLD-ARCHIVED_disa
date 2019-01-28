@@ -253,38 +253,38 @@ def read_record_data(recId=None):
     return jsonify(data)
 
 @app.route('/data/entrants/', methods=['GET'])
-@app.route('/data/entrants/<entId>', methods=['GET'])
+@app.route('/data/entrants/<rntId>', methods=['GET'])
 @login_required
-def read_entrant_data(entId=None):
+def read_referent_data(rntId=None):
     data = { 'ent': {} }
-    if entId == None:
+    if rntId == None:
         return jsonify(data)
-    ent = models.Referent.query.get(entId)
-    data['ent']['id'] = ent.id
+    rnt = models.Referent.query.get(rntId)
+    data['ent']['id'] = rnt.id
     data['ent']['names'] = [
         { 'first': n.first, 'last': n.last,
             'name_type': n.name_type.name,
-            'id': n.id } for n in ent.names ]
-    data['ent']['age'] = ent.age
-    data['ent']['sex'] = ent.sex
+            'id': n.id } for n in rnt.names ]
+    data['ent']['age'] = rnt.age
+    data['ent']['sex'] = rnt.sex
     data['ent']['races'] = [ 
         { 'label': r.name, 'value': r.name,
-            'id': r.id } for r in ent.races ]
+            'id': r.id } for r in rnt.races ]
     data['ent']['tribes'] = [ 
         { 'label': t.name, 'value': t.name,
-            'id': t.id } for t in ent.tribes ]
+            'id': t.id } for t in rnt.tribes ]
     data['ent']['origins'] = [ 
         { 'label': o.name, 'value': o.name,
-            'id': o.id } for o in ent.origins ]
+            'id': o.id } for o in rnt.origins ]
     data['ent']['titles'] = [ 
         { 'label': t.name, 'value': t.name,
-            'id': t.id } for t in ent.titles ]
+            'id': t.id } for t in rnt.titles ]
     data['ent']['vocations'] = [ 
         { 'label': v.name, 'value': v.name,
-            'id': v.id } for v in ent.vocations ]
+            'id': v.id } for v in rnt.vocations ]
     data['ent']['enslavements'] = [ 
         { 'label': e.name, 'value': e.name,
-            'id': e.id } for e in ent.enslavements ]
+            'id': e.id } for e in rnt.enslavements ]
     return jsonify(data)
 
 
@@ -321,25 +321,6 @@ def process_record_locations(locData, recObj):
         db.session.add(rec_loc)
     db.session.commit()
     return recObj
-
-
-# @app.route('/data/records/', methods=['POST'])
-# @login_required
-# def create_reference():
-#     data = request.get_json()
-#     cite = models.Citation.query.get(data['citation_id'])
-#     reference_type = get_or_create_type(data['record_type'], models.ReferenceType)
-#     ref = models.Reference(transcription=data['transcription'],
-#         national_context_id=data['national_context'], citation_id=cite.id,
-#         reference_type_id=reference_type.id)
-#     if data['date']:
-#         ref.date = datetime.datetime.strptime(data['date'], '%m/%d/%Y')
-#     db.session.add(ref)
-#     db.session.commit()
-#     ref = process_record_locations(data['locations'], ref)
-#     stamp_edit(current_user, ref)
-#     return jsonify(
-#         { 'redirect': url_for('edit_record', recId=ref.id) })
 
 @app.route('/data/records/', methods=['POST'])
 @app.route('/data/records/<refId>', methods=['PUT'])
@@ -387,7 +368,7 @@ def update_reference_data(refId=None):
         'value': ref.reference_type.name, 'id':ref.reference_type.id }
     return jsonify(data)
 
-def update_entrant_name(data):
+def update_referent_name(data):
     if data['id'] == 'name':
         name = models.ReferentName()
     else:
@@ -398,7 +379,7 @@ def update_entrant_name(data):
     name.name_type_id = data.get('name_type', given.id)
     return name   
 
-def get_or_create_entrant_attribute(data, attrModel):
+def get_or_create_referent_attribute(data, attrModel):
     if data['id'] == data['name']:
         new_attr = attrModel(name=data['name'])
         db.session.add(new_attr)
@@ -409,63 +390,71 @@ def get_or_create_entrant_attribute(data, attrModel):
         return existing 
 
 @app.route('/data/entrants/', methods=['POST'])
-@app.route('/data/entrants/<entId>', methods=['PUT', 'DELETE'])
+@app.route('/data/entrants/<rntId>', methods=['PUT', 'DELETE'])
 @login_required
-def update_entrant(entId=None):
+def update_referent(rntId=None):
     if request.method == 'DELETE':
-        ent = models.Referent.query.get(entId)
-        db.session.delete(ent)
+        rnt = models.Referent.query.get(rntId)
+        ref = rnt.reference
+        db.session.delete(rnt)
         db.session.commit()
-        return jsonify( { 'id': entId } )
+
+        stamp_edit(current_user, ref)
+
+        return jsonify( { 'id': rntId } )
     data = request.get_json()
     if request.method == 'POST':
-        ent = models.Referent(reference_id=data['record_id'])
+        rnt = models.Referent(reference_id=data['record_id'])
     if request.method == 'PUT':
-        ent = models.Referent.query.get(entId)
-    primary_name = update_entrant_name(data['name'])
-    ent.names.append(primary_name)
-    ent.primary_name = primary_name
-    ent.roles = [ get_or_create_entrant_attribute(a, models.Role)
+        rnt = models.Referent.query.get(rntId)
+    primary_name = update_referent_name(data['name'])
+    rnt.names.append(primary_name)
+    rnt.primary_name = primary_name
+    rnt.roles = [ get_or_create_referent_attribute(a, models.Role)
         for a in data['roles'] ]
-    db.session.add(ent)
+    db.session.add(rnt)
     db.session.commit()
+
+    stamp_edit(current_user, rnt.reference)
 
     return jsonify({
-        'name_id': ent.primary_name.id,
-        'first': ent.primary_name.first,
-        'last': ent.primary_name.last,
-        'id': ent.id,
-        'roles': [ role.id for role in ent.roles ] })
+        'name_id': rnt.primary_name.id,
+        'first': rnt.primary_name.first,
+        'last': rnt.primary_name.last,
+        'id': rnt.id,
+        'roles': [ role.id for role in rnt.roles ] })
 
 @app.route('/data/entrants/details/', methods=['PUT'])
-@app.route('/data/entrants/details/<entId>', methods=['PUT'])
+@app.route('/data/entrants/details/<rntId>', methods=['PUT'])
 @login_required
-def update_entrant_details(entId):
-    ent = models.Referent.query.get(entId)
+def update_referent_details(rntId):
+    rnt = models.Referent.query.get(rntId)
     data = request.get_json()
-    ent.names = [ update_entrant_name(n) for n in data['names'] ]
-    ent.age = data['age']
-    ent.sex = data['sex'] 
-    ent.primary_name = ent.names[0]
-    ent.races = [ get_or_create_entrant_attribute(a, models.Race)
+    rnt.names = [ update_referent_name(n) for n in data['names'] ]
+    rnt.age = data['age']
+    rnt.sex = data['sex'] 
+    rnt.primary_name = rnt.names[0]
+    rnt.races = [ get_or_create_referent_attribute(a, models.Race)
         for a in data['races'] ]
-    ent.tribes = [ get_or_create_entrant_attribute(a, models.Tribe)
+    rnt.tribes = [ get_or_create_referent_attribute(a, models.Tribe)
         for a in data['tribes'] ]
-    ent.origins = [ get_or_create_entrant_attribute(a, models.Location)
+    rnt.origins = [ get_or_create_referent_attribute(a, models.Location)
         for a in data['origins'] ]
-    ent.titles = [ get_or_create_entrant_attribute(a, models.Title)
+    rnt.titles = [ get_or_create_referent_attribute(a, models.Title)
         for a in data['titles'] ]
-    ent.enslavements = [ get_or_create_entrant_attribute(
+    rnt.enslavements = [ get_or_create_referent_attribute(
         a, models.EnslavementType)
             for a in data['statuses'] ]
-    ent.vocations = [ get_or_create_entrant_attribute(
+    rnt.vocations = [ get_or_create_referent_attribute(
         a, models.Vocation)
             for a in data['vocations'] ]
-    db.session.add(ent)
+    db.session.add(rnt)
     db.session.commit()
 
+    stamp_edit(current_user, rnt.reference)
+
     return jsonify(
-        { 'redirect': url_for('edit_record', recId=ent.reference_id) })
+        { 'redirect': url_for('edit_record', recId=rnt.reference_id) })
 
 def parse_person_relations(personObj):
     rels = [ (r.related_as, r.obj) for e in personObj.references
