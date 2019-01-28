@@ -281,16 +281,20 @@ def process_date(dateData):
 
 def process_record_date(entryData):
     doc_date = process_date(entryData['document']['date'])
+    bad_date = datetime.datetime(day=1, month=1, year=1)
     record_date_fields = [ 'dateOfEmancipation',
         'dateOfMarriage', 'dateOfRunaway', 'dateOfDeath' ]
     record_dates = [ process_date( entryData.get(df, {}) ) 
         for df in record_date_fields ]
     clean_dates = [ d for d in record_dates
-        if d != datetime.datetime(day=1, month=1, year=1) ]
+        if d != bad_date ]
     if len(clean_dates) > 1:
         raise
-    elif clean_dates == []:
-        return doc_date
+    if clean_dates == []:
+        if doc_date == bad_date:
+            return None
+        else:
+            return doc_date
     else:
         return clean_dates[0]
 

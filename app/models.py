@@ -255,8 +255,8 @@ class Referent(db.Model):
         secondary=enslaved_as, back_populates='referents')
 
     def __repr__(self):
-        return '<Referent {0}: {1} {2}>'.format(
-            self.id, self.first_name, self.last_name)
+        return '<Referent {0}: {1}>'.format(
+            self.id, self.display_name() )
 
     def display_name(self):
         display = "{0} {1}".format(

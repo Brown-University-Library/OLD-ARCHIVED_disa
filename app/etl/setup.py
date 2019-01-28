@@ -166,6 +166,7 @@ def load_multivalued_attributes():
         {'name': 'Account'},
         {'name': 'Note'},
         {'name': 'Inventory'},
+        {'name': 'Unspecified'},
         {'name': 'Reference'}
     ]
     name_types = [

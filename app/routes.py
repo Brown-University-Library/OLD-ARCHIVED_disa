@@ -8,6 +8,7 @@ import datetime
 import collections
 
 def stamp_edit(user, ref):
+    print('{} edits reference {}'.format(user.email, ref.id))
     edit = models.ReferenceEdit(reference_id=ref.id,
         user_id=user.id, timestamp=datetime.datetime.utcnow())
     db.session.add(edit)
@@ -52,7 +53,7 @@ def sort_documents(wrappedDocs):
     return sorted([ merge[w] for w in merge], reverse=True)
      
 @app.route('/editor', methods=['GET'])
-@login_required
+# @login_required
 def editor_index():
     all_docs = [ (doc, edit.user_id, edit.timestamp)
                      for doc in models.Citation.query.all()
@@ -68,7 +69,7 @@ def editor_index():
 
 @app.route('/editor/documents')
 @app.route('/editor/documents/<docId>')
-@login_required
+# @login_required
 def edit_document(docId=None):
     if not docId:
         return render_template('document_edit.html', doc=None)
@@ -77,7 +78,7 @@ def edit_document(docId=None):
 
 @app.route('/editor/records')
 @app.route('/editor/records/<recId>')
-@login_required
+# @login_required
 def edit_record(recId=None):
     locs = models.ReferenceLocation.query.all()
     rec_types = [ { 'id': rt.id, 'value': rt.name, 'name': rt.name }
@@ -115,7 +116,7 @@ def edit_record(recId=None):
 
 @app.route('/editor/person')
 @app.route('/editor/person/<entId>')
-@login_required
+# @login_required
 def edit_entrant(entId=None):
     nametypes = [ { 'id': role.id, 'value': role.name, 'label': role.name }
         for role in models.NameType.query.all()]
@@ -149,7 +150,7 @@ def edit_entrant(entId=None):
 
 @app.route('/data/documents/', methods=['GET'])
 @app.route('/data/documents/<docId>', methods=['GET'])
-@login_required
+# @login_required
 def read_document_data(docId=None):
     data = { 'doc': {} }
     data['doc_types'] = [ { 'id': dt.id, 'name': dt.name }
@@ -158,8 +159,6 @@ def read_document_data(docId=None):
         return jsonify(data)
     doc = models.Citation.query.get(docId)
     data['doc']['id'] = doc.id
-    # data['doc']['date'] = '{}/{}/{}'.format(doc.date.month,
-    #     doc.date.day, doc.date.year)
     data['doc']['citation'] = doc.display
     data['doc']['zotero_id'] = doc.zotero_id    
     data['doc']['comments'] = doc.comments
@@ -168,7 +167,7 @@ def read_document_data(docId=None):
     return jsonify(data)
 
 @app.route('/data/documents/', methods=['POST'])
-@login_required
+# @login_required
 def create_document():
     data = request.get_json()
     if data['citation'] == '':
@@ -186,7 +185,7 @@ def create_document():
 
 @app.route('/data/documents/', methods=['PUT'])
 @app.route('/data/documents/<docId>', methods=['PUT'])
-@login_required
+# @login_required
 def update_document_data(docId):
     data = request.get_json()
     if docId is None or data['citation'] == '':
@@ -230,8 +229,10 @@ def read_record_data(recId=None):
         return jsonify(data)
     rec = models.Reference.query.get(recId)
     data['rec']['id'] = rec.id
-    data['rec']['date'] = '{}/{}/{}'.format(rec.date.month,
-        rec.date.day, rec.date.year)
+    data['rec']['date'] = None
+    if rec.date:
+        data['rec']['date'] = '{}/{}/{}'.format(rec.date.month,
+            rec.date.day, rec.date.year)
     data['rec']['locations'] = [ 
         { 'label':l.location.name, 'value':l.location.name,
             'id': l.location.id } for l in rec.locations ]
@@ -294,7 +295,7 @@ def get_or_create_type(typeData, typeModel):
         db.session.commit()
         return new_type
     elif typeData == '' or typeData['id'] == 0:
-        unspec = typeModel.query.filter_by(name='unspecified').first()
+        unspec = typeModel.query.filter_by(name='Unspecified').first()
         return unspec
     else:
         existing = typeModel.query.get(typeData['id'])
@@ -307,6 +308,8 @@ def process_record_locations(locData, recObj):
             location = models.Location(name=loc['value'])
             db.session.add(location)
             db.session.commit()
+        elif loc['id'] == 0:
+            continue
         else:
             location = models.Location.query.get(loc['id'])
         locations.append(location)
@@ -320,49 +323,62 @@ def process_record_locations(locData, recObj):
     return recObj
 
 
-@app.route('/data/records/', methods=['POST'])
-@login_required
-def create_record():
-    data = request.get_json()
-    doc = models.Citation.query.get(data['document_id'])
-    if data['date']:
-        date = datetime.datetime.strptime(data['date'], '%m/%d/%Y')
-    else:
-        date = doc.date
-    record_type = get_or_create_type(data['record_type'], models.ReferenceType)
-    rec = models.Reference(citation=data['citation'],
-        comments=data['comments'], date=date, citation_id=doc.id,
-        reference_type_id=reference_type.id)
-    db.session.add(rec)
-    db.session.commit()
-    rec = process_record_locations(data['locations'], rec)
-    return jsonify(
-        { 'redirect': url_for('edit_record', recId=rec.id) })
+# @app.route('/data/records/', methods=['POST'])
+# @login_required
+# def create_reference():
+#     data = request.get_json()
+#     cite = models.Citation.query.get(data['citation_id'])
+#     reference_type = get_or_create_type(data['record_type'], models.ReferenceType)
+#     ref = models.Reference(transcription=data['transcription'],
+#         national_context_id=data['national_context'], citation_id=cite.id,
+#         reference_type_id=reference_type.id)
+#     if data['date']:
+#         ref.date = datetime.datetime.strptime(data['date'], '%m/%d/%Y')
+#     db.session.add(ref)
+#     db.session.commit()
+#     ref = process_record_locations(data['locations'], ref)
+#     stamp_edit(current_user, ref)
+#     return jsonify(
+#         { 'redirect': url_for('edit_record', recId=ref.id) })
 
-@app.route('/data/records/', methods=['PUT'])
+@app.route('/data/records/', methods=['POST'])
 @app.route('/data/records/<refId>', methods=['PUT'])
 @login_required
-def update_reference_data(refId):
+def update_reference_data(refId=None):
     data = request.get_json()
-    if refId is None:
-        return jsonify({})
-    ref = models.Reference.query.get(refId)
+    reference_type = get_or_create_type(
+        data['record_type'], models.ReferenceType)
+    if request.method == 'POST':
+        ref = models.Reference()
+        ref.citation_id = data['citation_id']
+        ref.national_context_id = data['national_context']
+        ref.reference_type_id = reference_type.id
+        db.session.add(ref)
+        db.session.commit()
+    else:
+        ref = models.Reference.query.get(refId)
     ref.locations = []
     ref = process_record_locations(data['locations'], ref)
-    if data['date']:
-        date = datetime.datetime.strptime(data['date'], '%m/%d/%Y')
-    reference_type = get_or_create_type(data['record_type'], models.ReferenceType)
-    ref.citation_id = data['citation_id']
-    ref.date = date
+    try:
+        ref.date = datetime.datetime.strptime(data['date'], '%m/%d/%Y')
+    except:
+        ref.date = None
     ref.reference_type_id = reference_type.id
+    ref.national_context_id = data['national_context']
     db.session.add(ref)
     db.session.commit()
 
     stamp_edit(current_user, ref)
     data = { 'rec': {} }
     data['rec']['id'] = ref.id
-    data['rec']['date'] = '{}/{}/{}'.format(ref.date.month,
-        ref.date.day, ref.date.year)
+    data['rec']['date'] = ''
+    if ref.date:
+        data['rec']['date'] = '{}/{}/{}'.format(ref.date.month,
+            ref.date.day, ref.date.year)
+    if request.method == 'POST':
+        data['entrants'] = []
+        data['rec']['header'] = '{}'.format(
+            ref.reference_type.name or '').strip()
     data['rec']['citation'] = ref.citation.id
     data['rec']['locations'] = [ 
         { 'label':l.location.name, 'value':l.location.name,

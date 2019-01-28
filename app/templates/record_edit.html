@@ -261,7 +261,8 @@ var updateRecordData = function(recId, docId) {
         data: JSON.stringify(data),
         success: function(data) {
             if ( method === 'POST' ) {
-                window.location.href = data.redirect;
+                initializeForm(data);
+                $('#record_form').accordion('option','active', false )
             } else {
                 setInputValues(data.rec);
                 $('#record_form').accordion('option','active', false );
@@ -493,7 +494,7 @@ $( document ).ready(function() {
                 });
             }
         },
-        select: function (event, ui) {
+        change: function (event, ui) {
             updateRecordType($('#recordtype_autocomplete'), ui.item);
         }
     });
@@ -559,6 +560,7 @@ $( document ).ready(function() {
         active: (rec_id ? false : 0)
     });
     $( "#record_date" ).datepicker({
+      defaultDate: "01/01/1492",
       changeMonth: true,
       changeYear: true,
       yearRange: "1491:2000"
