@@ -71,10 +71,16 @@ def editor_index():
 @app.route('/editor/documents/<docId>')
 # @login_required
 def edit_document(docId=None):
+    ct = models.CitationType.query.all()
+    ct_fields = { 
+        c.id: [ f.display_name for f in c.zotero_type.template_fields ]
+            for c in ct }
     if not docId:
-        return render_template('document_edit.html', doc=None)
+        return render_template('document_edit.html',
+            doc=None, ct_fields=ct_fields)
     doc = models.Citation.query.get(docId)
-    return render_template('document_edit.html', doc=doc)
+    return render_template('document_edit.html',
+        doc=doc, ct_fields=ct_fields)
 
 @app.route('/editor/records')
 @app.route('/editor/records/<recId>')
@@ -153,8 +159,8 @@ def edit_entrant(entId=None):
 # @login_required
 def read_document_data(docId=None):
     data = { 'doc': {} }
-    data['doc_types'] = [ { 'id': dt.id, 'name': dt.name }
-        for dt in models.CitationType.query.all() ]
+    ct = models.CitationType.query.all()
+    data['doc_types'] = [ { 'id': c.id, 'name': c.name } for c in ct ]
     if docId == None:
         return jsonify(data)
     doc = models.Citation.query.get(docId)
@@ -208,8 +214,8 @@ def update_document_data(docId):
     db.session.commit()
 
     data = { 'doc': {} }
-    data['doc_types'] = [ { 'id': dt.id, 'name': dt.name }
-        for dt in models.CitationType.query.all() ]
+    ct = models.CitationType.query.all()
+    data['doc_types'] = [ { 'id': c.id, 'name': c.name } for c in ct ]
     data['doc']['id'] = doc.id
     data['doc']['date'] = '{}/{}/{}'.format(doc.date.month,
         doc.date.day, doc.date.year)

@@ -15,19 +15,19 @@
         <h2 id="document_header"></h2>
         <form action="" method="">
             <div class="form-group row">
-                <label for="citation">Citation<br />
-                <em class="small text-muted">Enter the document citation according to Chicago Style, 17th edition</em></label>
-                <textarea class="form-control" id="citation"  placeholder='Example: “Early American Newspapers, 1690-1922.” Readex, May 16, 2013. https://www.readex.com/content/early-american-newspapers-1690-1922.'></textarea>
-            </div>
-            <div class="form-group row" hidden>
-                <label for="citation">Zotero ID</label>
-                <input type="text" class="form-control" id="zotero" />
-            </div>
-            <div class="form-group row">
                 <label for="document_type">Document type<br />
                     <em class="small text-muted">Select the document type that most clearly describes the document you're adding</em></label>
                 <select class="form-control" id="document_type">
                 </select>
+            </div>
+            <ul class="form-group" id="citation_fields">
+<!--                 <label for="title">Title<br />
+                <em class="small text-muted">Enter the document citation according to Chicago Style, 17th edition</em></label>
+                <input class="form-control" id="citation"  placeholder='Example: “Early American Newspapers, 1690-1922.” Readex, May 16, 2013. https://www.readex.com/content/early-american-newspapers-1690-1922.'></input> -->
+            </ul>
+            <div class="form-group row" hidden>
+                <label for="zotero">Zotero ID</label>
+                <input type="text" class="form-control" id="zotero" />
             </div>
             <div class="form-group row">
                 <label for="document_date">Document date<br />
@@ -84,6 +84,31 @@
 var getDocumentId = function () {
     var doc_id = "{{ doc.id or '' }}";
     return doc_id;
+}
+
+var makeCitationFieldInput = function(fieldName) {
+    var $input, $row, $label;
+    $row = $('<li/>', { 'class' : 'row'});
+    $label = $('<label/>', {
+        'for' : fieldName,
+        'text' : fieldName });
+    $input = $('<input/>', {
+        'id' : fieldName,
+        'class' : 'form-control citation-field',
+        'type' : 'text',
+        'data-citation-field': fieldName });
+    $row.append($label).append($input);
+
+    return $row;
+}
+
+var updateCitationFields = function(citeType, ctMap) {
+    var ct_fields = ctMap[citeType];
+    $fg = $('#citation_fields');
+    $fg.empty();
+    for (var i=0; i < ct_fields.length; i++) {
+        $fg.append(makeCitationFieldInput(ct_fields[i]));
+    }
 }
 
 var setInputValues = function(docData) {
@@ -168,6 +193,7 @@ var updateDocumentData = function(docId) {
 
 $( document ).ready(function() {
     var doc_id = getDocumentId();
+    var cite_type_fields = JSON.parse('{{ ct_fields | tojson | safe}}');
     readDocumentData(doc_id);
     $( "#document_form" ).accordion({
         collapsible: true,
@@ -178,6 +204,11 @@ $( document ).ready(function() {
       changeMonth: true,
       changeYear: true,
       yearRange: "1491:2000"
+    });
+    $( "#document_type").on('change', function(e) {
+        e.preventDefault();
+        var cite_type = $(this).val();
+        updateCitationFields(cite_type, cite_type_fields);
     });
     $( "#doc_update" ).on('click', function(e) {
           e.preventDefault();
