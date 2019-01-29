@@ -127,7 +127,7 @@ class CitationField(db.Model):
     citation = db.relationship(Citation,
         primaryjoin=(citation_id == Citation.id),
         backref='citation_data')
-    fields = db.relationship(ZoteroField,
+    field = db.relationship(ZoteroField,
         primaryjoin=(field_id == ZoteroField.id),
         backref='citations')
 

@@ -53,7 +53,7 @@ def sort_documents(wrappedDocs):
     return sorted([ merge[w] for w in merge], reverse=True)
      
 @app.route('/editor', methods=['GET'])
-# @login_required
+@login_required
 def editor_index():
     all_docs = [ (doc, edit.user_id, edit.timestamp)
                      for doc in models.Citation.query.all()
@@ -68,24 +68,27 @@ def editor_index():
         user_documents=srtd_user, documents=srtd_all)
 
 @app.route('/editor/documents')
-@app.route('/editor/documents/<docId>')
-# @login_required
-def edit_document(docId=None):
+@app.route('/editor/documents/<citeId>')
+@login_required
+def edit_citation(citeId=None):
     ct = models.CitationType.query.all()
     ct_fields = { 
-        c.id: [ { 'name': f.zotero_field.display_name, 'rank': f.rank }
+        c.id: [ {   'name': f.zotero_field.name,
+                    'rank': f.rank,
+                    'display': f.zotero_field.display_name }
             for f in c.zotero_type.template_fields ]
                 for c in ct }
-    if not docId:
+    if not citeId:
         return render_template('document_edit.html',
-            doc=None, ct_fields=ct_fields)
-    doc = models.Citation.query.get(docId)
+            doc=None, ct_fields=ct_fields )
+    cite = models.Citation.query.get(citeId)
+    # citation_data = { f.field.name: f.field_data for f in cite.citation_data }
     return render_template('document_edit.html',
-        doc=doc, ct_fields=ct_fields)
+        doc=cite, ct_fields=ct_fields )
 
 @app.route('/editor/records')
 @app.route('/editor/records/<recId>')
-# @login_required
+@login_required
 def edit_record(recId=None):
     locs = models.ReferenceLocation.query.all()
     rec_types = [ { 'id': rt.id, 'value': rt.name, 'name': rt.name }
@@ -123,7 +126,7 @@ def edit_record(recId=None):
 
 @app.route('/editor/person')
 @app.route('/editor/person/<entId>')
-# @login_required
+@login_required
 def edit_entrant(entId=None):
     nametypes = [ { 'id': role.id, 'value': role.name, 'label': role.name }
         for role in models.NameType.query.all()]
@@ -157,7 +160,7 @@ def edit_entrant(entId=None):
 
 @app.route('/data/documents/', methods=['GET'])
 @app.route('/data/documents/<docId>', methods=['GET'])
-# @login_required
+@login_required
 def read_document_data(docId=None):
     data = { 'doc': {} }
     ct = models.CitationType.query.all()
@@ -167,64 +170,81 @@ def read_document_data(docId=None):
     doc = models.Citation.query.get(docId)
     data['doc']['id'] = doc.id
     data['doc']['citation'] = doc.display
-    data['doc']['zotero_id'] = doc.zotero_id    
+    # data['doc']['zotero_id'] = doc.zotero_id   
     data['doc']['comments'] = doc.comments
     data['doc']['acknowledgements'] = doc.acknowledgements
-    data['doc']['document_type_id'] = doc.citation_type_id
+    data['doc']['citation_type_id'] = doc.citation_type_id
+    data['doc']['fields'] = { f.field.name: f.field_data for f in doc.citation_data }
     return jsonify(data)
 
 @app.route('/data/documents/', methods=['POST'])
-# @login_required
-def create_document():
+@login_required
+def create_citation():
     data = request.get_json()
-    if data['citation'] == '':
-        data['citation'] = 'Citation'
-    doc_types = [ { 'id': dt.id, 'name': dt.name }
-        for dt in models.CitationType.query.all() ]
-    date = data['date'] or '1/1/2001'
-    data['date'] = datetime.datetime.strptime(date, '%m/%d/%Y')
-    data['document_type_id'] = data['document_type_id']
-    doc = models.Citation(**data)
-    db.session.add(doc)
+    cite_types = [ { 'id': ct.id, 'name': ct.name }
+        for ct in models.CitationType.query.all() ]
+    unspec = [ ct['id'] for ct in cite_types
+        if ct['name'] == 'Document' ][0]
+    data['citation_type_id'] = data['citation_type_id'] or unspec
+    cite = models.Citation(citation_type_id=data['citation_type_id'],
+        comments=data['comments'], acknowledgements=data['acknowledgements'])
+    db.session.add(cite)
+    db.session.commit()
+    citation_display = ''
+    for field, val in data['fields'].items():
+        if val == '':
+            continue
+        zfield = models.ZoteroField.query.filter_by(name=field).first()
+        cfield = models.CitationField(citation_id=cite.id,
+            field_id=zfield.id, field_data=val)
+        citation_display += val
+        db.session.add(cfield)
+    cite.display = citation_display
+    db.session.add(cite)
     db.session.commit()
     return jsonify(
-        { 'redirect': url_for('edit_document', docId=doc.id) })
+        { 'redirect': url_for('edit_citation', citeId=cite.id) })
 
 @app.route('/data/documents/', methods=['PUT'])
-@app.route('/data/documents/<docId>', methods=['PUT'])
-# @login_required
-def update_document_data(docId):
+@app.route('/data/documents/<citeId>', methods=['PUT'])
+@login_required
+def update_citation_data(citeId):
     data = request.get_json()
-    if docId is None or data['citation'] == '':
+    if citeId is None:
         return jsonify({})
-    doc_types = [ { 'id': dt.id, 'name': dt.name }
+    cite_types = [ { 'id': dt.id, 'name': dt.name }
         for dt in models.CitationType.query.all() ]
-    unspec = [ dt['id'] for dt in doc_types
-        if dt['name'] == 'unspecified' ][0]
-    date = data['date'] or '1/1/2001'
-    data['date'] = datetime.datetime.strptime(date, '%m/%d/%Y')
-    data['document_type_id'] = data['document_type_id'] or unspec
-    doc = models.Citation.query.get(docId)
-    doc.citation = data['citation']
-    doc.date = data['date']
-    doc.citation_type_id = data['document_type_id']
-    doc.zotero_id = data['zotero_id']
-    doc.comments = data['comments']
-    doc.acknowledgements = data['acknowledgements']
-    db.session.add(doc)
+    unspec = [ ct['id'] for ct in cite_types
+        if ct['name'] == 'Document' ][0]
+    data['citation_type_id'] = data['citation_type_id'] or unspec
+    cite = models.Citation.query.get(citeId)
+    cite.citation_type_id = data['citation_type_id']
+    # doc.zotero_id = data['zotero_id']
+    cite.comments = data['comments']
+    cite.acknowledgements = data['acknowledgements']
+    citation_display = ''
+    cite.citation_data = []
+    for field, val in data['fields'].items():
+        if val == '':
+            continue
+        zfield = models.ZoteroField.query.filter_by(name=field).first()
+        cfield = models.CitationField(citation_id=cite.id,
+            field_id=zfield.id, field_data=val)
+        citation_display += val
+        db.session.add(cfield)
+    cite.display = citation_display
+    db.session.add(cite)
     db.session.commit()
 
     data = { 'doc': {} }
     ct = models.CitationType.query.all()
     data['doc_types'] = [ { 'id': c.id, 'name': c.name } for c in ct ]
-    data['doc']['id'] = doc.id
-    data['doc']['date'] = '{}/{}/{}'.format(doc.date.month,
-        doc.date.day, doc.date.year)
-    data['doc']['citation'] = doc.citation
-    data['doc']['zotero_id'] = doc.zotero_id
-    data['doc']['comments'] = doc.comments
-    data['doc']['acknowledgements'] = doc.acknowledgements
-    data['doc']['document_type_id'] = doc.citation_type_id
+    data['doc']['id'] = cite.id
+    data['doc']['citation'] = cite.display
+    # data['doc']['zotero_id'] = doc.zotero_id
+    data['doc']['comments'] = cite.comments
+    data['doc']['acknowledgements'] = cite.acknowledgements
+    data['doc']['citation_type_id'] = cite.citation_type_id
     return jsonify(data)
 
 @app.route('/data/records/', methods=['GET'])
@@ -244,6 +264,7 @@ def read_record_data(recId=None):
         { 'label':l.location.name, 'value':l.location.name,
             'id': l.location.id } for l in rec.locations ]
     data['rec']['transcription'] = rec.transcription
+    data['rec']['national_context'] = rec.national_context_id
     data['rec']['record_type'] = {'label': rec.reference_type.name,
         'value': rec.reference_type.name, 'id':rec.reference_type.id }
     data['entrants'] = [ 
@@ -368,6 +389,7 @@ def update_reference_data(refId=None):
         data['rec']['header'] = '{}'.format(
             ref.reference_type.name or '').strip()
     data['rec']['citation'] = ref.citation.id
+    data['rec']['national_context'] = ref.national_context_id
     data['rec']['locations'] = [ 
         { 'label':l.location.name, 'value':l.location.name,
             'id': l.location.id } for l in ref.locations ]
