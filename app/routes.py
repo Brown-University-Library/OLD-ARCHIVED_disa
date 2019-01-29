@@ -73,8 +73,9 @@ def editor_index():
 def edit_document(docId=None):
     ct = models.CitationType.query.all()
     ct_fields = { 
-        c.id: [ f.display_name for f in c.zotero_type.template_fields ]
-            for c in ct }
+        c.id: [ { 'name': f.zotero_field.display_name, 'rank': f.rank }
+            for f in c.zotero_type.template_fields ]
+                for c in ct }
     if not docId:
         return render_template('document_edit.html',
             doc=None, ct_fields=ct_fields)

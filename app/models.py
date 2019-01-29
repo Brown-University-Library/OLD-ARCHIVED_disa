@@ -58,12 +58,6 @@ citationtype_referencetypes = db.Table('3_citationtype_referencetypes',
     db.Column('reference_type', db.Integer, db.ForeignKey('1_reference_types.id')),
 )
 
-zoterotype_fields = db.Table('2_zoterotype_fields',
-    db.Column('id', db.Integer, primary_key=True),
-    db.Column('zotero_type', db.Integer, db.ForeignKey('1_zotero_types.id')),
-    db.Column('zotero_field', db.Integer, db.ForeignKey('1_zotero_fields.id')),
-)
-
 
 class Citation(db.Model):
     __tablename__ = '3_citations'
@@ -101,9 +95,6 @@ class ZoteroType(db.Model):
     creator_name = db.Column(db.String(255))
     citation_types = db.relationship('CitationType',
         backref='zotero_type', lazy=True)
-    template_fields = db.relationship(
-        'ZoteroField', secondary=zoterotype_fields,
-        back_populates='templates')
 
 class ZoteroField(db.Model):
     __tablename__ = '1_zotero_fields'
@@ -111,9 +102,20 @@ class ZoteroField(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255)) 
     display_name = db.Column(db.String(255))
-    templates = db.relationship(
-        'ZoteroType', secondary=zoterotype_fields,
-        back_populates='template_fields')
+
+class ZoteroTypeField(db.Model):
+    __tablename__ = '2_zoterotype_fields'
+
+    id = db.Column(db.Integer, primary_key=True)
+    zotero_type_id = db.Column(db.Integer, db.ForeignKey('1_zotero_types.id'))
+    zotero_field_id = db.Column(db.Integer, db.ForeignKey('1_zotero_fields.id'))
+    rank = db.Column(db.Integer)
+    zotero_type = db.relationship(ZoteroType,
+        primaryjoin=(zotero_type_id == ZoteroType.id),
+        backref='template_fields')
+    zotero_field = db.relationship(ZoteroField,
+        primaryjoin=(zotero_field_id == ZoteroField.id),
+        backref='templates')
 
 class CitationField(db.Model):
     __tablename__ = '4_citation_fields'

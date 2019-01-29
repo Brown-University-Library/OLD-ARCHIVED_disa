@@ -10,10 +10,10 @@ def clear_data(tables=[]):
         models.has_origin,
         models.enslaved_as,
         models.referencetype_roles,
-        models.citationtype_referencetypes,
-        models.zoterotype_fields
+        models.citationtype_referencetypes
     ]
     disa_models = [
+        models.ZoteroTypeField,
         models.ReferentRelationship,
         models.ReferenceLocation,
         models.ReferenceEdit,

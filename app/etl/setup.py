@@ -330,7 +330,19 @@ def load_multivalued_attributes():
         {'name': 'videoRecordingFormat', 'display_name': 'Video Recording Format' },
         {'name': 'volume', 'display_name': 'Volume' },
         {'name': 'websiteTitle', 'display_name': 'Website Title' },
-        {'name': 'websiteType', 'display_name': 'Website Type' }
+        {'name': 'websiteType', 'display_name': 'Website Type' },
+        {'name': 'author', 'display_name': 'Author' },
+        {'name': 'director', 'display_name': 'Director' },
+        {'name': 'inventor', 'display_name': 'Inventor' },
+        {'name': 'performer', 'display_name': 'Performer' },
+        {'name': 'presenter', 'display_name': 'Presenter' },
+        {'name': 'programmer', 'display_name': 'Programmer' },
+        {'name': 'contributor', 'display_name': 'Contributor' },
+        {'name': 'artist', 'display_name': 'Artist' },
+        {'name': 'sponsor', 'display_name': 'Sponsor' },
+        {'name': 'interviewee', 'display_name': 'Interviewee' },
+        {'name': 'cartographer', 'display_name': 'Cartographer' },
+        {'name': 'podcaster', 'display_name': 'Podcaster' }
     ]
 
     location_types = [
@@ -508,49 +520,9 @@ def load_many_to_many():
         ('Execution', ['Executed']),
     ]
 
-    zoterotype_fields = [
-        ('artwork', ['abstractNote', 'accessDate', 'archive', 'archiveLocation', 'artworkMedium', 'artworkSize', 'callNumber', 'collections', 'creators', 'date', 'extra', 'itemType', 'language', 'libraryCatalog', 'relations', 'rights', 'shortTitle', 'tags', 'title', 'url']),
-        ('audioRecording', ['ISBN', 'abstractNote', 'accessDate', 'archive', 'archiveLocation', 'audioRecordingFormat', 'callNumber', 'collections', 'creators', 'date', 'extra', 'itemType', 'label', 'language', 'libraryCatalog', 'numberOfVolumes', 'place', 'relations', 'rights', 'runningTime', 'seriesTitle', 'shortTitle', 'tags', 'title', 'url', 'volume']),
-        ('bill', ['abstractNote', 'accessDate', 'billNumber', 'code', 'codePages', 'codeVolume', 'collections', 'creators', 'date', 'extra', 'history', 'itemType', 'language', 'legislativeBody', 'relations', 'rights', 'section', 'session', 'shortTitle', 'tags', 'title', 'url']),
-        ('blogPost', ['abstractNote', 'accessDate', 'blogTitle', 'collections', 'creators', 'date', 'extra', 'itemType', 'language', 'relations', 'rights', 'shortTitle', 'tags', 'title', 'url', 'websiteType']),
-        ('book', ['ISBN', 'abstractNote', 'accessDate', 'archive', 'archiveLocation', 'callNumber', 'collections', 'creators', 'date', 'edition', 'extra', 'itemType', 'language', 'libraryCatalog', 'numPages', 'numberOfVolumes', 'place', 'publisher', 'relations', 'rights', 'series', 'seriesNumber', 'shortTitle', 'tags', 'title', 'url', 'volume']),
-        ('bookSection', ['ISBN', 'abstractNote', 'accessDate', 'archive', 'archiveLocation', 'bookTitle', 'callNumber', 'collections', 'creators', 'date', 'edition', 'extra', 'itemType', 'language', 'libraryCatalog', 'numberOfVolumes', 'pages', 'place', 'publisher', 'relations', 'rights', 'series', 'seriesNumber', 'shortTitle', 'tags', 'title', 'url', 'volume']),
-        ('case', ['abstractNote', 'accessDate', 'caseName', 'collections', 'court', 'creators', 'dateDecided', 'docketNumber', 'extra', 'firstPage', 'history', 'itemType', 'language', 'relations', 'reporter', 'reporterVolume', 'rights', 'shortTitle', 'tags', 'url']),
-        ('computerProgram', ['ISBN', 'abstractNote', 'accessDate', 'archive', 'archiveLocation', 'callNumber', 'collections', 'company', 'creators', 'date', 'extra', 'itemType', 'libraryCatalog', 'place', 'programmingLanguage', 'relations', 'rights', 'seriesTitle', 'shortTitle', 'system', 'tags', 'title', 'url', 'versionNumber']),
-        ('conferencePaper', ['DOI', 'ISBN', 'abstractNote', 'accessDate', 'archive', 'archiveLocation', 'callNumber', 'collections', 'conferenceName', 'creators', 'date', 'extra', 'itemType', 'language', 'libraryCatalog', 'pages', 'place', 'proceedingsTitle', 'publisher', 'relations', 'rights', 'series', 'shortTitle', 'tags', 'title', 'url', 'volume']),
-        ('dictionaryEntry', ['ISBN', 'abstractNote', 'accessDate', 'archive', 'archiveLocation', 'callNumber', 'collections', 'creators', 'date', 'dictionaryTitle', 'edition', 'extra', 'itemType', 'language', 'libraryCatalog', 'numberOfVolumes', 'pages', 'place', 'publisher', 'relations', 'rights', 'series', 'seriesNumber', 'shortTitle', 'tags', 'title', 'url', 'volume']),
-        ('document', ['abstractNote', 'accessDate', 'archive', 'archiveLocation', 'callNumber', 'collections', 'creators', 'date', 'extra', 'itemType', 'language', 'libraryCatalog', 'publisher', 'relations', 'rights', 'shortTitle', 'tags', 'title', 'url']),
-        ('email', ['abstractNote', 'accessDate', 'collections', 'creators', 'date', 'extra', 'itemType', 'language', 'relations', 'rights', 'shortTitle', 'subject', 'tags', 'url']),
-        ('encyclopediaArticle', ['ISBN', 'abstractNote', 'accessDate', 'archive', 'archiveLocation', 'callNumber', 'collections', 'creators', 'date', 'edition', 'encyclopediaTitle', 'extra', 'itemType', 'language', 'libraryCatalog', 'numberOfVolumes', 'pages', 'place', 'publisher', 'relations', 'rights', 'series', 'seriesNumber', 'shortTitle', 'tags', 'title', 'url', 'volume']),
-        ('film', ['abstractNote', 'accessDate', 'archive', 'archiveLocation', 'callNumber', 'collections', 'creators', 'date', 'distributor', 'extra', 'genre', 'itemType', 'language', 'libraryCatalog', 'relations', 'rights', 'runningTime', 'shortTitle', 'tags', 'title', 'url', 'videoRecordingFormat']),
-        ('forumPost', ['abstractNote', 'accessDate', 'collections', 'creators', 'date', 'extra', 'forumTitle', 'itemType', 'language', 'postType', 'relations', 'rights', 'shortTitle', 'tags', 'title', 'url']),
-        ('hearing', ['abstractNote', 'accessDate', 'collections', 'committee', 'creators', 'date', 'documentNumber', 'extra', 'history', 'itemType', 'language', 'legislativeBody', 'numberOfVolumes', 'pages', 'place', 'publisher', 'relations', 'rights', 'session', 'shortTitle', 'tags', 'title', 'url']),
-        ('instantMessage', ['abstractNote', 'accessDate', 'collections', 'creators', 'date', 'extra', 'itemType', 'language', 'relations', 'rights', 'shortTitle', 'tags', 'title', 'url']),
-        ('interview', ['abstractNote', 'accessDate', 'archive', 'archiveLocation', 'callNumber', 'collections', 'creators', 'date', 'extra', 'interviewMedium', 'itemType', 'language', 'libraryCatalog', 'relations', 'rights', 'shortTitle', 'tags', 'title', 'url']),
-        ('journalArticle', ['DOI', 'ISSN', 'abstractNote', 'accessDate', 'archive', 'archiveLocation', 'callNumber', 'collections', 'creators', 'date', 'extra', 'issue', 'itemType', 'journalAbbreviation', 'language', 'libraryCatalog', 'pages', 'publicationTitle', 'relations', 'rights', 'series', 'seriesText', 'seriesTitle', 'shortTitle', 'tags', 'title', 'url', 'volume']),
-        ('letter', ['abstractNote', 'accessDate', 'archive', 'archiveLocation', 'callNumber', 'collections', 'creators', 'date', 'extra', 'itemType', 'language', 'letterType', 'libraryCatalog', 'relations', 'rights', 'shortTitle', 'tags', 'title', 'url']),
-        ('magazineArticle', ['ISSN', 'abstractNote', 'accessDate', 'archive', 'archiveLocation', 'callNumber', 'collections', 'creators', 'date', 'extra', 'issue', 'itemType', 'language', 'libraryCatalog', 'pages', 'publicationTitle', 'relations', 'rights', 'shortTitle', 'tags', 'title', 'url', 'volume']),
-        ('manuscript', ['abstractNote', 'accessDate', 'archive', 'archiveLocation', 'callNumber', 'collections', 'creators', 'date', 'extra', 'itemType', 'language', 'libraryCatalog', 'manuscriptType', 'numPages', 'place', 'relations', 'rights', 'shortTitle', 'tags', 'title', 'url']),
-        ('map', ['ISBN', 'abstractNote', 'accessDate', 'archive', 'archiveLocation', 'callNumber', 'collections', 'creators', 'date', 'edition', 'extra', 'itemType', 'language', 'libraryCatalog', 'mapType', 'place', 'publisher', 'relations', 'rights', 'scale', 'seriesTitle', 'shortTitle', 'tags', 'title', 'url']),
-        ('newspaperArticle', ['ISSN', 'abstractNote', 'accessDate', 'archive', 'archiveLocation', 'callNumber', 'collections', 'creators', 'date', 'edition', 'extra', 'itemType', 'language', 'libraryCatalog', 'pages', 'place', 'publicationTitle', 'relations', 'rights', 'section', 'shortTitle', 'tags', 'title', 'url']),
-        ('patent', ['abstractNote', 'accessDate', 'applicationNumber', 'assignee', 'collections', 'country', 'creators', 'extra', 'filingDate', 'issueDate', 'issuingAuthority', 'itemType', 'language', 'legalStatus', 'pages', 'patentNumber', 'place', 'priorityNumbers', 'references', 'relations', 'rights', 'shortTitle', 'tags', 'title', 'url']),
-        ('podcast', ['abstractNote', 'accessDate', 'audioFileType', 'collections', 'creators', 'episodeNumber', 'extra', 'itemType', 'language', 'relations', 'rights', 'runningTime', 'seriesTitle', 'shortTitle', 'tags', 'title', 'url']),
-        ('presentation', ['abstractNote', 'accessDate', 'collections', 'creators', 'date', 'extra', 'itemType', 'language', 'meetingName', 'place', 'presentationType', 'relations', 'rights', 'shortTitle', 'tags', 'title', 'url']),
-        ('radioBroadcast', ['abstractNote', 'accessDate', 'archive', 'archiveLocation', 'audioRecordingFormat', 'callNumber', 'collections', 'creators', 'date', 'episodeNumber', 'extra', 'itemType', 'language', 'libraryCatalog', 'network', 'place', 'programTitle', 'relations', 'rights', 'runningTime', 'shortTitle', 'tags', 'title', 'url']),
-        ('report', ['abstractNote', 'accessDate', 'archive', 'archiveLocation', 'callNumber', 'collections', 'creators', 'date', 'extra', 'institution', 'itemType', 'language', 'libraryCatalog', 'pages', 'place', 'relations', 'reportNumber', 'reportType', 'rights', 'seriesTitle', 'shortTitle', 'tags', 'title', 'url']),
-        ('statute', ['abstractNote', 'accessDate', 'code', 'codeNumber', 'collections', 'creators', 'dateEnacted', 'extra', 'history', 'itemType', 'language', 'nameOfAct', 'pages', 'publicLawNumber', 'relations', 'rights', 'section', 'session', 'shortTitle', 'tags', 'url']),
-        ('thesis', ['abstractNote', 'accessDate', 'archive', 'archiveLocation', 'callNumber', 'collections', 'creators', 'date', 'extra', 'itemType', 'language', 'libraryCatalog', 'numPages', 'place', 'relations', 'rights', 'shortTitle', 'tags', 'thesisType', 'title', 'university', 'url']),
-        ('tvBroadcast', ['abstractNote', 'accessDate', 'archive', 'archiveLocation', 'callNumber', 'collections', 'creators', 'date', 'episodeNumber', 'extra', 'itemType', 'language', 'libraryCatalog', 'network', 'place', 'programTitle', 'relations', 'rights', 'runningTime', 'shortTitle', 'tags', 'title', 'url', 'videoRecordingFormat']),
-        ('videoRecording', ['ISBN', 'abstractNote', 'accessDate', 'archive', 'archiveLocation', 'callNumber', 'collections', 'creators', 'date', 'extra', 'itemType', 'language', 'libraryCatalog', 'numberOfVolumes', 'place', 'relations', 'rights', 'runningTime', 'seriesTitle', 'shortTitle', 'studio', 'tags', 'title', 'url', 'videoRecordingFormat', 'volume']),
-        ('webpage', ['abstractNote', 'accessDate', 'collections', 'creators', 'date', 'extra', 'itemType', 'language', 'relations', 'rights', 'shortTitle', 'tags', 'title', 'url', 'websiteTitle', 'websiteType']),
-        ('note', ['collections', 'itemType', 'note', 'relations', 'tags'])
-    ]
-
     many_to_many = [
         (models.ReferenceType, models.Role, referencetype_roles,
             'name', 'name', 'roles'),
-        (models.ZoteroType, models.ZoteroField, zoterotype_fields,
-            'name', 'name', 'template_fields')
     ]
 
     for many in many_to_many:
@@ -566,6 +538,71 @@ def load_many_to_many():
             print( "{}:{} associated with {}:{}".format(
                 model1.__tablename__, mapping[0],
                 model2.__tablename__, mapping[1]) )
+            db.session.commit()
+
+def load_many_to_many_with_attr():
+
+    zoterotype_fields = [
+        ('artwork', ['title', 'artist', 'abstractNote', 'artworkMedium', 'artworkSize', 'date', 'language', 'shortTitle', 'archive', 'archiveLocation', 'libraryCatalog', 'callNumber', 'url', 'accessDate', 'rights', 'extra']),
+        ('audioRecording', ['title', 'performer', 'abstractNote', 'audioRecordingFormat', 'seriesTitle', 'volume', 'numberOfVolumes', 'place', 'label', 'date', 'runningTime', 'language', 'ISBN', 'shortTitle', 'archive', 'archiveLocation', 'libraryCatalog', 'callNumber', 'url', 'accessDate', 'rights', 'extra']),
+        ('bill', ['title', 'sponsor', 'abstractNote', 'billNumber', 'code', 'codeVolume', 'section', 'codePages', 'legislativeBody', 'session', 'history', 'date', 'language', 'url', 'accessDate', 'shortTitle', 'rights', 'extra']),
+        ('blogPost', ['title', 'author', 'abstractNote', 'blogTitle', 'websiteType', 'date', 'url', 'accessDate', 'language', 'shortTitle', 'rights', 'extra']),
+        ('book', ['title', 'author', 'abstractNote', 'series', 'seriesNumber', 'volume', 'numberOfVolumes', 'edition', 'place', 'publisher', 'date', 'numPages', 'language', 'ISBN', 'shortTitle', 'url', 'accessDate', 'archive', 'archiveLocation', 'libraryCatalog', 'callNumber', 'rights', 'extra']),
+        ('bookSection', ['title', 'author', 'abstractNote', 'bookTitle', 'series', 'seriesNumber', 'volume', 'numberOfVolumes', 'edition', 'place', 'publisher', 'date', 'pages', 'language', 'ISBN', 'shortTitle', 'url', 'accessDate', 'archive', 'archiveLocation', 'libraryCatalog', 'callNumber', 'rights', 'extra']),
+        ('case', ['caseName', 'author', 'abstractNote', 'reporter', 'reporterVolume', 'court', 'docketNumber', 'firstPage', 'history', 'dateDecided', 'language', 'shortTitle', 'url', 'accessDate', 'rights', 'extra']),
+        ('computerProgram', ['title', 'programmer', 'abstractNote', 'seriesTitle', 'versionNumber', 'date', 'system', 'place', 'company', 'programmingLanguage', 'ISBN', 'shortTitle', 'url', 'rights', 'archive', 'archiveLocation', 'libraryCatalog', 'callNumber', 'accessDate', 'extra']),
+        ('conferencePaper', ['title', 'author', 'abstractNote', 'date', 'proceedingsTitle', 'conferenceName', 'place', 'publisher', 'volume', 'pages', 'series', 'language', 'DOI', 'ISBN', 'shortTitle', 'url', 'accessDate', 'archive', 'archiveLocation', 'libraryCatalog', 'callNumber', 'rights', 'extra']),
+        ('dictionaryEntry', ['title', 'author', 'abstractNote', 'dictionaryTitle', 'series', 'seriesNumber', 'volume', 'numberOfVolumes', 'edition', 'place', 'publisher', 'date', 'pages', 'language', 'ISBN', 'shortTitle', 'url', 'accessDate', 'archive', 'archiveLocation', 'libraryCatalog', 'callNumber', 'rights', 'extra']),
+        ('document', ['title', 'author', 'abstractNote', 'publisher', 'date', 'language', 'shortTitle', 'url', 'accessDate', 'archive', 'archiveLocation', 'libraryCatalog', 'callNumber', 'rights', 'extra']),
+        ('email', ['subject', 'author', 'abstractNote', 'date', 'shortTitle', 'url', 'accessDate', 'language', 'rights', 'extra']),
+        ('encyclopediaArticle', ['title', 'author', 'abstractNote', 'encyclopediaTitle', 'series', 'seriesNumber', 'volume', 'numberOfVolumes', 'edition', 'place', 'publisher', 'date', 'pages', 'ISBN', 'shortTitle', 'url', 'accessDate', 'language', 'archive', 'archiveLocation', 'libraryCatalog', 'callNumber', 'rights', 'extra']),
+        ('film', ['title', 'director', 'abstractNote', 'distributor', 'date', 'genre', 'videoRecordingFormat', 'runningTime', 'language', 'shortTitle', 'url', 'accessDate', 'archive', 'archiveLocation', 'libraryCatalog', 'callNumber', 'rights', 'extra']),
+        ('forumPost', ['title', 'author', 'abstractNote', 'forumTitle', 'postType', 'date', 'language', 'shortTitle', 'url', 'accessDate', 'rights', 'extra']),
+        ('hearing', ['title', 'contributor', 'abstractNote', 'committee', 'place', 'publisher', 'numberOfVolumes', 'documentNumber', 'pages', 'legislativeBody', 'session', 'history', 'date', 'language', 'shortTitle', 'url', 'accessDate', 'rights', 'extra']),
+        ('instantMessage', ['title', 'author', 'abstractNote', 'date', 'language', 'shortTitle', 'url', 'accessDate', 'rights', 'extra']),
+        ('interview', ['title', 'interviewee', 'abstractNote', 'date', 'interviewMedium', 'language', 'shortTitle', 'url', 'accessDate', 'archive', 'archiveLocation', 'libraryCatalog', 'callNumber', 'rights', 'extra']),
+        ('journalArticle', ['title', 'author', 'abstractNote', 'publicationTitle', 'volume', 'issue', 'pages', 'date', 'series', 'seriesTitle', 'seriesText', 'journalAbbreviation', 'language', 'DOI', 'ISSN', 'shortTitle', 'url', 'accessDate', 'archive', 'archiveLocation', 'libraryCatalog', 'callNumber', 'rights', 'extra']),
+        ('letter', ['title', 'author', 'abstractNote', 'letterType', 'date', 'language', 'shortTitle', 'url', 'accessDate', 'archive', 'archiveLocation', 'libraryCatalog', 'callNumber', 'rights', 'extra']),
+        ('magazineArticle', ['title', 'author', 'abstractNote', 'publicationTitle', 'volume', 'issue', 'date', 'pages', 'language', 'ISSN', 'shortTitle', 'url', 'accessDate', 'archive', 'archiveLocation', 'libraryCatalog', 'callNumber', 'rights', 'extra']),
+        ('manuscript', ['title', 'author', 'abstractNote', 'manuscriptType', 'place', 'date', 'numPages', 'language', 'shortTitle', 'url', 'accessDate', 'archive', 'archiveLocation', 'libraryCatalog', 'callNumber', 'rights', 'extra']),
+        ('map', ['title', 'cartographer', 'abstractNote', 'mapType', 'scale', 'seriesTitle', 'edition', 'place', 'publisher', 'date', 'language', 'ISBN', 'shortTitle', 'url', 'accessDate', 'archive', 'archiveLocation', 'libraryCatalog', 'callNumber', 'rights', 'extra']),
+        ('newspaperArticle', ['title', 'author', 'abstractNote', 'publicationTitle', 'place', 'edition', 'date', 'section', 'pages', 'language', 'shortTitle', 'ISSN', 'url', 'accessDate', 'archive', 'archiveLocation', 'libraryCatalog', 'callNumber', 'rights', 'extra']),
+        ('patent', ['title', 'inventor', 'abstractNote', 'place', 'country', 'assignee', 'issuingAuthority', 'patentNumber', 'filingDate', 'pages', 'applicationNumber', 'priorityNumbers', 'issueDate', 'references', 'legalStatus', 'language', 'shortTitle', 'url', 'accessDate', 'rights', 'extra']),
+        ('podcast', ['title', 'podcaster', 'abstractNote', 'seriesTitle', 'episodeNumber', 'audioFileType', 'runningTime', 'url', 'accessDate', 'language', 'shortTitle', 'rights', 'extra']),
+        ('presentation', ['title', 'presenter', 'abstractNote', 'presentationType', 'date', 'place', 'meetingName', 'url', 'accessDate', 'language', 'shortTitle', 'rights', 'extra']),
+        ('radioBroadcast', ['title', 'director', 'abstractNote', 'programTitle', 'episodeNumber', 'audioRecordingFormat', 'place', 'network', 'date', 'runningTime', 'language', 'shortTitle', 'url', 'accessDate', 'archive', 'archiveLocation', 'libraryCatalog', 'callNumber', 'rights', 'extra']),
+        ('report', ['title', 'author', 'abstractNote', 'reportNumber', 'reportType', 'seriesTitle', 'place', 'institution', 'date', 'pages', 'language', 'shortTitle', 'url', 'accessDate', 'archive', 'archiveLocation', 'libraryCatalog', 'callNumber', 'rights', 'extra']),
+        ('statute', ['nameOfAct', 'author', 'abstractNote', 'code', 'codeNumber', 'publicLawNumber', 'dateEnacted', 'pages', 'section', 'session', 'history', 'language', 'shortTitle', 'url', 'accessDate', 'rights', 'extra']),
+        ('thesis', ['title', 'author', 'abstractNote', 'thesisType', 'university', 'place', 'date', 'numPages', 'language', 'shortTitle', 'url', 'accessDate', 'archive', 'archiveLocation', 'libraryCatalog', 'callNumber', 'rights', 'extra']),
+        ('tvBroadcast', ['title', 'director', 'abstractNote', 'programTitle', 'episodeNumber', 'videoRecordingFormat', 'place', 'network', 'date', 'runningTime', 'language', 'shortTitle', 'url', 'accessDate', 'archive', 'archiveLocation', 'libraryCatalog', 'callNumber', 'rights', 'extra']),
+        ('videoRecording', ['title', 'director', 'abstractNote', 'videoRecordingFormat', 'seriesTitle', 'volume', 'numberOfVolumes', 'place', 'studio', 'date', 'runningTime', 'language', 'ISBN', 'shortTitle', 'url', 'accessDate', 'archive', 'archiveLocation', 'libraryCatalog', 'callNumber', 'rights', 'extra']),
+        ('webpage', ['title', 'author', 'abstractNote', 'websiteTitle', 'websiteType', 'date', 'shortTitle', 'url', 'accessDate', 'language', 'rights', 'extra'])
+    ]
+
+    many_to_many = [
+        (models.ZoteroTypeField, models.ZoteroType, models.ZoteroField,
+            zoterotype_fields, 'name', 'name',
+            'zotero_type','zotero_field', 'rank')
+    ]
+
+    for many in many_to_many:
+        table = many[0]
+        assc1 = many[1]
+        assc2 = many[2]
+        for mapping in many[3]:
+            query = { many[4]: mapping[0] }
+            focus = assc1.query.filter_by( **query ).first()
+            opts  = assc2.query.all()
+            rel = [ o for o in opts if getattr(o, many[5]) in mapping[1] ]
+            for r in rel:
+                inst = table()
+                setattr(inst, many[6],focus)
+                setattr(inst, many[7],r)
+                setattr(inst, many[8],mapping[1].index(getattr(r,many[5])))                
+                db.session.add(inst)
+            print( "{}:{} associated with {}:{}".format(
+                assc1.__tablename__, mapping[0],
+                assc2.__tablename__, mapping[1]) )
             db.session.commit()
 
 def load_self_references():

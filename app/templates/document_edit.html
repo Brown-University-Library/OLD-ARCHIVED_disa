@@ -6,6 +6,14 @@
 #document_header {
     font-size: 150%;
 }
+
+#citation_fields {
+    display: flex;
+    flex-flow: row wrap;
+}
+.citation-field {
+    flex: 1 1 30%;
+}
 </style>
 {% endblock %}
 
@@ -86,17 +94,19 @@ var getDocumentId = function () {
     return doc_id;
 }
 
-var makeCitationFieldInput = function(fieldName) {
+var makeCitationFieldInput = function(fieldData) {
     var $input, $row, $label;
-    $row = $('<li/>', { 'class' : 'row'});
+    $row = $('<li/>', {
+        'class' : 'citation-field',
+        'style' : `order: ${fieldData.rank}` });
     $label = $('<label/>', {
-        'for' : fieldName,
-        'text' : fieldName });
+        'for' : fieldData.name,
+        'text' : fieldData.name });
     $input = $('<input/>', {
-        'id' : fieldName,
-        'class' : 'form-control citation-field',
+        'id' : fieldData.name,
+        'class' : 'form-control',
         'type' : 'text',
-        'data-citation-field': fieldName });
+        'data-citation-field': fieldData.name });
     $row.append($label).append($input);
 
     return $row;
