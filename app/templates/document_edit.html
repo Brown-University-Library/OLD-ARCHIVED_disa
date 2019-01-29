@@ -10,9 +10,12 @@
 #citation_fields {
     display: flex;
     flex-flow: row wrap;
+    list-style: none;
+    padding-right: 20px;
 }
 .citation-field {
-    flex: 1 1 30%;
+    flex: 0 1 30%;
+    margin: 2px 0 0 5px;
 }
 </style>
 {% endblock %}
@@ -28,19 +31,15 @@
                 <select class="form-control" id="document_type">
                 </select>
             </div>
-            <ul class="form-group" id="citation_fields">
-<!--                 <label for="title">Title<br />
-                <em class="small text-muted">Enter the document citation according to Chicago Style, 17th edition</em></label>
-                <input class="form-control" id="citation"  placeholder='Example: “Early American Newspapers, 1690-1922.” Readex, May 16, 2013. https://www.readex.com/content/early-american-newspapers-1690-1922.'></input> -->
-            </ul>
+            <div class="form-group row">
+                <label for="citation_fields">Citation information<br />
+                <em class="small text-muted">Information related to the publication of the document (e.g. the date of publication of the newspaper, not a date listed within an article)</em></label>
+                <ul  id="citation_fields">
+                </ul>
+            </div>
             <div class="form-group row" hidden>
                 <label for="zotero">Zotero ID</label>
                 <input type="text" class="form-control" id="zotero" />
-            </div>
-            <div class="form-group row">
-                <label for="document_date">Document date<br />
-                <em class="small text-muted">Enter the publication date of the document (e.g. the date of the publication of the newspaper and not the date of the article)</em></label>
-                <input class="form-control" type="text" id="document_date" />
             </div>
             <div class="form-group row">
                 <label for="comments">Comments</label>
@@ -99,15 +98,13 @@ var makeCitationFieldInput = function(fieldData) {
     $row = $('<li/>', {
         'class' : 'citation-field',
         'style' : `order: ${fieldData.rank}` });
-    $label = $('<label/>', {
-        'for' : fieldData.name,
-        'text' : fieldData.name });
     $input = $('<input/>', {
         'id' : fieldData.name,
         'class' : 'form-control',
         'type' : 'text',
+        'placeholder': fieldData.name,
         'data-citation-field': fieldData.name });
-    $row.append($label).append($input);
+    $row.append($input);
 
     return $row;
 }
@@ -115,6 +112,7 @@ var makeCitationFieldInput = function(fieldData) {
 var updateCitationFields = function(citeType, ctMap) {
     var ct_fields = ctMap[citeType];
     $fg = $('#citation_fields');
+    $('#citation_fields').siblings('label').show();
     $fg.empty();
     for (var i=0; i < ct_fields.length; i++) {
         $fg.append(makeCitationFieldInput(ct_fields[i]));
@@ -128,7 +126,6 @@ var setInputValues = function(docData) {
     $('#citation').text(docData['citation']);
     $('#zotero').val(docData['zotero_id']);
     $('#document_type').val(docData['document_type_id']).attr('selected', true);
-    $('#document_date').val(docData['date']);
     $('#comments').text(docData['comments']);    
     $('#acknowledgements').text(docData['acknowledgements']);
 }
@@ -163,6 +160,7 @@ var setFormHeader = function (docData) {
             If your document has been already entered, find your document in the 
             <a href="/editor">recent document list</a> and add an item.</em></div>`);
         $('#doc_update').text('Create');
+        $('#citation_fields').siblings('label').hide();
     } else {
         header.text(docData['citation']);
     }
