@@ -190,16 +190,20 @@ def create_citation():
         comments=data['comments'], acknowledgements=data['acknowledgements'])
     db.session.add(cite)
     db.session.commit()
-    citation_display = ''
+    citation_display = []
     for field, val in data['fields'].items():
         if val == '':
             continue
         zfield = models.ZoteroField.query.filter_by(name=field).first()
         cfield = models.CitationField(citation_id=cite.id,
             field_id=zfield.id, field_data=val)
-        citation_display += val
+        citation_display.append(val)
         db.session.add(cfield)
-    cite.display = citation_display
+    if len(citation_display) == 0:
+        now = datetime.datetime.utcnow()
+        cite.display = 'Document :: {}'.format(now.strftime('%Y %B %d'))
+    else:
+        cite.display = ' '.join(citation_display)
     db.session.add(cite)
     db.session.commit()
     return jsonify(
@@ -222,7 +226,7 @@ def update_citation_data(citeId):
     # doc.zotero_id = data['zotero_id']
     cite.comments = data['comments']
     cite.acknowledgements = data['acknowledgements']
-    citation_display = ''
+    citation_display = []
     cite.citation_data = []
     for field, val in data['fields'].items():
         if val == '':
@@ -230,9 +234,13 @@ def update_citation_data(citeId):
         zfield = models.ZoteroField.query.filter_by(name=field).first()
         cfield = models.CitationField(citation_id=cite.id,
             field_id=zfield.id, field_data=val)
-        citation_display += val
+        citation_display.append(val)
         db.session.add(cfield)
-    cite.display = citation_display
+    if len(citation_display) == 0:
+        now = datetime.datetime.utcnow()
+        cite.display = 'Document :: {}'.format(now.strftime('%Y %B %d'))
+    else:
+        cite.display = ' '.join(citation_display)
     db.session.add(cite)
     db.session.commit()
 
