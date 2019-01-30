@@ -348,11 +348,18 @@ def process_record_locations(locData, recObj):
         else:
             location = models.Location.query.get(loc['id'])
         locations.append(location)
+    clny_state = models.LocationType.query.filter_by(name='Colony/State').first()
+    city = models.LocationType.query.filter_by(name='City').first()
+    locale = models.LocationType.query.filter_by(name='Locale').first()
+    loc_types = [ clny_state, city, locale ]
     for loc in locations:
         rec_loc = models.ReferenceLocation()
         rec_loc.reference = recObj
         rec_loc.location = loc
-        rec_loc.location_rank = locations.index(loc)
+        idx = locations.index(loc)
+        rec_loc.location_rank = idx
+        if idx < len(loc_types):
+            rec_loc.location_type = loc_types[idx]
         db.session.add(rec_loc)
     db.session.commit()
     return recObj

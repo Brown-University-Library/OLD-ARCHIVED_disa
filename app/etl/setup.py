@@ -347,7 +347,7 @@ def load_multivalued_attributes():
 
     location_types = [
         {'name': 'Colony/State'},
-        {'name': 'String Location'},
+        {'name': 'Location'},
         {'name': 'Locale'},
         {'name': 'City'},
         {'name': 'Colony'},
