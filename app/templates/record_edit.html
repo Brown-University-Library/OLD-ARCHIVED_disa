@@ -149,7 +149,6 @@ var updateNationalContext = function ($select, data) {
     if ( data === '')  {
         $select.val(null);
     } else {
-        console.log(data);
         $select.val(data);
     }
 }
@@ -260,8 +259,7 @@ var updateRecordData = function(recId, docId) {
         data: JSON.stringify(data),
         success: function(data) {
             if ( method === 'POST' ) {
-                initializeForm(data);
-                $('#record_form').accordion('option','active', false )
+                window.location.href = data.redirect;
             } else {
                 setInputValues(data.rec);
                 $('#record_form').accordion('option','active', false );

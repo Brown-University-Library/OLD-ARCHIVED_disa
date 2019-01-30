@@ -8,7 +8,6 @@ import datetime
 import collections
 
 def stamp_edit(user, ref):
-    print('{} edits reference {}'.format(user.email, ref.id))
     edit = models.ReferenceEdit(reference_id=ref.id,
         user_id=user.id, timestamp=datetime.datetime.utcnow())
     db.session.add(edit)
@@ -386,6 +385,9 @@ def update_reference_data(refId=None):
     db.session.commit()
 
     stamp_edit(current_user, ref)
+    if request.method == 'POST':
+        return jsonify(
+            { 'redirect': url_for('edit_record', recId=ref.id) })
     data = { 'rec': {} }
     data['rec']['id'] = ref.id
     data['rec']['date'] = ''
