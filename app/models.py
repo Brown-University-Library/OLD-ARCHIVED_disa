@@ -368,7 +368,7 @@ class RoleRelationship(db.Model):
         else:
             return
 
-class RoleRelationshipTypes(db.Model):
+class RoleRelationshipType(db.Model):
     __tablename__ = '1_role_relationship_types'
 
     id = db.Column(db.Integer, primary_key=True)

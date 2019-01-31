@@ -24,6 +24,11 @@ def load_multivalued_attributes():
         {'name': 'Buyer', 'name_as_relationship': 'buyer of'},
         {'name': 'Seller', 'name_as_relationship': 'seller of'}
     ]
+
+    role_relationship_types = [
+        {'name': 'inverse'},
+        {'name': 'is_a'}
+    ]
     tribes = [
         {'name': 'Blanco'},
         {'name': 'Bocotora'},
@@ -376,6 +381,7 @@ def load_multivalued_attributes():
         ( models.ZoteroType, zotero_types ),
         ( models.ZoteroField, zotero_fields ),
         ( models.LocationType, location_types ),
+        ( models.RoleRelationshipType, role_relationship_types)
     ]
     for pair in tables:
         table = pair[0]
@@ -609,7 +615,9 @@ def load_many_to_many_with_attr():
             db.session.commit()
 
 def load_role_relationships():
-    role_table = models.Role
+    roles = models.Role.query.all()
+    inv = models.RoleRelationshipType.query.filter_by(name="inverse").first()
+    is_a = models.RoleRelationshipType.query.filter_by(name="is_a").first()
 
     inverse_relationships = [
         ('Enslaved', 'Owner'),
@@ -618,8 +626,9 @@ def load_role_relationships():
         ('Captured', 'Captor'),
         ('Emancipated', 'Owner'),
         ('Escaped', 'Owner'),
-        ('Child', 'Mother'),
-        ('Child', 'Father'),
+        ('Mother', 'Child'),
+        ('Father', 'Child'),
+        ('Parent', 'Child'),
         ('Spouse', 'Spouse')
     ]
     
@@ -638,3 +647,20 @@ def load_role_relationships():
         ('Buyer', 'Owner'),
         ('Seller', 'Owner')
     ]
+
+    for i in inverse_relationships:
+        role1 = [ r for r in roles if r.name == i[0]][0]
+        role2 = [ r for r in roles if r.name == i[1]][0]
+        rel = models.RoleRelationship(
+            role1=role1.id, role2=role2.id, relationship_type=inv.id)
+        db.session.add(rel)
+
+    for i in is_a_relationships:
+        role1 = [ r for r in roles if r.name == i[0]][0]
+        role2 = [ r for r in roles if r.name == i[1]][0]
+        rel = models.RoleRelationship(
+            role1=role1.id, role2=role2.id, relationship_type=is_a.id)
+        db.session.add(rel)
+
+    db.session.commit()
+
