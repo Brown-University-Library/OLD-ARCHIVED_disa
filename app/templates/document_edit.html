@@ -19,7 +19,7 @@
                 <em class="small text-muted">Enter the document citation according to Chicago Style, 17th edition</em></label>
                 <textarea class="form-control" id="citation"  placeholder='Example: “Early American Newspapers, 1690-1922.” Readex, May 16, 2013. https://www.readex.com/content/early-american-newspapers-1690-1922.'></textarea>
             </div>
-            <div class="form-group row" hidden>
+            <div class="form-group row">
                 <label for="citation">Zotero ID</label>
                 <input type="text" class="form-control" id="zotero" />
             </div>
@@ -31,7 +31,7 @@
             </div>
             <div class="form-group row">
                 <label for="document_date">Document date<br />
-                <em class="small text-muted">Enter the publication date of the document (e.g. the date of the publication of the newspaper and not the date of the article)</em></label>
+                <em class="small text-muted">Enter the publication/creation date of the document (e.g. the date of the publication of the newspaper and not the date of the article)</em></label>
                 <input class="form-control" type="text" id="document_date" />
             </div>
             <div class="form-group row">
@@ -171,7 +171,7 @@ $( document ).ready(function() {
     $( "#document_date" ).datepicker({
       changeMonth: true,
       changeYear: true,
-      yearRange: "1491:2000"
+      yearRange: "1492:1900"
     });
     $( "#doc_update" ).on('click', function(e) {
           e.preventDefault();
