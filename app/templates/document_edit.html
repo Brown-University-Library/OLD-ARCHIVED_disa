@@ -6,6 +6,17 @@
 #document_header {
     font-size: 150%;
 }
+
+#citation_fields {
+    display: flex;
+    flex-flow: row wrap;
+    list-style: none;
+    padding-right: 20px;
+}
+.citation-field {
+    flex: 0 1 30%;
+    margin: 2px 0 0 5px;
+}
 </style>
 {% endblock %}
 
@@ -15,24 +26,28 @@
         <h2 id="document_header"></h2>
         <form action="" method="">
             <div class="form-group row">
-                <label for="citation">Citation</label>
-                <textarea class="form-control" id="citation"></textarea>
-            </div>
-            <div class="form-group row">
-                <label for="citation">Zotero ID</label>
-                <input type="text" class="form-control" id="zotero" />
-            </div>
-            <div class="form-group row">
-                <label for="document_type">Document type</label> 
+                <label for="document_type">Document type<br />
+                    <em class="small text-muted">Select the document type that most clearly describes the document you're adding</em></label>
                 <select class="form-control" id="document_type">
                 </select>
             </div>
             <div class="form-group row">
-                <label for="document_date">Date</label>
-                <input class="form-control" type="text" id="document_date" />
+                <label for="citation_fields">Citation information<br />
+                <em class="small text-muted">Information related to the publication of the document (e.g. the date of publication of the newspaper, not a date listed within an article)</em></label>
+                <ul  id="citation_fields">
+                </ul>
+            </div>
+            <div class="form-group row" hidden>
+                <label for="zotero">Zotero ID</label>
+                <input type="text" class="form-control" id="zotero" />
             </div>
             <div class="form-group row">
-                <label for="acknowledgements">Acknowledgements</label>
+                <label for="comments">Comments</label>
+                <textarea class="form-control" id="comments"></textarea>
+            </div>
+            <div class="form-group row">
+                <label for="acknowledgements">Acknowledgements<br />
+                <em class="small text-muted">If you've received the document from an individual or organization for the purposes of this project, please acknowledge their contribution (e.g. "Thank you to the Jennifer Shaw family")</em></label>
                 <textarea class="form-control" id="acknowledgements"></textarea>
             </div>
             <button type="submit" class="btn btn-primary" id="doc_update">Update</button>
@@ -41,23 +56,23 @@
 
     {% if doc %}
     <h2>Items</h2>
-        {% if doc.records|length != 0 %}
+        {% if doc.references|length != 0 %}
         <table class="table">
             <thead>
                 <tr>
                   <th scope="col">ID</th>
                   <th scope="col">Item type</th>
-                  <th scope="col">Date</th>
+                  <th scope="col">Edited</th>
                 </tr>
             </thead>
             <tbody>
-            {% for item in doc.records %}
+            {% for item in doc.references %}
                 <tr>
                     <th scope="row">{{ item.id }}</th>
                     <td>
-                        <a href="{{ url_for('edit_record', recId=item.id) }}">{{ item.record_type.name }}</a>
+                        <a href="{{ url_for('edit_record', recId=item.id) }}">{{ item.reference_type.name }}</a>
                     </td>
-                    <td>{{ item.date.strftime("%Y-%m-%d") }}</td>
+                    <td>{{ item.last_edit().timestamp.strftime("%Y-%m-%d") }}</td>
                 </tr>
             {% endfor %}
             </tbody>
@@ -78,24 +93,67 @@ var getDocumentId = function () {
     return doc_id;
 }
 
+var makeCitationFieldInput = function(fieldData) {
+    var $input, $row, $label;
+    $row = $('<li/>', {
+        'class' : 'citation-field',
+        'style' : `order: ${fieldData.rank}` });
+    $input = $('<input/>', {
+        'id' : fieldData.name,
+        'class' : 'form-control',
+        'type' : 'text',
+        'placeholder': fieldData.display,
+        'data-citation-field': fieldData.name });
+    $input.val(fieldData.value);
+    $row.append($input);
+
+    return $row;
+}
+
+var updateCitationFields = function(citeData, citeType, ctMap) {
+    var ct_fields = ctMap[citeType];
+    $fg = $('#citation_fields');
+    $('#citation_fields').siblings('label').show();
+    $fg.empty();
+    for (var i=0; i < ct_fields.length; i++) {
+        var field_data = ct_fields[i];
+        if (field_data.name in citeData) {
+            field_data['value'] = citeData[field_data.name];
+        } else {
+            field_data['value'] = '';
+        }
+        $fg.append(makeCitationFieldInput(field_data));
+    }
+}
+
+var collectCitationFieldData = function(dataObj) {
+    var cite_fields = $('.citation-field');
+    dataObj['fields'] = {};
+    cite_fields.each( function(index) {
+        $input = $(this).find('input');
+        dataObj.fields[$input.attr('data-citation-field')] = $input.val();
+    })
+    return dataObj
+}
+
 var setInputValues = function(docData) {
     if ( $.isEmptyObject(docData) ) {
         return;
     }
     $('#citation').text(docData['citation']);
-    $('#zotero').val(docData['zotero_id']);
-    $('#document_type').val(docData['document_type_id']).attr('selected', true);
-    $('#document_date').val(docData['date']);
+    // $('#zotero').val(docData['zotero_id']);
+    $('#document_type').val(docData['citation_type_id']).attr('selected', true);
+    $('#comments').text(docData['comments']);    
     $('#acknowledgements').text(docData['acknowledgements']);
 }
 
 var collectInputValues = function() {
     var data = {};
-    data['citation'] = $('#citation').val();
-    data['zotero_id'] = $('#zotero').val();
-    data['document_type_id'] = Number($('#document_type').val());
-    data['date'] = $('#document_date').val();
+    // data['zotero_id'] = $('#zotero').val();
+    data['citation_type_id'] = Number($('#document_type').val());
+    data['comments'] = $('#comments').val();
     data['acknowledgements'] = $('#acknowledgements').val();
+    data = collectCitationFieldData(data);
     return data;
 }
 
@@ -108,33 +166,42 @@ var addTypeOptions = function(opts) {
                                         'text': opt.name });
         dtype_select.append(opt_elem);
     }
+    dtype_select.val(null);
 }
 
 var setFormHeader = function (docData) {
     var header = $('#document_header');
     if ( $.isEmptyObject(docData) ) {
-        header.text('Create new document');
+        header.text('Add a document');
+        header.append(`<div style="font-size: 50%"><em>Fill out this form only when entering a document for the first time. 
+            If your document has been already entered, find your document in the 
+            <a href="/editor">recent document list</a> and add an item.</em></div>`);
         $('#doc_update').text('Create');
+        $('#citation_fields').siblings('label').hide();
     } else {
         header.text(docData['citation']);
     }
 }
 
-var initializeForm = function (data) {
+var initializeForm = function (data, ctMap) {
     setFormHeader(data['doc']);
     addTypeOptions(data['doc_types']);
-    setInputValues(data['doc']);    
+    setInputValues(data['doc']);
+    if ( 'fields' in data['doc'] ) {
+        updateCitationFields(
+            data['doc']['fields'], data['doc']['citation_type_id'], ctMap);
+    }
 }
 
-var readDocumentData = function(docId) {
+var readDocumentData = function(docId, ctMap) {
     var doc_data_api = "{{ url_for('read_document_data', docId=None ) }}" + docId;
     $.get(doc_data_api, function(data) {
-        initializeForm(data);
+        initializeForm(data, ctMap);
     });
 }
 
-var updateDocumentData = function(docId) {
-    var doc_data_api = "{{ url_for('update_document_data', docId=None )}}" + docId;
+var updateDocumentData = function(docId, ctMap) {
+    var doc_data_api = "{{ url_for('update_citation_data', docId=None )}}" + docId;
     var data = collectInputValues();
     var method = (docId ? "PUT" : "POST");
     $.ajax({
@@ -146,7 +213,7 @@ var updateDocumentData = function(docId) {
             if ( method === 'POST' ) {
                 window.location.href = data.redirect;
             } else {
-                initializeForm(data);
+                initializeForm(data, ctMap);
                 $('#document_form').accordion('option','active', false );
             }
         }
@@ -155,10 +222,12 @@ var updateDocumentData = function(docId) {
 
 $( document ).ready(function() {
     var doc_id = getDocumentId();
-    readDocumentData(doc_id);
+    var cite_type_fields = JSON.parse('{{ ct_fields | tojson | safe}}');
+    readDocumentData(doc_id, cite_type_fields);
     $( "#document_form" ).accordion({
         collapsible: true,
         header: "h2",
+        heightStyle: "content",
         active: (doc_id ? false : 0)
     });
     $( "#document_date" ).datepicker({
@@ -166,9 +235,16 @@ $( document ).ready(function() {
       changeYear: true,
       yearRange: "1491:2000"
     });
+    $( "#document_type").on('change', function(e) {
+        e.preventDefault();
+        var cite_type = $(this).val();
+        var cite_data = collectCitationFieldData({});
+        updateCitationFields(
+            cite_data['fields'], cite_type, cite_type_fields);
+    });
     $( "#doc_update" ).on('click', function(e) {
           e.preventDefault();
-         updateDocumentData(doc_id);
+        updateDocumentData(doc_id, cite_type_fields);
     });
 });
 </script>

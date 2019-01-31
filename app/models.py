@@ -3,194 +3,262 @@ from app import db, login
 from werkzeug import security
 from flask_login import UserMixin
 
-has_role = db.Table('has_role',
+has_role = db.Table('6_has_role',
     db.Column('id', db.Integer, primary_key=True),
-    db.Column('entrant', db.Integer, db.ForeignKey('entrants.id')),
-    db.Column('role', db.Integer, db.ForeignKey('roles.id'))
+    db.Column('referent', db.Integer, db.ForeignKey('5_referents.id')),
+    db.Column('role', db.Integer, db.ForeignKey('1_roles.id'))
 )
 
-has_title = db.Table('has_title',
+has_title = db.Table('6_has_title',
     db.Column('id', db.Integer, primary_key=True),
-    db.Column('entrant', db.Integer, db.ForeignKey('entrants.id')),
-    db.Column('title', db.Integer, db.ForeignKey('titles.id'))
+    db.Column('referent', db.Integer, db.ForeignKey('5_referents.id')),
+    db.Column('title', db.Integer, db.ForeignKey('1_titles.id'))
 )
 
-has_vocation = db.Table('has_vocation',
+has_vocation = db.Table('6_has_vocation',
     db.Column('id', db.Integer, primary_key=True),
-    db.Column('entrant', db.Integer, db.ForeignKey('entrants.id')),
-    db.Column('vocation', db.Integer, db.ForeignKey('vocations.id'))
+    db.Column('referent', db.Integer, db.ForeignKey('5_referents.id')),
+    db.Column('vocation', db.Integer, db.ForeignKey('1_vocations.id'))
 )
 
-has_tribe = db.Table('has_tribe',
+has_tribe = db.Table('6_has_tribe',
     db.Column('id', db.Integer, primary_key=True),
-    db.Column('entrant', db.Integer, db.ForeignKey('entrants.id')),
-    db.Column('tribe', db.Integer, db.ForeignKey('tribes.id'))
+    db.Column('referent', db.Integer, db.ForeignKey('5_referents.id')),
+    db.Column('tribe', db.Integer, db.ForeignKey('1_tribes.id'))
 )
 
-has_race = db.Table('has_race',
+has_race = db.Table('6_has_race',
     db.Column('id', db.Integer, primary_key=True),
-    db.Column('entrant', db.Integer, db.ForeignKey('entrants.id')),
-    db.Column('race', db.Integer, db.ForeignKey('races.id'))
+    db.Column('referent', db.Integer, db.ForeignKey('5_referents.id')),
+    db.Column('race', db.Integer, db.ForeignKey('1_races.id'))
 )
 
-has_origin = db.Table('has_origin',
+has_origin = db.Table('6_has_origin',
     db.Column('id', db.Integer, primary_key=True),
-    db.Column('entrant', db.Integer, db.ForeignKey('entrants.id')),
-    db.Column('origin', db.Integer, db.ForeignKey('locations.id'))
+    db.Column('referent', db.Integer, db.ForeignKey('5_referents.id')),
+    db.Column('origin', db.Integer, db.ForeignKey('1_locations.id'))
 )
 
-enslaved_as = db.Table('enslaved_as',
+enslaved_as = db.Table('6_enslaved_as',
     db.Column('id', db.Integer, primary_key=True),
-    db.Column('entrant', db.Integer, db.ForeignKey('entrants.id')),
+    db.Column('referent', db.Integer, db.ForeignKey('5_referents.id')),
     db.Column('enslavement', db.Integer,
-        db.ForeignKey('enslavement_types.id'))
+        db.ForeignKey('1_enslavement_types.id'))
 )
 
-recordtype_roles = db.Table('recordtype_roles',
+referencetype_roles = db.Table('2_referencetype_roles',
     db.Column('id', db.Integer, primary_key=True),
-    db.Column('record_type', db.Integer, db.ForeignKey('record_types.id')),
-    db.Column('role', db.Integer, db.ForeignKey('roles.id'))
+    db.Column('reference_type', db.Integer, db.ForeignKey('1_reference_types.id')),
+    db.Column('role', db.Integer, db.ForeignKey('1_roles.id'))
 )
 
-documenttype_recordtypes = db.Table('documenttype_recordtypes',
+citationtype_referencetypes = db.Table('3_citationtype_referencetypes',
     db.Column('id', db.Integer, primary_key=True),
-    db.Column('document_type', db.Integer, db.ForeignKey('document_types.id')),
-    db.Column('record_type', db.Integer, db.ForeignKey('record_types.id')),
+    db.Column('citation_type', db.Integer, db.ForeignKey('2_citation_types.id')),
+    db.Column('reference_type', db.Integer, db.ForeignKey('1_reference_types.id')),
 )
 
-class Document(db.Model):
-    __tablename__ = 'documents'
+
+class Citation(db.Model):
+    __tablename__ = '3_citations'
 
     id = db.Column(db.Integer, primary_key=True)
-    document_type_id = db.Column(db.Integer, db.ForeignKey('document_types.id'),
+    citation_type_id = db.Column(db.Integer, db.ForeignKey('2_citation_types.id'),
         nullable=False)
-    date = db.Column(db.DateTime())
-    citation = db.Column(db.String(500))
+    display = db.Column(db.String(500))
     zotero_id = db.Column(db.String(255))
-    acknowledgements = db.Column(db.String(255))
-    records = db.relationship('Record', backref='document', lazy=True)
-
-    def __repr__(self):
-        return '<Document {0}>'.format(self.id)
-
-class DocumentType(db.Model):
-    __tablename__ = 'document_types'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255))
-    record_types = db.relationship(
-        'RecordType', secondary=documenttype_recordtypes,
-        back_populates='document_types')
-    documents = db.relationship('Document',
-        backref='document_type', lazy=True)
-
-class Record(db.Model):
-    __tablename__ = 'records'
-
-    id = db.Column(db.Integer, primary_key=True)
-    record_type_id = db.Column(db.Integer, db.ForeignKey('record_types.id'),
-        nullable=False)
-    citation = db.Column(db.String(255))
-    date = db.Column(db.DateTime())
     comments = db.Column(db.UnicodeText())
-    entrants = db.relationship('Entrant', backref='record', lazy=True)
-    document_id = db.Column(db.Integer, db.ForeignKey('documents.id'),
-        nullable=False)
+    acknowledgements = db.Column(db.String(255))
+    references = db.relationship('Reference', backref='citation', lazy=True)
 
     def __repr__(self):
-        return '<Record {0}>'.format(self.id)
+        return '<Citation {0}>'.format(self.id)
 
-class RecordType(db.Model):
-    __tablename__ = 'record_types'
+class CitationType(db.Model):
+    __tablename__ = '2_citation_types'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
-    records = db.relationship('Record',
-        backref='record_type', lazy=True)
+    zotero_type_id = db.Column(db.Integer, db.ForeignKey('1_zotero_types.id'),
+        nullable=False)
+    reference_types = db.relationship(
+        'ReferenceType', secondary=citationtype_referencetypes,
+        back_populates='citation_types')
+    citations = db.relationship('Citation',
+        backref='citation_type', lazy=True)
+
+class ZoteroType(db.Model):
+    __tablename__ = '1_zotero_types'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255)) 
+    creator_name = db.Column(db.String(255))
+    citation_types = db.relationship('CitationType',
+        backref='zotero_type', lazy=True)
+
+class ZoteroField(db.Model):
+    __tablename__ = '1_zotero_fields'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255)) 
+    display_name = db.Column(db.String(255))
+
+class ZoteroTypeField(db.Model):
+    __tablename__ = '2_zoterotype_fields'
+
+    id = db.Column(db.Integer, primary_key=True)
+    zotero_type_id = db.Column(db.Integer, db.ForeignKey('1_zotero_types.id'))
+    zotero_field_id = db.Column(db.Integer, db.ForeignKey('1_zotero_fields.id'))
+    rank = db.Column(db.Integer)
+    zotero_type = db.relationship(ZoteroType,
+        primaryjoin=(zotero_type_id == ZoteroType.id),
+        backref='template_fields')
+    zotero_field = db.relationship(ZoteroField,
+        primaryjoin=(zotero_field_id == ZoteroField.id),
+        backref='templates')
+
+class CitationField(db.Model):
+    __tablename__ = '4_citation_fields'
+
+    id = db.Column(db.Integer, primary_key=True)
+    citation_id = db.Column(db.Integer, db.ForeignKey('3_citations.id'))
+    field_id = db.Column(db.Integer, db.ForeignKey('1_zotero_fields.id'))
+    field_data = db.Column(db.String(255))
+    citation = db.relationship(Citation,
+        primaryjoin=(citation_id == Citation.id),
+        backref='citation_data')
+    field = db.relationship(ZoteroField,
+        primaryjoin=(field_id == ZoteroField.id),
+        backref='citations')
+
+class Reference(db.Model):
+    __tablename__ = '4_references'
+
+    id = db.Column(db.Integer, primary_key=True)
+    citation_id = db.Column(db.Integer, db.ForeignKey('3_citations.id'),
+        nullable=False)
+    reference_type_id = db.Column(db.Integer, db.ForeignKey('1_reference_types.id'),
+        nullable=False)
+    national_context_id = db.Column(db.Integer, db.ForeignKey('1_national_context.id'),
+        nullable=False)
+    date = db.Column(db.DateTime())
+    transcription = db.Column(db.UnicodeText())
+    referents = db.relationship('Referent', backref='reference', lazy=True)
+
+    def last_edit(self):
+        edits = sorted([ (e.timestamp, e) for e in self.edits ], reverse=True)
+        return edits[0][1]
+
+    def __repr__(self):
+        return '<Reference {0}>'.format(self.id)
+
+class ReferenceType(db.Model):
+    __tablename__ = '1_reference_types'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    references = db.relationship('Reference',
+        backref='reference_type', lazy=True)
     roles = db.relationship(
-        'Role', secondary=recordtype_roles,
-        back_populates='record_types')
-    document_types = db.relationship(
-        'DocumentType', secondary=documenttype_recordtypes,
-        back_populates='record_types')
+        'Role', secondary=referencetype_roles,
+        back_populates='reference_types')
+    citation_types = db.relationship(
+        'CitationType', secondary=citationtype_referencetypes,
+        back_populates='reference_types')
 
 class Location(db.Model):
-    __tablename__ = 'locations'
+    __tablename__ = '1_locations'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
-    origin_for = db.relationship('Entrant',
-        secondary='has_origin', back_populates='origins')
+    origin_for = db.relationship('Referent',
+        secondary=has_origin, back_populates='origins')
 
     def __repr__(self):
         return '<Location {0}: {1}>'.format(self.id, self.name)
 
-class RecordLocation(db.Model):
-    __tablename__ = 'has_location'
+class ReferenceLocation(db.Model):
+    __tablename__ = '5_has_location'
 
     id = db.Column(db.Integer, primary_key=True)
-    record_id = db.Column(db.Integer, db.ForeignKey('records.id'))
-    location_id = db.Column(db.Integer, db.ForeignKey('locations.id'))
+    reference_id = db.Column(db.Integer, db.ForeignKey('4_references.id'))
+    location_id = db.Column(db.Integer, db.ForeignKey('1_locations.id'))
+    location_type_id = db.Column(db.Integer, db.ForeignKey('1_location_types.id'))
     location_rank = db.Column(db.Integer)
-    record = db.relationship(Record,
-        primaryjoin=(record_id == Record.id),
+    reference = db.relationship(Reference,
+        primaryjoin=(reference_id == Reference.id),
         backref='locations')
     location = db.relationship(Location,
         primaryjoin=(location_id == Location.id),
-        backref='records')
+        backref='references')
+
+class LocationType(db.Model):
+    __tablename__ = '1_location_types'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    locations = db.relationship(
+        'ReferenceLocation', backref='location_type', lazy=True)
+
+class NationalContext(db.Model):
+    __tablename__ = '1_national_context'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    references = db.relationship('Reference', backref='national_context', lazy=True)
 
 class NameType(db.Model):
-    __tablename__ = 'name_types'
+    __tablename__ = '1_name_types'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
 
-class EntrantName(db.Model):
-    __tablename__ = 'entrant_names'
+class ReferentName(db.Model):
+    __tablename__ = '6_referent_names'
 
     id = db.Column(db.Integer, primary_key=True)
-    entrant_id = db.Column(db.Integer, db.ForeignKey('entrants.id'))
-    name_type_id = db.Column(db.Integer, db.ForeignKey('name_types.id'))
+    referent_id = db.Column(db.Integer, db.ForeignKey('5_referents.id'))
+    name_type_id = db.Column(db.Integer, db.ForeignKey('1_name_types.id'))
     first = db.Column(db.String(255))
     last = db.Column(db.String(255))
     name_type = db.relationship('NameType',
         primaryjoin=(name_type_id == NameType.id) )
 
-class Entrant(db.Model):
-    __tablename__ = 'entrants'
+class Referent(db.Model):
+    __tablename__ = '5_referents'
 
     id = db.Column(db.Integer, primary_key=True)
     age = db.Column(db.String(255))
     sex = db.Column(db.String(255))
     primary_name_id = db.Column(db.Integer, 
-        db.ForeignKey('entrant_names.id'))
-    record_id = db.Column(db.Integer, db.ForeignKey('records.id'),
+        db.ForeignKey('6_referent_names.id'))
+    reference_id = db.Column(db.Integer, db.ForeignKey('4_references.id'),
         nullable=False)
-    person_id = db.Column(db.Integer, db.ForeignKey('people.id'),
+    person_id = db.Column(db.Integer, db.ForeignKey('1_people.id'),
         nullable=True)
-    names = db.relationship('EntrantName',
-        primaryjoin=(id == EntrantName.entrant_id) )
-    primary_name = db.relationship('EntrantName',
-        primaryjoin=(primary_name_id == EntrantName.id),
+    names = db.relationship('ReferentName',
+        primaryjoin=(id == ReferentName.referent_id) )
+    primary_name = db.relationship('ReferentName',
+        primaryjoin=(primary_name_id == ReferentName.id),
         post_update=True )
     roles = db.relationship('Role',
-        secondary='has_role', back_populates='entrants')
+        secondary=has_role, back_populates='referents')
     tribes = db.relationship('Tribe',
-        secondary='has_tribe', back_populates='entrants')
+        secondary=has_tribe, back_populates='referents')
     races = db.relationship('Race',
-        secondary='has_race', back_populates='entrants')
+        secondary=has_race, back_populates='referents')
     titles = db.relationship('Title',
-        secondary='has_title', back_populates='entrants')
+        secondary=has_title, back_populates='referents')
     vocations = db.relationship('Vocation',
-        secondary='has_vocation', back_populates='entrants')
+        secondary=has_vocation, back_populates='referents')
     origins = db.relationship('Location',
-        secondary='has_origin', back_populates='origin_for')
+        secondary=has_origin, back_populates='origin_for')
     enslavements = db.relationship('EnslavementType',
-        secondary='enslaved_as', back_populates='entrants')
+        secondary=enslaved_as, back_populates='referents')
 
     def __repr__(self):
-        return '<Entrant {0}: {1} {2}>'.format(
-            self.id, self.first_name, self.last_name)
+        return '<Referent {0}: {1}>'.format(
+            self.id, self.display_name() )
 
     def display_name(self):
         display = "{0} {1}".format(
@@ -201,69 +269,69 @@ class Entrant(db.Model):
             return display
 
 class Title(db.Model):
-    __tablename__ = 'titles'
+    __tablename__ = '1_titles'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
-    entrants = db.relationship('Entrant',
-        secondary='has_title', back_populates='titles')
+    referents = db.relationship('Referent',
+        secondary=has_title, back_populates='titles')
 
 class Tribe(db.Model):
-    __tablename__ = 'tribes'
+    __tablename__ = '1_tribes'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
-    entrants = db.relationship('Entrant',
-        secondary='has_tribe', back_populates='tribes')
+    referents = db.relationship('Referent',
+        secondary=has_tribe, back_populates='tribes')
 
 class Race(db.Model):
-    __tablename__ = 'races'
+    __tablename__ = '1_races'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
-    entrants = db.relationship('Entrant',
-        secondary='has_race', back_populates='races')
+    referents = db.relationship('Referent',
+        secondary=has_race, back_populates='races')
 
 class Vocation(db.Model):
-    __tablename__ = 'vocations'
+    __tablename__ = '1_vocations'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
-    entrants = db.relationship('Entrant',
-        secondary='has_vocation', back_populates='vocations')
+    referents = db.relationship('Referent',
+        secondary=has_vocation, back_populates='vocations')
 
 class EnslavementType(db.Model):
-    __tablename__ = 'enslavement_types'
+    __tablename__ = '1_enslavement_types'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
-    entrants = db.relationship('Entrant',
-        secondary='enslaved_as', back_populates='enslavements')
+    referents = db.relationship('Referent',
+        secondary=enslaved_as, back_populates='enslavements')
 
 class Role(db.Model):
-    __tablename__ = 'roles'
+    __tablename__ = '1_roles'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
     name_as_relationship = db.Column(db.String(255))
-    entrants = db.relationship('Entrant',
-        secondary='has_role', back_populates='roles')
-    record_types = db.relationship(
-        'RecordType', secondary=recordtype_roles,
+    referents = db.relationship('Referent',
+        secondary=has_role, back_populates='roles')
+    reference_types = db.relationship(
+        'ReferenceType', secondary=referencetype_roles,
         back_populates='roles')
 
-class EntrantRelationship(db.Model):
-    __tablename__ = 'entrant_relationships'
+class ReferentRelationship(db.Model):
+    __tablename__ = '6_referent_relationships'
 
     id = db.Column(db.Integer, primary_key=True)
-    subject_id = db.Column(db.Integer, db.ForeignKey('entrants.id'))
-    object_id = db.Column(db.Integer, db.ForeignKey('entrants.id'))
-    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
-    sbj = db.relationship(Entrant,
-        primaryjoin=(subject_id == Entrant.id),
+    subject_id = db.Column(db.Integer, db.ForeignKey('5_referents.id'))
+    object_id = db.Column(db.Integer, db.ForeignKey('5_referents.id'))
+    role_id = db.Column(db.Integer, db.ForeignKey('1_roles.id'))
+    sbj = db.relationship(Referent,
+        primaryjoin=(subject_id == Referent.id),
         backref='as_subject')
-    obj = db.relationship(Entrant,
-        primaryjoin=(object_id == Entrant.id),
+    obj = db.relationship(Referent,
+        primaryjoin=(object_id == Referent.id),
         backref='as_object')
     related_as = db.relationship(Role,
         primaryjoin=(role_id == Role.id),
@@ -278,13 +346,13 @@ class EntrantRelationship(db.Model):
         return implied
 
 class RoleRelationship(db.Model):
-    __tablename__ = 'role_relationships'
+    __tablename__ = '2_role_relationships'
 
     id = db.Column(db.Integer, primary_key=True)
-    role1 = db.Column(db.Integer, db.ForeignKey('roles.id'))
-    role2 = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    role1 = db.Column(db.Integer, db.ForeignKey('1_roles.id'))
+    role2 = db.Column(db.Integer, db.ForeignKey('1_roles.id'))
     relationship_type = db.Column(db.Integer,
-        db.ForeignKey('role_relationship_types.id'))
+        db.ForeignKey('1_role_relationship_types.id'))
     alternate_text = db.Column(db.String(255))
 
     def entail_role(self):
@@ -292,16 +360,16 @@ class RoleRelationship(db.Model):
 
     def entail_relationships(self, sbjId, objId):
         if self.related_as.name == 'inverse':
-            return EntrantRelationship(
+            return ReferentRelationship(
                 subject_id=objId, role_id=self.role2, object_id=sbjId)
         elif self.related_as.name == 'is_a':
-            return EntrantRelationship(
+            return ReferentRelationship(
                 subject_id=sbjId, role_id=self.role2, object_id=objId)
         else:
             return
 
 class RoleRelationshipTypes(db.Model):
-    __tablename__ = 'role_relationship_types'
+    __tablename__ = '1_role_relationship_types'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
@@ -310,47 +378,52 @@ class RoleRelationshipTypes(db.Model):
 
 
 class Person(db.Model):
-    __tablename__ = 'people'
+    __tablename__ = '1_people'
 
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(255))
     last_name = db.Column(db.String(255))
     comments = db.Column(db.String(255))
-    references = db.relationship('Entrant', backref='person', lazy=True)
+    references = db.relationship('Referent', backref='person', lazy=True)
 
     @classmethod
     def filter_on_description(cls, desc):
         return cls.query.join(
-            cls.references).join(Entrant.roles).filter(Role.name==desc)
+            cls.references).join(Referent.roles).filter(Role.name==desc)
 
 class User(UserMixin, db.Model):
-    __tablename__ = 'users'
+    __tablename__ = '1_users'
 
     id = db.Column(db.Integer, primary_key=True)
     role = db.Column(db.String(64))
     name = db.Column(db.String(64))
     email = db.Column(db.String(120))
+    created = db.Column(db.DateTime())
+    last_login = db.Column(db.DateTime())
     password_hash = db.Column(db.String(128))
 
     def set_password(self, password):
         self.password_hash = security.generate_password_hash(password)
 
     def check_password(self, password):
-        return security.check_password_hash(self.password_hash, password)
+        try:
+            return security.check_password_hash(self.password_hash, password)
+        except:
+            return None
 
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))
 
-class RecordEdit(db.Model):
-    __tablename__ = 'record_edits'
+class ReferenceEdit(db.Model):
+    __tablename__ = '5_reference_edits'
 
     id = db.Column(db.Integer, primary_key=True)
-    record_id = db.Column(db.Integer, db.ForeignKey('records.id'))
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    datetime = db.Column(db.DateTime())
-    edited = db.relationship(Record,
-        primaryjoin=(record_id == Record.id),
+    reference_id = db.Column(db.Integer, db.ForeignKey('4_references.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('1_users.id'))
+    timestamp = db.Column(db.DateTime())
+    edited = db.relationship(Reference,
+        primaryjoin=(reference_id == Reference.id),
         backref='edits')
     edited_by = db.relationship(User,
         primaryjoin=(user_id == User.id),

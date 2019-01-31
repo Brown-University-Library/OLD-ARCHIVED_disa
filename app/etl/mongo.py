@@ -45,8 +45,8 @@ def load_data(datafile):
     with open(datafile, 'r') as f:
         data = json.load(f)
 
-    doc_types = models.DocumentType.query.all()
-    rec_types = models.RecordType.query.all()
+    doc_types = models.CitationType.query.all()
+    rec_types = models.ReferenceType.query.all()
     roles = models.Role.query.all()
     users = models.User.query.all()
     tribes = models.Tribe.query.all()
@@ -56,6 +56,7 @@ def load_data(datafile):
     titles = models.Title.query.all()
     locations = models.Location.query.all()
     name_types = models.NameType.query.all()
+    natl_ctx = models.NationalContext.query.all()
 
     parent_role = filter_collection('Parent', roles)
     child_role = filter_collection('Child', roles)
@@ -70,26 +71,29 @@ def load_data(datafile):
     for mongo_dict in data:
         print(counter)
         doc = process_document(mongo_dict['document'])
-        doc.document_type = process_document_type(
+        doc.citation_type = process_document_type(
             mongo_dict['document']['sourceType'],
-            mongo_dict['document']['recordType'], doc_types)[0]
+            mongo_dict['document']['recordType'], doc_types)
+        doc.comments = mongo_dict['researcherNotes']
         db.session.add(doc)
         db.session.commit()
 
-        rec = models.Record()
+        rec = models.Reference()
         rec.date = process_record_date(mongo_dict)
-        rec.comments = mongo_dict['additionalInformation']
-        rec.record_type = process_record_type(
-            mongo_dict['document']['recordType'],
-            mongo_dict['document']['sourceType'], rec_types)[0]
-        rec.document = doc
+        rec.transcription = mongo_dict['additionalInformation']
+        rec.national_context = process_national_context(
+            mongo_dict['document'], natl_ctx)
+        rec.reference_type = process_record_type(
+            mongo_dict['document']['sourceType'],
+            mongo_dict['document']['recordType'], rec_types)
+        rec.citation = doc
         db.session.add(rec)
         db.session.commit()
 
         admin = process_administrative_metadata(
             mongo_dict['meta'], users)
         for amn in admin:
-            edit = models.RecordEdit(datetime=amn[1])
+            edit = models.ReferenceEdit(timestamp=amn[1])
             edit.edited_by = amn[0]
             edit.edited = rec
             db.session.add(edit)
@@ -97,12 +101,13 @@ def load_data(datafile):
 
         locs = process_location(mongo_dict['document'])
         for loc in locs:
-            db.session.add(loc)
+            db.session.add(loc[0])
         db.session.commit()
         for loc in locs:
-            rec_loc = models.RecordLocation()
-            rec_loc.record = rec
-            rec_loc.location = loc
+            rec_loc = models.ReferenceLocation()
+            rec_loc.reference = rec
+            rec_loc.location = loc[0]
+            rec_loc.location_type = loc[1]
             rec_loc.location_rank = locs.index(loc)
             db.session.add(rec_loc)
         db.session.commit()
@@ -209,7 +214,7 @@ def load_data(datafile):
             relationships.extend(ers)
 
         for e in entrants:
-            e.record = rec
+            e.reference = rec
             e.primary_name = e.names[0]
             db.session.add(e)
         db.session.commit()
@@ -240,19 +245,23 @@ def extract_zotero_id(citation):
         print(citation)
         return ('', citation)
 
+def clean_citation(citation):
+    cit = citation.strip()
+    if "Tangier" in cit and ";" in cit:
+        cit  = cit[:cit.index(';')]
+    return cit
+
 def process_document(docData):
     citation = docData['citation']
     zotero = ''
     if 'DISA' in citation:
         zotero, citation = extract_zotero_id(citation)
-    date = process_date(docData['date'])
-    existing = models.Document.query.filter_by(citation=citation).first()
+    citation = clean_citation(citation)
+    existing = models.Citation.query.filter_by(display=citation).first()
     if existing:
         return existing
-    doc = models.Document()
-    doc.citation = citation
-    doc.national_context = process_national_context(docData)
-    doc.date = date
+    doc = models.Citation()
+    doc.display = citation
     doc.zotero_id = zotero
     return doc
 
@@ -272,16 +281,20 @@ def process_date(dateData):
 
 def process_record_date(entryData):
     doc_date = process_date(entryData['document']['date'])
+    bad_date = datetime.datetime(day=1, month=1, year=1)
     record_date_fields = [ 'dateOfEmancipation',
         'dateOfMarriage', 'dateOfRunaway', 'dateOfDeath' ]
     record_dates = [ process_date( entryData.get(df, {}) ) 
         for df in record_date_fields ]
     clean_dates = [ d for d in record_dates
-        if d != datetime.datetime(day=1, month=1, year=1) ]
+        if d != bad_date ]
     if len(clean_dates) > 1:
         raise
-    elif clean_dates == []:
-        return doc_date
+    if clean_dates == []:
+        if doc_date == bad_date:
+            return None
+        else:
+            return doc_date
     else:
         return clean_dates[0]
 
@@ -340,7 +353,7 @@ def check_person(personData, personType):
 
 def process_person(personData, nameTypes, tribes,
         races, origins, vocations, enslavements):
-    ent = models.Entrant()
+    ent = models.Referent()
     ent.names = process_names(personData['names'], nameTypes)
     ent.sex = personData['sex']
     ent.age = personData.get('age','')
@@ -354,7 +367,7 @@ def process_person(personData, nameTypes, tribes,
 
 def process_parent(parentData, nameTypes, races, origins,
         enslavements, gender, parentRole, genderRole):
-    ent = models.Entrant()
+    ent = models.Referent()
     ent.sex = gender
     ent.names = process_name(parentData['name'], nameTypes)
     ent.races = process_race(parentData['race'], races)
@@ -365,20 +378,20 @@ def process_parent(parentData, nameTypes, races, origins,
     return ent
 
 def process_child(childData, nameTypes, childRole):
-    ent = models.Entrant()
+    ent = models.Referent()
     ent.names = process_name(childData['name'], nameTypes)
     ent.roles.append(childRole)
     return ent
 
 def process_owner(ownerData, nameTypes, titles, ownerRole):
-    ent = models.Entrant()
+    ent = models.Referent()
     ent.names = process_name(ownerData['name'], nameTypes)
     ent.titles = process_title(ownerData['name']['title'], titles)
     ent.roles.append(ownerRole)
     return ent
 
 def process_other(otherData, nameTypes, otherRole):
-    ent = models.Entrant()
+    ent = models.Referent()
     ent.names = process_name(otherData, nameTypes)
     ent.roles.append(otherRole)
     return ent
@@ -398,7 +411,7 @@ def process_name(nameData, nameTypes, typeStr='Given'):
     if nameData == { 'firstName': '', 'lastName': '' }:
         typeStr = 'Unknown'
     type_obj = filter_collection(typeStr, nameTypes)
-    name = models.EntrantName()
+    name = models.ReferentName()
     name.first = nameData['firstName'].strip()
     name.last = nameData['lastName'].strip()
     name.name_type = type_obj
@@ -470,91 +483,137 @@ def process_enslavement(enslvStr, objs):
 
 def process_document_type(docTypeStr, recTypeStr, objs):
     pairs = {
-        ('', 'Archival'): 'Town Record',
-        ('', 'Inventory'): 'Probate Record',
+        ('', ''): 'Document',
+        ('', 'Archival'): 'Book',
+        ('', 'Inventory'): 'Book',
         ('Archie', 'Manumission'): 'Letter',
         ('Archival', 'List'): 'List',
         ('Archival', 'Listing'): 'List',
         ('Archival', 'Registry'): 'Registry',
         ('Archival ', 'Listing'): 'List',
-        ('Archive', ''): 'Record',
+        ('Archive', ''): 'Book',
         ('Archive', 'LIst'): 'List',
         ('Archive', 'List'): 'List',
-        ('Archive', 'Manumission'): 'Letter',
-        ('Archive', 'Manumission '): 'Letter',
+        ('Archive', 'Manumission'): 'Book',
+        ('Archive', 'Manumission '): 'Book',
         ('Archive', 'Registry'): 'Registry',
         ('Archive', 'Registry '): 'Registry',
-        ('Archive ', 'Registry'): 'Registry'
+        ('Archive ', 'Registry'): 'Registry',
+        ('Book', ''): 'Book',
+        ('Book', 'Court Document'): 'Book',
+        ('Census', ''): 'Census',
+        ('Court Documents', 'Archival'): 'Document',
+        ('Indenture', ''): 'Book',
+        ('Indenture', 'Book'): 'Book',
+        ('Inventory', ''): 'Book',
+        ('Inventory', 'Archival'): 'Book',
+        ('Inventory', 'Probate'): 'Book',
+        ('Letter', 'Archival'): 'Letter',
+        ('Mosquito Coast ', 'British Honduras'): 'Registry',
+        ('Newsletter', 'Advertisement of sale'): 'Advertisement of Sale',
+        ('Newsletter', 'Runaway Advertisement'): 'Runaway Advertisement',
+        ('Newspaper', 'Advertisement of Sale'): 'Advertisement of Sale',
+        ('Newspaper', 'Advertisement of sale'): 'Advertisement of Sale',
+        ('Newspaper', 'Execution notice'): 'Execution Notice',
+        ('Newspaper', 'News story'): 'Newspaper Article',
+        ('Newspaper', 'Runaway Advertisement'): 'Runaway Advertisement',
+        ('Newspaper', 'Runaway Advertisement '): 'Runaway Advertisement',
+        ('Newspaper', 'Runaway Advertisements'): 'Runaway Advertisement',
+        ('Newspaper', 'Runaway advertisement'): 'Runaway Advertisement',
+        ('Newspaper', 'Runaway capture advertisement'): 'Runaway Capture Advertisement',
+        ('Newspaper', 'Slave Advertisment'): 'Advertisement of Sale',
+        ('Newspaper', 'Smallpox inoculation notice'): 'Smallpox Inoculation Notice',
+        ('Newspaper ', 'Runaway Advertisement'): 'Runaway Advertisement',
+        ('Newspaper; DISA00081', 'Runaway Advertisement '): 'Runaway Advertisement',
+        ('Printed primary source', 'Letter'): 'Letter',
+        ('Probate Account', 'Probate'): 'Book',
+        ('Probate note', ''): 'Book',
+        ('Registry', 'Archive'): 'Registry',
+        ('Runaway Advertisement', 'Newspaper'): 'Runaway Advertisement',
+        ('Runaway advertisement', 'Newspaper'): 'Runaway Advertisement',
+        ('Will', 'Probate'): 'Book',
+        ('Will Written', 'Probate'): 'Book',
     }
     if ( docTypeStr, recTypeStr ) in pairs:
         docTypeStr = pairs[( docTypeStr, recTypeStr )]
-    mapped = {
-        '': 'Document',
-        'Court Documents': 'Court Document',
-        'Indenture': 'Book',
-        'Mosquito Coast': 'Registry',
-        'Newspaper; DISA00081' : 'Newspaper',
-        'Printed primary source': 'Letter',
-        'Probate Account': 'Probate Record',
-        'Probate note': 'Probate Record',
-        'Runaway Advertisement': 'Newspaper',
-        'Runaway advertisement': 'Newspaper',
-        'Will Written': 'Will',
-    }
-    return process_multivalued_attr(docTypeStr, objs, mapped)
+    else:
+        raise
+    return filter_collection(docTypeStr, objs) 
 
 def process_record_type(recTypeStr, docTypeStr, objs):
     pairs = {
-        ('', ''): 'Section',
-        ('', 'Archive'): 'Section',
-        ('', 'Book'): 'Section',
-        ('', 'Census') : 'Listing',
-        ('', 'Indenture'): 'Indenture',
-        ('', 'Inventory'): 'Listing',
-        ('', 'Probate note'): 'Note',
-        ('Archival', ''): 'Section',
-        ('Archival', 'Court Documents'): 'Section',
-        ('Archival', 'Inventory') : 'Listing',
-        ('Archival', 'Letter'): 'Section',
-        ('Probate', 'Inventory'): 'Listing',
-        ('Probate', 'Probate Account'): 'Listing',
-        ('Probate', 'Will'): 'Listing',
-        ('Probate', 'Will Written'): 'Listing',
+        ('', ''): 'Inventory',
+        ('', 'Archival'): 'Inventory',
+        ('', 'Inventory'): 'Inventory',
+        ('Archie', 'Manumission'): 'Manumission',
+        ('Archival', 'List'): 'Inventory',
+        ('Archival', 'Listing'): 'Inventory',
+        ('Archival', 'Registry'): 'Inventory',
+        ('Archival ', 'Listing'): 'Inventory',
+        ('Archive', ''): 'Reference',
+        ('Archive', 'LIst'): 'Inventory',
+        ('Archive', 'List'): 'Inventory',
+        ('Archive', 'Manumission'): 'Manumission',
+        ('Archive', 'Manumission '): 'Manumission',
+        ('Archive', 'Registry'): 'Inventory',
+        ('Archive', 'Registry '): 'Inventory',
+        ('Archive ', 'Registry'): 'Inventory',
+        ('Book', ''): 'Reference',
+        ('Book', 'Court Document'): 'Reference',
+        ('Census', ''): 'Reference',
+        ('Court Documents', 'Archival'): 'Reference',
+        ('Indenture', ''): 'Indenture',
+        ('Indenture', 'Book'): 'Indenture',
+        ('Inventory', ''): 'Inventory',
+        ('Inventory', 'Archival'): 'Inventory',
+        ('Inventory', 'Probate'): 'Inventory',
+        ('Letter', 'Archival'): 'Reference',
+        ('Mosquito Coast ', 'British Honduras'): 'Inventory',
+        ('Newsletter', 'Advertisement of sale'): 'Sale',
+        ('Newsletter', 'Runaway Advertisement'): 'Runaway',
+        ('Newspaper', 'Advertisement of Sale'): 'Sale',
+        ('Newspaper', 'Advertisement of sale'): 'Sale',
+        ('Newspaper', 'Execution notice'): 'Execution',
+        ('Newspaper', 'News story'): 'Reference',
+        ('Newspaper', 'Runaway Advertisement'): 'Runaway',
+        ('Newspaper', 'Runaway Advertisement '): 'Runaway',
+        ('Newspaper', 'Runaway Advertisements'): 'Runaway',
+        ('Newspaper', 'Runaway advertisement'): 'Runaway',
+        ('Newspaper', 'Runaway capture advertisement'): 'Capture',
+        ('Newspaper', 'Slave Advertisment'): 'Sale',
+        ('Newspaper', 'Smallpox inoculation notice'): 'Inoculation',
+        ('Newspaper ', 'Runaway Advertisement'): 'Runaway',
+        ('Newspaper; DISA00081', 'Runaway Advertisement '): 'Runaway',
+        ('Printed primary source', 'Letter'): 'Reference',
+        ('Probate Account', 'Probate'): 'Inventory',
+        ('Probate note', ''): 'Inventory',
+        ('Registry', 'Archive'): 'Inventory',
+        ('Runaway Advertisement', 'Newspaper'): 'Runaway',
+        ('Runaway advertisement', 'Newspaper'): 'Runaway',
+        ('Will', 'Probate'): 'Inventory',
+        ('Will Written', 'Probate'): 'Inventory',
     }
     if ( recTypeStr, docTypeStr ) in pairs:
         recTypeStr = pairs[( recTypeStr, docTypeStr )]
-    mapped = {
-        '': 'Section',
-        'Archive': 'Section',
-        'Book': 'Indenture',
-        'British Honduras': 'Listing',
-        'Court Document': 'Section',
-        'Execution notice': 'Execution Notice',
-        'Inventory': 'Listing',
-        'Letter': 'Section',
-        'List': 'Listing',
-        'LIst': 'Listing',
-        'Newspaper': 'Runaway Advertisement',
-        'Registry': 'Listing',
-        'Runaway Advertisements': 'Runaway Advertisement',
-        'Slave Advertisment' : 'Advertisement of Sale',
-    }
-    return process_multivalued_attr(recTypeStr, objs, mapped)
+    else:
+        print(recTypeStr, docTypeStr)
+        raise
+    return filter_collection(recTypeStr, objs)
 
 def process_entrant_relationship(e1, e2, e1Role, e2Role):
-    er1 = models.EntrantRelationship()
+    er1 = models.ReferentRelationship()
     er1.sbj = e1
     er1.obj = e2
     er1.related_as = e1Role
-    er2 = models.EntrantRelationship()
+    er2 = models.ReferentRelationship()
     er2.sbj = e2
     er2.obj = e1
     er2.related_as = e2Role
     return [ er1, er2 ]
 
-def process_national_context(docData):
+def process_national_context(docData, national_contexts):
     ctx_map = {
-        '': 'unspecified',
+        '': 'Other',
         'American': 'American',
         'British': 'British',
         'British ': 'British',
@@ -565,7 +624,8 @@ def process_national_context(docData):
         'USA': 'American',
         'United States': 'American'
     }
-    return ctx_map[docData['nationalContext']]
+    mapped = ctx_map[docData['nationalContext']]
+    return filter_collection(mapped, national_contexts)
 
 def prep_location_text(loc):
     loc_map  = {
@@ -594,20 +654,27 @@ def prep_location_text(loc):
 
 def process_location(docData):
     location_names = []
-    location_keys = [ 'nationalContext', 'colonyState', 'stringLocation', 'locale']
+    location_keys = [ 'colonyState', 'stringLocation', 'locale']
+    loc_key_map = {
+        'colonyState' : 'Colony/State',
+        'stringLocation' : 'String Location',
+        'locale' : 'Locale'
+    }
     for loc_key in location_keys:
         loc_text = docData.get(loc_key, None)
         if loc_text:
+            loc_type_text = loc_key_map[loc_key]
+            loc_type = models.LocationType.query.filter_by(name=loc_type_text).first()
             prepped = prep_location_text(loc_text)
             for p in prepped:
                 if p not in location_names:
-                    location_names.append(p)
+                    location_names.append((p, loc_type))
     locations = []
     for loc in location_names:
-        location = models.Location.query.filter_by(name=loc).first()
+        location = models.Location.query.filter_by(name=loc[0]).first()
         if not location:
-            location = models.Location(name=loc)
-        locations.append(location)
+            location = models.Location(name=loc[0])
+        locations.append( (location, loc[1]) )
     return locations
 
 def process_administrative_metadata(metaData, users):

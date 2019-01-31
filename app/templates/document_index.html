@@ -12,7 +12,7 @@
 {% block content %}
 	<div class="container">
         <div id="new_document_button" class="d-flex flex-row-reverse">
-            <a class="btn btn-primary" href="{{ url_for('edit_document') }}">New document</a>
+            <a class="btn btn-primary" href="{{ url_for('edit_citation') }}">New document</a>
         </div>
 		<h2>Your recent documents</h2>
         {% if user_documents %}
@@ -30,9 +30,9 @@
                 <tr>
                     <th scope="row">{{ doc.id }}</th>
                     <td>
-                        <a href="{{ url_for('edit_document', docId=doc.id) }}">{{ doc.citation }}</a>
+                        <a href="{{ url_for('edit_citation', citeId=doc.id) }}">{{ doc.display }}</a>
                     </td>
-                    <td>{{ doc.records|length }}</td>
+                    <td>{{ doc.references|length }}</td>
                     <td>{{ date.strftime('%Y-%m-%d') }}</td>
                 </tr>
             {% endfor %}
@@ -56,9 +56,9 @@
                 <tr>
                     <th scope="row">{{ doc.id }}</th>
                     <td>
-                        <a href="{{ url_for('edit_document', docId=doc.id) }}">{{ doc.citation }}</a>
+                        <a href="{{ url_for('edit_citation', citeId=doc.id) }}">{{ doc.display }}</a>
                     </td>
-                    <td>{{ doc.records|length }}</td>
+                    <td>{{ doc.references|length }}</td>
                     <td>{{ date.strftime('%Y-%m-%d') }}</td>
                 </tr>
             {% endfor %}

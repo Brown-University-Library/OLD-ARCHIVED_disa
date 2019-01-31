@@ -43,7 +43,9 @@ def rebuild():
     teardown.clear_data()
     users.load_existing_users()
     setup.load_multivalued_attributes()
+    setup.load_many_to_one()
     setup.load_many_to_many()
+    setup.load_many_to_many_with_attr()
     mongo.load_data(os.path.join(
         app.config['APP_DIR'], 'data/latest-entries.json') )
     inferencing.extract_information()
