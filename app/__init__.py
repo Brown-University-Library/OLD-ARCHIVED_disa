@@ -47,7 +47,7 @@ def rebuild():
     setup.load_many_to_many()
     setup.load_many_to_many_with_attr()
     mongo.load_data(os.path.join(
-        app.config['APP_DIR'], 'data/latest-entries.json') )
+        app.config['APP_DIR'], 'data/entries_01_31.json') )
     inferencing.extract_information()
 
 @app.cli.command()

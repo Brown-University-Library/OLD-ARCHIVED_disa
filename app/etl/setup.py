@@ -76,6 +76,7 @@ def load_multivalued_attributes():
         {'name': 'Mestiza'},
         {'name': 'Mestizo'},
         {'name': 'Mulatto'},
+        {'name': 'Mustee'},
         {'name': 'Sambo'},
         {'name': 'Spanish Indian'},
         {'name': 'Surinam Indian'},
@@ -135,7 +136,9 @@ def load_multivalued_attributes():
         {'name': 'of Bragmans'},
         {'name': 'Presbitero'},
         {'name': 'Sacristán Mayor'},
-        {'name': 'Sargento Mayor Actual de Esta Ciudad'}
+        {'name': 'Sargento Mayor Actual de Esta Ciudad'},
+        {'name': 'Spinner'},
+        {'name': 'Tanner'}
     ]
     origins = [
         { 'name': 'Allentown' },
@@ -605,10 +608,33 @@ def load_many_to_many_with_attr():
                 assc2.__tablename__, mapping[1]) )
             db.session.commit()
 
-def load_self_references():
-    tables = [ (models.Role, 'roles') ]
+def load_role_relationships():
+    role_table = models.Role
 
-    role_references = [
-        ('captor', 'captured')
+    inverse_relationships = [
+        ('Enslaved', 'Owner'),
+        ('Bought', 'Buyer'),
+        ('Sold', 'Seller'),
+        ('Captured', 'Captor'),
+        ('Emancipated', 'Owner'),
+        ('Escaped', 'Owner'),
+        ('Child', 'Mother'),
+        ('Child', 'Father'),
+        ('Spouse', 'Spouse')
     ]
-    references = {}
+    
+    is_a_relationships = [
+        ('Emancipated', 'Enslaved'),
+        ('Inoculated', 'Enslaved'),
+        ('Bought', 'Enslaved'),
+        ('Sold', 'Enslaved'),
+        ('Escaped', 'Enslaved'),
+        ('Shipped', 'Enslaved'),
+        ('Arrived', 'Enslaved'),
+        ('Baptised', 'Enslaved'),
+        ('Executed', 'Enslaved'),
+        ('Mother', 'Parent'),
+        ('Father', 'Parent'),
+        ('Buyer', 'Owner'),
+        ('Seller', 'Owner')
+    ]
