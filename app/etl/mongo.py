@@ -66,6 +66,8 @@ def load_data(datafile):
     enslaved_role = filter_collection('Enslaved', roles)
     buyer_role = filter_collection('Buyer', roles)
     seller_role = filter_collection('Seller', roles)
+
+    title_field = models.ZoteroField.query.filter_by(name='title').first()
     
     counter = 0
     for mongo_dict in data:
@@ -76,6 +78,11 @@ def load_data(datafile):
             mongo_dict['document']['recordType'], doc_types)
         doc.comments = mongo_dict['researcherNotes']
         db.session.add(doc)
+        db.session.commit()
+
+        cite_field = models.CitationField(citation_id=doc.id,
+            field_id=title_field.id, field_data=doc.display)
+        db.session.add(cite_field)
         db.session.commit()
 
         rec = models.Reference()
@@ -477,7 +484,8 @@ def process_enslavement(enslvStr, objs):
         'Man slave': 'Manslave',
         'Maid servant': 'Maidservant',
         'Maid Servant': 'Maidservant',
-        'Indenture': 'Indentured Servant'
+        'Indenture': 'Indentured Servant',
+        'Unclear': 'Enslaved'
     }
     return process_multivalued_attr(enslvStr, objs, mapped, nulls)
 
@@ -518,6 +526,9 @@ def process_document_type(docTypeStr, recTypeStr, objs):
         ('Newspaper', 'News story'): 'Newspaper Article',
         ('Newspaper', 'Runaway Advertisement'): 'Runaway Advertisement',
         ('Newspaper', 'Runaway Advertisement '): 'Runaway Advertisement',
+        ('Newspaper', 'Runaway Ad'): 'Runaway Advertisement',
+        ('Newspaper', ''): 'Runaway Advertisement',
+        ('Newspaper', 'Runaway Slave Ad'): 'Runaway Advertisement',
         ('Newspaper', 'Runaway Advertisements'): 'Runaway Advertisement',
         ('Newspaper', 'Runaway advertisement'): 'Runaway Advertisement',
         ('Newspaper', 'Runaway capture advertisement'): 'Runaway Capture Advertisement',
@@ -579,6 +590,9 @@ def process_record_type(recTypeStr, docTypeStr, objs):
         ('Newspaper', 'Runaway Advertisement '): 'Runaway',
         ('Newspaper', 'Runaway Advertisements'): 'Runaway',
         ('Newspaper', 'Runaway advertisement'): 'Runaway',
+        ('Newspaper', 'Runaway Slave Ad'): 'Runaway',
+        ('Newspaper', 'Runaway Ad'): 'Runaway',
+        ('Newspaper', ''): 'Runaway',
         ('Newspaper', 'Runaway capture advertisement'): 'Capture',
         ('Newspaper', 'Slave Advertisment'): 'Sale',
         ('Newspaper', 'Smallpox inoculation notice'): 'Inoculation',
@@ -686,7 +700,9 @@ def process_administrative_metadata(metaData, users):
         '112148132795694739523': 'marley-vincent_lindsey@brown.edu',
         '112487255676465508755': 'rose_lang-maso@brown.edu',
         '113112063790792171857': 'samuel_skinner@brown.edu',
-        '117289295548725522159': 'gwenyth_winship@brown.edu'
+        '117289295548725522159': 'gwenyth_winship@brown.edu',
+        '103765728548502769566': 'ashley_champagne@brown.edu',
+        '114667147260750536832': 'cole_hansen@brown.edu'
     }
 
     created_id = metaData['creator']

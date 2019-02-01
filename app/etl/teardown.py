@@ -13,28 +13,34 @@ def clear_data(tables=[]):
         models.citationtype_referencetypes
     ]
     disa_models = [
-        models.ZoteroTypeField,
         models.ReferentRelationship,
-        models.ReferenceLocation,
-        models.ReferenceEdit,
-        models.NationalContext,
+        models.ReferentName,
+        models.Referent,
         models.Tribe,
         models.Race,
         models.Title,
         models.Vocation,
         models.EnslavementType,
-        models.ReferentName,
-        models.NameType,
-        models.Referent,
+        models.NameType,        
         models.Person,
+
+        models.RoleRelationship,
+        models.RoleRelationshipType,
         models.Role,
+
+        models.ReferenceEdit,
+        models.User,
+        models.ReferenceLocation,
+        models.LocationType,
         models.Location,
+        models.NationalContext,
         models.Reference,
         models.ReferenceType,
+
         models.CitationField,
         models.Citation,
         models.CitationType,
-        models.User,
+        models.ZoteroTypeField,
         models.ZoteroType,
         models.ZoteroField
     ]
