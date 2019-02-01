@@ -217,7 +217,7 @@ class ReferentName(db.Model):
     __tablename__ = '6_referent_names'
 
     id = db.Column(db.Integer, primary_key=True)
-    referent_id = db.Column(db.Integer, db.ForeignKey('5_referents.id'))
+    referent_id = db.Column(db.Integer, db.ForeignKey('5_referents.id', ondelete='CASCADE'))
     name_type_id = db.Column(db.Integer, db.ForeignKey('1_name_types.id'))
     first = db.Column(db.String(255))
     last = db.Column(db.String(255))
@@ -231,7 +231,8 @@ class Referent(db.Model):
     age = db.Column(db.String(255))
     sex = db.Column(db.String(255))
     primary_name_id = db.Column(db.Integer, 
-        db.ForeignKey('6_referent_names.id'))
+        db.ForeignKey('6_referent_names.id', ondelete='CASCADE'),
+        nullable=True)
     reference_id = db.Column(db.Integer, db.ForeignKey('4_references.id'),
         nullable=False)
     person_id = db.Column(db.Integer, db.ForeignKey('1_people.id'),
