@@ -472,10 +472,13 @@ $( document ).ready(function() {
     });
     $('#names').on('click', '.del-name', function(e) {
         e.preventDefault();
-        var $name_row = $( this ).closest('.name-row');
-        
-        $name_row.remove();
-        disableNameDeletion($('#names'));
+
+        if (window.confirm('This will delete the entry! Are you sure?')) {
+            var $name_row = $( this ).closest('.name-row');
+            
+            $name_row.remove();
+            disableNameDeletion($('#names'));
+        }
     });
     $('#entrant_form').on('click', '#details_update', function(e) {
         e.preventDefault();

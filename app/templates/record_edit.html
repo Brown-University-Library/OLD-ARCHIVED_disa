@@ -597,14 +597,20 @@ $( document ).ready(function() {
         initiateEntrantWorkflow( $('#entrant_component'), details_url );
     });
     $('#entrant_component').on('click', '.del-entrant', function(e) {
-        e.preventDefault();
-        var ent_id = $( this ).attr('del-entrant-id');
 
-        if (ent_id === 'new') {
-            deleteEntrantRow( $('#entrant_component'), ent_id, details_url );
-            return;
+        e.preventDefault();
+
+        if (window.confirm('You are about to delete an entry! Are you sure?')) {
+
+            var ent_id = $( this ).attr('del-entrant-id');
+
+            if (ent_id === 'new') {
+                deleteEntrantRow( $('#entrant_component'), ent_id, details_url );
+            } else {
+                deleteEntrant( $('#entrant_component'), ent_id, details_url );
+            }
         }
-        deleteEntrant( $('#entrant_component'), ent_id, details_url );
+
         return;
     });
     $('#entrant_component').on('click', '.save-entrant', function(e) {
