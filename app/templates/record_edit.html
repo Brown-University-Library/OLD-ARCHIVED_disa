@@ -37,32 +37,39 @@
         <h2 id="record_header"></h2>
         <form action="" method="">
             <div class="form-group row">
-                <label for="recordtype_autocomplete">Type</label> 
+                <label for="recordtype_autocomplete">Type<br />
+                    <em class="small">Enter the type of item within the document that you’re adding. Use the drop down menu to see a list of options.</em></label> 
                 <input class="form-control" data-rectype-id="" type="text" id="recordtype_autocomplete"/>
             </div>
             <div class="form-group row">
-                <label for="national_context">National Context</label> 
+                <label for="national_context">National Context<br />
+                    <em class="small">Can be either a European nation or empire (e.g. Spanish, English, Dutch)</em></label>
                 <select class="form-control" id="national_context">
                 </select>
             </div>
             <div class="form-group row">
-                <label for="col_state_autocomplete">Colony/State</label>
+                <label for="col_state_autocomplete">Colony/State<br />
+                    <em class="small">If the item lists a state or colony, write it here. Use the drop down menu to see a list of options. </em></label>
                 <input class="form-control location-input" type="text" id="col_state_autocomplete" data-loc-id=""/>
             </div>
             <div class="form-group row">
-                <label for="town_autocomplete">Town</label>
+                <label for="town_autocomplete">Town<br />
+                    <em class="small">If there is a town listed in the item, write the name of the town here. </em></label>
                 <input class="form-control location-input" type="text" id="town_autocomplete" data-loc-id=""/>
             </div>
             <div class="form-group row">
-                <label for="addl_loc_autocomplete">Additional location</label>
+                <label for="addl_loc_autocomplete">Additional location<br />
+                    <em class="small">If there are additional locations listed in the item, enter them here (e.g. “the dock”)</em></label>
                 <input class="form-control location-input" type="text" id="addl_loc_autocomplete" data-loc-id=""/>
             </div>
             <div class="form-group row">
-                <label for="record_date">Event date</label>
+                <label for="record_date">Event date<br />
+                    <em class="small">Enter the date of the events described in the item, <strong>not</strong> the date of the containing document</em></label>
                 <input class="form-control" type="text" id="record_date" />
             </div>
             <div class="form-group row">
-                <label for="transcription">Transcription</label>
+                <label for="transcription">Transcription<br />
+                    <em class="small">Write the full text of the item in this field, as close as possible to the original (e.g. using original spelling, etc.)</em></label>
                 <textarea class="form-control" id="transcription"></textarea>
             </div>
             <button type="submit" class="btn btn-primary" id="rec_update">Update</button>
@@ -224,7 +231,7 @@ var setFormHeader = function (recData) {
 
     header = $('#record_header');
     if ( $.isEmptyObject(recData) ) {
-        header.text('Add new item');
+        header.text('Add new item (An “item” is a section of text within the larger document — for example, an advertisement within a newspaper)');
         $('#rec_update').text('Create');
     } else {
         header.text(recData['header']);
