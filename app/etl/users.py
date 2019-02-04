@@ -33,3 +33,35 @@ def load_existing_users():
             created=datetime.datetime.utcnow())
         db.session.add(row)
     db.session.commit()
+
+def make_current_users(passw):
+    to_be_created = [
+        ('Antonio Taylor', 'antonio_taylor@brown.edu'),
+        ('Anchita Dasgupta','anchita_dasgupta@brown.edu'),
+        ('Juan Colin','juan_colin@brown.edu'),
+        ('Jeanne Ernest','jeanne_ernest@brown.edu'),
+        ('Alexander Samaha','alexander_samaha@brown.edu'),
+        ('Frishta Qaderi','frishta_qaderi@brown.edu'),
+        ('Ben Bienstock','benjamin_bienstock@brown.edu'),
+        ('Justin Han','justin_han@brown.edu'),
+        ('Kanha Prasad','kanha_prasad@brown.edu')
+    ]
+    new_users = []
+    for user in to_be_created:
+        existing = models.User.query.filter_by(email=user[1]).first()
+        if existing:
+            raise
+        new_users.append(
+            models.User(name=user[0],email=user[1],role='User',
+            created=datetime.datetime.utcnow())
+        )
+    for user in new_users:
+        db.session.add(user)
+    db.session.commit()
+
+    for user in new_users:
+        print("Created user {} | email {}".format(user.name, user.email))
+        user.set_password(passw)
+        print("Password set for user {}".format(user.name))
+        db.session.add(user)
+    db.session.commit()
