@@ -14,8 +14,8 @@ def clear_data(tables=[]):
     ]
     disa_models = [
         models.ReferentRelationship,
-        models.ReferentName,
         models.Referent,
+        models.ReferentName,
         models.Tribe,
         models.Race,
         models.Title,
@@ -33,8 +33,8 @@ def clear_data(tables=[]):
         models.ReferenceLocation,
         models.LocationType,
         models.Location,
-        models.NationalContext,
         models.Reference,
+        models.NationalContext,
         models.ReferenceType,
 
         models.CitationField,
