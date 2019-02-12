@@ -44,13 +44,14 @@ def make_current_users(passw):
         ('Frishta Qaderi','frishta_qaderi@brown.edu'),
         ('Ben Bienstock','benjamin_bienstock@brown.edu'),
         ('Justin Han','justin_han@brown.edu'),
-        ('Kanha Prasad','kanha_prasad@brown.edu')
+        ('Kanha Prasad','kanha_prasad@brown.edu'),
+        ('Ingrid Mader', 'ingrid_mader@brown.edu')
     ]
     new_users = []
     for user in to_be_created:
         existing = models.User.query.filter_by(email=user[1]).first()
         if existing:
-            raise
+            continue
         new_users.append(
             models.User(name=user[0],email=user[1],role='User',
             created=datetime.datetime.utcnow())
