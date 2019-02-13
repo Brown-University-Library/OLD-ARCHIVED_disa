@@ -388,6 +388,7 @@ def update_reference_data(refId=None):
         ref.date = None
     ref.reference_type_id = reference_type.id
     ref.national_context_id = data['national_context']
+    ref.transcription = data['transcription']
     db.session.add(ref)
     db.session.commit()
 
@@ -406,6 +407,7 @@ def update_reference_data(refId=None):
         data['rec']['header'] = '{}'.format(
             ref.reference_type.name or '').strip()
     data['rec']['citation'] = ref.citation.id
+    data['rec']['transcription'] = ref.transcription
     data['rec']['national_context'] = ref.national_context_id
     data['rec']['locations'] = [ 
         { 'label':l.location.name, 'value':l.location.name,
