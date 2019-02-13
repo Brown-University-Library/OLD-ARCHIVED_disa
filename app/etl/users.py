@@ -44,13 +44,15 @@ def make_current_users(passw):
         ('Frishta Qaderi','frishta_qaderi@brown.edu'),
         ('Ben Bienstock','benjamin_bienstock@brown.edu'),
         ('Justin Han','justin_han@brown.edu'),
-        ('Kanha Prasad','kanha_prasad@brown.edu')
+        ('Kanha Prasad','kanha_prasad@brown.edu'),
+        ('Ingrid Mader', 'ingrid_mader@brown.edu'),
+        ('Alyxandra Todichiini Lawson', 'alyxandra_todichiini_lawson@brown.edu')
     ]
     new_users = []
     for user in to_be_created:
         existing = models.User.query.filter_by(email=user[1]).first()
         if existing:
-            raise
+            continue
         new_users.append(
             models.User(name=user[0],email=user[1],role='User',
             created=datetime.datetime.utcnow())
@@ -64,4 +66,15 @@ def make_current_users(passw):
         user.set_password(passw)
         print("Password set for user {}".format(user.name))
         db.session.add(user)
+    db.session.commit()
+
+def remove_users():
+    del_users = [
+        ('Frishta Qaderi','frishta_qaderi@brown.edu')
+    ]
+    for user in del_users:
+        existing = models.User.query.filter_by(email=user[1]).first()
+        if existing:
+            print("Removing user {} | email {}".format(existing.name, existing.email))
+            db.session.delete(existing)
     db.session.commit()
