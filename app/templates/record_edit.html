@@ -231,7 +231,7 @@ var setFormHeader = function (recData) {
 
     header = $('#record_header');
     if ( $.isEmptyObject(recData) ) {
-        header.html('Add new item<br /><em>A "item" is a description of one or more people (with their relationship) that appears in a place (such as an ad or article) within a document. An item may include time and place information.</em>');
+        header.html('Add new item<br /><em>A "item" is a description of one or more people (with their relationship) that appears in the document.<br />There may be associated time and place information&mdash;for example, if the item describes an event.</em>');
         $('#rec_update').text('Create');
     } else {
         header.text(recData['header']);
