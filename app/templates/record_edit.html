@@ -37,32 +37,39 @@
         <h2 id="record_header"></h2>
         <form action="" method="">
             <div class="form-group row">
-                <label for="recordtype_autocomplete">Type</label> 
+                <label for="recordtype_autocomplete">Type<br />
+                    <em class="small">Enter the type of item within the document that you’re adding. Use the drop down menu to see a list of options.</em></label> 
                 <input class="form-control" data-rectype-id="" type="text" id="recordtype_autocomplete"/>
             </div>
             <div class="form-group row">
-                <label for="national_context">National Context</label> 
+                <label for="national_context">National Context<br />
+                    <em class="small">Can be either a European nation or empire (e.g. Spanish, English, Dutch)</em></label>
                 <select class="form-control" id="national_context">
                 </select>
             </div>
             <div class="form-group row">
-                <label for="col_state_autocomplete">Colony/State</label>
+                <label for="col_state_autocomplete">Colony/State<br />
+                    <em class="small">If the item lists a state or colony, write it here. Use the drop down menu to see a list of options. </em></label>
                 <input class="form-control location-input" type="text" id="col_state_autocomplete" data-loc-id=""/>
             </div>
             <div class="form-group row">
-                <label for="town_autocomplete">Town</label>
+                <label for="town_autocomplete">Town<br />
+                    <em class="small">If there is a town listed in the item, write the name of the town here. </em></label>
                 <input class="form-control location-input" type="text" id="town_autocomplete" data-loc-id=""/>
             </div>
             <div class="form-group row">
-                <label for="addl_loc_autocomplete">Additional location</label>
+                <label for="addl_loc_autocomplete">Additional location<br />
+                    <em class="small">If there are additional locations listed in the item, enter them here (e.g. “the dock”)</em></label>
                 <input class="form-control location-input" type="text" id="addl_loc_autocomplete" data-loc-id=""/>
             </div>
             <div class="form-group row">
-                <label for="record_date">Event date</label>
+                <label for="record_date">Event date<br />
+                    <em class="small">Enter the date of the events described in the item, <strong>not</strong> the date of the containing document</em></label>
                 <input class="form-control" type="text" id="record_date" />
             </div>
             <div class="form-group row">
-                <label for="transcription">Transcription</label>
+                <label for="transcription">Transcription<br />
+                    <em class="small">Write the full text of the item in this field, as close as possible to the original (e.g. using original spelling, etc.)</em></label>
                 <textarea class="form-control" id="transcription"></textarea>
             </div>
             <button type="submit" class="btn btn-primary" id="rec_update">Update</button>
@@ -70,10 +77,10 @@
     </div>
     {% if rec %}
     <h2>People</h2>
-    <div id="entrant_component">
+    <div id="entrant_component"><!--
             <div class="d-flex flex-row-reverse">
               <p><a href="{{ url_for('edit_relationships', recId=rec.id)}}">Manage relationships</a></p>
-            </div>
+            </div>-->
         <table class="table">
             <thead>
                 <tr>
@@ -87,7 +94,8 @@
             </tbody>
         </table>
         <div id="new_person_button" class="d-flex flex-row-reverse">
-            <button class="btn btn-primary" id="add-person">Add Person</button>
+            <button class="btn btn-primary" id="add-person">Add a person</button>&nbsp;&nbsp;
+            <a class="btn btn-primary" href="{{ url_for('edit_relationships', recId=rec.id)}}">Identify connections between people</a>
         </div>
     </div>
     {% endif %}
@@ -223,7 +231,7 @@ var setFormHeader = function (recData) {
 
     header = $('#record_header');
     if ( $.isEmptyObject(recData) ) {
-        header.text('Add new item');
+        header.html('Add new item<br /><em>A "item" is a description of one or more people (with their relationship) that appears in the document.<br />There may be associated time and place information&mdash;for example, if the item describes an event.</em>');
         $('#rec_update').text('Create');
     } else {
         header.text(recData['header']);
@@ -354,6 +362,7 @@ var initiateEntrantWorkflow = function ($container, editUrl) {
             'text': 'Details',
             'href': `${editUrl}/${ent_id}` });
         var $merge_btn = $('<button/>', { 'class': 'btn btn-warning merge-entrant entrant-ctl',
+            'hidden': 'hidden',
             'text': 'Merge'});
         var $edit_btn = $('<button/>', { 'class': 'btn btn-primary edit-entrant entrant-ctl',
             'text': 'Edit'});
@@ -551,7 +560,8 @@ $( document ).ready(function() {
         }
     });
     $( "#record_form" ).accordion({
-        collapsible: true,
+        collapsible: false,
+        // collapsible: true,
         header: "h2",
         heightStyle: 'content',
         active: (rec_id ? false : 0)
@@ -587,14 +597,20 @@ $( document ).ready(function() {
         initiateEntrantWorkflow( $('#entrant_component'), details_url );
     });
     $('#entrant_component').on('click', '.del-entrant', function(e) {
-        e.preventDefault();
-        var ent_id = $( this ).attr('del-entrant-id');
 
-        if (ent_id === 'new') {
-            deleteEntrantRow( $('#entrant_component'), ent_id, details_url );
-            return;
+        e.preventDefault();
+
+        if (window.confirm('You are about to delete an entry! Are you sure?')) {
+
+            var ent_id = $( this ).attr('del-entrant-id');
+
+            if (ent_id === 'new') {
+                deleteEntrantRow( $('#entrant_component'), ent_id, details_url );
+            } else {
+                deleteEntrant( $('#entrant_component'), ent_id, details_url );
+            }
         }
-        deleteEntrant( $('#entrant_component'), ent_id, details_url );
+
         return;
     });
     $('#entrant_component').on('click', '.save-entrant', function(e) {
