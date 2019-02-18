@@ -132,17 +132,17 @@ def edit_entrant(entId=None):
     roles = [ { 'id': role.id, 'value': role.name, 'label': role.name }
         for role in models.Role.query.all()]
     # desc_data = models.Description.query.all()
-    origins = [ { 'id': loc.id, 'value': loc.name, 'label': loc.name }
+    origins = [ { 'id': loc.name, 'value': loc.name, 'label': loc.name }
         for loc in models.Location.query.all()]
-    races = [ { 'id': loc.id, 'value': loc.name, 'label': loc.name }
+    races = [ { 'id': loc.name, 'value': loc.name, 'label': loc.name }
         for loc in models.Race.query.all()]
-    tribes = [ { 'id': loc.id, 'value': loc.name, 'label': loc.name }
+    tribes = [ { 'id': loc.name, 'value': loc.name, 'label': loc.name }
         for loc in models.Tribe.query.all()]
-    titles = [ { 'id': loc.id, 'value': loc.name, 'label': loc.name }
+    titles = [ { 'id': loc.name, 'value': loc.name, 'label': loc.name }
         for loc in models.Title.query.all()]
-    vocations = [ { 'id': loc.id, 'value': loc.name, 'label': loc.name }
+    vocations = [ { 'id': loc.name, 'value': loc.name, 'label': loc.name }
         for loc in models.Vocation.query.all()]
-    enslavements = [ { 'id': loc.id, 'value': loc.name, 'label': loc.name }
+    enslavements = [ { 'id': loc.name, 'value': loc.name, 'label': loc.name }
         for loc in models.EnslavementType.query.all()]
     if not entId:
         rec_id = request.args.get('rec')
@@ -304,22 +304,22 @@ def read_referent_data(rntId=None):
     data['ent']['sex'] = rnt.sex
     data['ent']['races'] = [ 
         { 'label': r.name, 'value': r.name,
-            'id': r.id } for r in rnt.races ]
+            'id': r.name } for r in rnt.races ]
     data['ent']['tribes'] = [ 
         { 'label': t.name, 'value': t.name,
-            'id': t.id } for t in rnt.tribes ]
+            'id': t.name } for t in rnt.tribes ]
     data['ent']['origins'] = [ 
         { 'label': o.name, 'value': o.name,
-            'id': o.id } for o in rnt.origins ]
+            'id': o.name } for o in rnt.origins ]
     data['ent']['titles'] = [ 
         { 'label': t.name, 'value': t.name,
-            'id': t.id } for t in rnt.titles ]
+            'id': t.name } for t in rnt.titles ]
     data['ent']['vocations'] = [ 
         { 'label': v.name, 'value': v.name,
-            'id': v.id } for v in rnt.vocations ]
+            'id': v.name } for v in rnt.vocations ]
     data['ent']['enslavements'] = [ 
         { 'label': e.name, 'value': e.name,
-            'id': e.id } for e in rnt.enslavements ]
+            'id': e.name } for e in rnt.enslavements ]
     return jsonify(data)
 
 
@@ -428,13 +428,13 @@ def update_referent_name(data):
     return name   
 
 def get_or_create_referent_attribute(data, attrModel):
-    if data['id'] == data['name']:
+    existing = attrModel.query.filter_by(name=data['name']).first()
+    if not existing:
         new_attr = attrModel(name=data['name'])
         db.session.add(new_attr)
         db.session.commit()
         return new_attr
     else:
-        existing = attrModel.query.get(data['id'])
         return existing 
 
 @app.route('/data/entrants/', methods=['POST'])
