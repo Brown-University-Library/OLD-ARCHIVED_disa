@@ -54,15 +54,18 @@ def sort_documents(wrappedDocs):
 @app.route('/editor', methods=['GET'])
 @login_required
 def editor_index():
-    all_docs = [ (doc, edit.user_id, edit.timestamp)
-                     for doc in models.Citation.query.all()
-                        for rec in doc.references
-                            for edit in rec.edits
-                                ]
-    user_docs = [ wrapped for wrapped in all_docs
+    all_cites = models.Citation.query.all()
+    no_refs = [ (cite, current_user.id, datetime.datetime.utcnow())
+        for cite in all_cites if len(cite.references) == 0 ]
+    has_refs = [ cite for cite in all_cites if len(cite.references) > 0 ]
+    wrapped_refs = [ (cite, edit.user_id, edit.timestamp)
+                        for cite in has_refs
+                            for ref in cite.references
+                                for edit in ref.edits ]
+    user_cites = [ wrapped for wrapped in wrapped_refs
                     if wrapped[1] == current_user.id ]
-    srtd_all = sort_documents(all_docs)
-    srtd_user = sort_documents(user_docs)
+    srtd_all = sort_documents(no_refs + wrapped_refs)
+    srtd_user = sort_documents(user_cites)
     return render_template('document_index.html',
         user_documents=srtd_user, documents=srtd_all)
 
