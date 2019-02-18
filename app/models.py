@@ -1,3 +1,5 @@
+import operator
+
 from app import db, login
 
 from werkzeug import security
@@ -146,7 +148,8 @@ class Reference(db.Model):
     referents = db.relationship('Referent', backref='reference', lazy=True)
 
     def last_edit(self):
-        edits = sorted([ (e.timestamp, e) for e in self.edits ], reverse=True)
+        edits = sorted([ (e.timestamp, e) for e in self.edits ],
+             key=operator.itemgetter(0), reverse=True)
         return edits[0][1]
 
     def __repr__(self):
