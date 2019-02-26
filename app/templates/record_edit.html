@@ -332,12 +332,16 @@ var addEntrantInput = function($container, entData, tags) {
 var makeEntrantEditable = function ($container, entId) {
     $active = $container.find($(`.entrant-row[data-ent-id=${entId}]`));
 
-    $save_btn = $('<button/>', { 'class': 'btn btn-primary save-entrant entrant-ctl',
-        'save-entrant-id': entId });
+    $save_btn = $('<button/>', { 
+        'class': 'btn btn-primary save-entrant entrant-ctl',
+        'save-entrant-id': entId,
+        'title': 'Save changes' });
     $save_span = $('<span/>', {'class': 'fas fa-check-circle'});
         
-    $del_btn = $('<button/>', { 'class': 'btn btn-danger del-entrant entrant-ctl',
-        'del-entrant-id': entId });
+    $del_btn = $('<button/>', { 
+        'class': 'btn btn-danger del-entrant entrant-ctl',
+        'del-entrant-id': entId,
+        'title': 'Delete entry for this person' });
     $del_span = $('<span/>', {'class': 'fas fa-times-circle'});
         
     $save_btn.append($save_span);
@@ -347,7 +351,10 @@ var makeEntrantEditable = function ($container, entId) {
     $active.find($('.entrant-controls')).append($save_btn).append($del_btn);
     
     if (entId !== 'new') {
-        $cancel_btn = $('<button/>', { 'class': 'btn btn-secondary cancel-entrant entrant-ctl'});
+        $cancel_btn = $('<button/>', { 
+            'class': 'btn btn-secondary cancel-entrant entrant-ctl',
+            'title': 'Cancel current changes'
+        });
         $cancel_span = $('<span/>', {'class': 'fas fa-undo'});
 
         $cancel_btn.append($cancel_span);
