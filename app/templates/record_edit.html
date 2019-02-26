@@ -560,8 +560,7 @@ $( document ).ready(function() {
         }
     });
     $( "#record_form" ).accordion({
-        collapsible: false,
-        // collapsible: true,
+        collapsible: true,
         header: "h2",
         heightStyle: 'content',
         active: (rec_id ? false : 0)
@@ -599,16 +598,12 @@ $( document ).ready(function() {
     $('#entrant_component').on('click', '.del-entrant', function(e) {
 
         e.preventDefault();
+        var ent_id = $( this ).attr('del-entrant-id');
 
-        if (window.confirm('You are about to delete an entry! Are you sure?')) {
-
-            var ent_id = $( this ).attr('del-entrant-id');
-
-            if (ent_id === 'new') {
-                deleteEntrantRow( $('#entrant_component'), ent_id, details_url );
-            } else {
-                deleteEntrant( $('#entrant_component'), ent_id, details_url );
-            }
+        if (ent_id === 'new') {
+            deleteEntrantRow( $('#entrant_component'), ent_id, details_url );
+        } else {
+            deleteEntrant( $('#entrant_component'), ent_id, details_url );
         }
 
         return;

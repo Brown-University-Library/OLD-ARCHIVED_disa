@@ -19,19 +19,16 @@ class RelationshipMgmt {
   }
 
   handleEvent(event) {
-    let target = event.target;
-
     switch(event.type) {
       case "click":
-        if (target.classList.contains('add-rel')) {
-          var obj = this._adder.getData();
+        let btn = event.target.closest('button');
+        if (btn.classList.contains('add-rel')) {
+          let obj = this._adder.getData();
           obj['section'] = this._section;
           this._source.addRelationship(obj);
-        } else if (target.classList.contains('del-rel')) {
-          if (window.confirm('This will delete this relationship! Are you sure?')) {
-            var rel_id = parseInt(target.getAttribute('data-rel-id'));
-            this._source.deleteRelationship(this._section, rel_id);
-          }
+        } else if (btn.classList.contains('del-rel')) {
+          let rel_id = parseInt(btn.getAttribute('data-rel-id'));
+          this._source.deleteRelationship(this._section, rel_id);
         }
         return;
       default:

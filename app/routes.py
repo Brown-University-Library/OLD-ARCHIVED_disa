@@ -54,15 +54,18 @@ def sort_documents(wrappedDocs):
 @app.route('/editor', methods=['GET'])
 @login_required
 def editor_index():
-    all_docs = [ (doc, edit.user_id, edit.timestamp)
-                     for doc in models.Citation.query.all()
-                        for rec in doc.references
-                            for edit in rec.edits
-                                ]
-    user_docs = [ wrapped for wrapped in all_docs
+    all_cites = models.Citation.query.all()
+    no_refs = [ (cite, current_user.id, datetime.datetime.utcnow())
+        for cite in all_cites if len(cite.references) == 0 ]
+    has_refs = [ cite for cite in all_cites if len(cite.references) > 0 ]
+    wrapped_refs = [ (cite, edit.user_id, edit.timestamp)
+                        for cite in has_refs
+                            for ref in cite.references
+                                for edit in ref.edits ]
+    user_cites = [ wrapped for wrapped in wrapped_refs
                     if wrapped[1] == current_user.id ]
-    srtd_all = sort_documents(all_docs)
-    srtd_user = sort_documents(user_docs)
+    srtd_all = sort_documents(no_refs + wrapped_refs)
+    srtd_user = sort_documents(user_cites)
     return render_template('document_index.html',
         user_documents=srtd_user, documents=srtd_all)
 
@@ -132,17 +135,17 @@ def edit_entrant(entId=None):
     roles = [ { 'id': role.id, 'value': role.name, 'label': role.name }
         for role in models.Role.query.all()]
     # desc_data = models.Description.query.all()
-    origins = [ { 'id': loc.id, 'value': loc.name, 'label': loc.name }
+    origins = [ { 'id': loc.name, 'value': loc.name, 'label': loc.name }
         for loc in models.Location.query.all()]
-    races = [ { 'id': loc.id, 'value': loc.name, 'label': loc.name }
+    races = [ { 'id': loc.name, 'value': loc.name, 'label': loc.name }
         for loc in models.Race.query.all()]
-    tribes = [ { 'id': loc.id, 'value': loc.name, 'label': loc.name }
+    tribes = [ { 'id': loc.name, 'value': loc.name, 'label': loc.name }
         for loc in models.Tribe.query.all()]
-    titles = [ { 'id': loc.id, 'value': loc.name, 'label': loc.name }
+    titles = [ { 'id': loc.name, 'value': loc.name, 'label': loc.name }
         for loc in models.Title.query.all()]
-    vocations = [ { 'id': loc.id, 'value': loc.name, 'label': loc.name }
+    vocations = [ { 'id': loc.name, 'value': loc.name, 'label': loc.name }
         for loc in models.Vocation.query.all()]
-    enslavements = [ { 'id': loc.id, 'value': loc.name, 'label': loc.name }
+    enslavements = [ { 'id': loc.name, 'value': loc.name, 'label': loc.name }
         for loc in models.EnslavementType.query.all()]
     if not entId:
         rec_id = request.args.get('rec')
@@ -304,22 +307,22 @@ def read_referent_data(rntId=None):
     data['ent']['sex'] = rnt.sex
     data['ent']['races'] = [ 
         { 'label': r.name, 'value': r.name,
-            'id': r.id } for r in rnt.races ]
+            'id': r.name } for r in rnt.races ]
     data['ent']['tribes'] = [ 
         { 'label': t.name, 'value': t.name,
-            'id': t.id } for t in rnt.tribes ]
+            'id': t.name } for t in rnt.tribes ]
     data['ent']['origins'] = [ 
         { 'label': o.name, 'value': o.name,
-            'id': o.id } for o in rnt.origins ]
+            'id': o.name } for o in rnt.origins ]
     data['ent']['titles'] = [ 
         { 'label': t.name, 'value': t.name,
-            'id': t.id } for t in rnt.titles ]
+            'id': t.name } for t in rnt.titles ]
     data['ent']['vocations'] = [ 
         { 'label': v.name, 'value': v.name,
-            'id': v.id } for v in rnt.vocations ]
+            'id': v.name } for v in rnt.vocations ]
     data['ent']['enslavements'] = [ 
         { 'label': e.name, 'value': e.name,
-            'id': e.id } for e in rnt.enslavements ]
+            'id': e.name } for e in rnt.enslavements ]
     return jsonify(data)
 
 
@@ -388,6 +391,7 @@ def update_reference_data(refId=None):
         ref.date = None
     ref.reference_type_id = reference_type.id
     ref.national_context_id = data['national_context']
+    ref.transcription = data['transcription']
     db.session.add(ref)
     db.session.commit()
 
@@ -406,6 +410,7 @@ def update_reference_data(refId=None):
         data['rec']['header'] = '{}'.format(
             ref.reference_type.name or '').strip()
     data['rec']['citation'] = ref.citation.id
+    data['rec']['transcription'] = ref.transcription
     data['rec']['national_context'] = ref.national_context_id
     data['rec']['locations'] = [ 
         { 'label':l.location.name, 'value':l.location.name,
@@ -426,13 +431,13 @@ def update_referent_name(data):
     return name   
 
 def get_or_create_referent_attribute(data, attrModel):
-    if data['id'] == data['name']:
+    existing = attrModel.query.filter_by(name=data['name']).first()
+    if not existing:
         new_attr = attrModel(name=data['name'])
         db.session.add(new_attr)
         db.session.commit()
         return new_attr
     else:
-        existing = attrModel.query.get(data['id'])
         return existing 
 
 @app.route('/data/entrants/', methods=['POST'])
