@@ -36,6 +36,10 @@
     <div id="record_form">
         <h2 id="record_header"></h2>
         <form action="" method="">
+            <div class="alert alert-primary">
+                    <strong>Please record information based on what is written in the document, rather than interpreting the text.</strong><br />
+                    For example, if a location is identified as "Charles-Town" in the document, please preserve the spelling rather than modernizing to "Charleston."
+            </div>
             <div class="form-group row">
                 <label for="recordtype_autocomplete">Type<br />
                     <em class="small">Enter the type of item within the document that you’re adding. Use the drop down menu to see a list of options.</em></label> 
@@ -49,7 +53,8 @@
             </div>
             <div class="form-group row">
                 <label for="col_state_autocomplete">Colony/State<br />
-                    <em class="small">If the item lists a state or colony, write it here. Use the drop down menu to see a list of options. </em></label>
+                    <em class="small">If the item lists a state or colony, write it here. Use the drop down menu to see a list of options.<br/>
+                    Please write out the full name&mdash;e.g. enter "Rhode Island", not "RI".</em></label>
                 <input class="form-control location-input" type="text" id="col_state_autocomplete" data-loc-id=""/>
             </div>
             <div class="form-group row">
@@ -64,7 +69,7 @@
             </div>
             <div class="form-group row">
                 <label for="record_date">Event date<br />
-                    <em class="small">Enter the date of the events described in the item, <strong>not</strong> the date of the containing document</em></label>
+                    <em class="small">Enter the date of the events described in the item, <strong>not</strong> the publication date of the containing document</em></label>
                 <input class="form-control" type="text" id="record_date" />
             </div>
             <div class="form-group row">
