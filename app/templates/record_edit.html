@@ -36,6 +36,10 @@
     <div id="record_form">
         <h2 id="record_header"></h2>
         <form action="" method="">
+            <div class="alert alert-primary">
+                    <strong>Please record information based on what is written in the document, rather than interpreting the text.</strong><br />
+                    For example, if a location is identified as "Charles-Town" in the document, please preserve the spelling rather than modernizing to "Charleston."
+            </div>
             <div class="form-group row">
                 <label for="recordtype_autocomplete">Type<br />
                     <em class="small">Enter the type of item within the document that you’re adding. Use the drop down menu to see a list of options.</em></label> 
@@ -49,7 +53,8 @@
             </div>
             <div class="form-group row">
                 <label for="col_state_autocomplete">Colony/State<br />
-                    <em class="small">If the item lists a state or colony, write it here. Use the drop down menu to see a list of options. </em></label>
+                    <em class="small">If the item lists a state or colony, write it here. Use the drop down menu to see a list of options.<br/>
+                    Please write out the full name&mdash;e.g. enter "Rhode Island", not "RI".</em></label>
                 <input class="form-control location-input" type="text" id="col_state_autocomplete" data-loc-id=""/>
             </div>
             <div class="form-group row">
@@ -64,7 +69,7 @@
             </div>
             <div class="form-group row">
                 <label for="record_date">Event date<br />
-                    <em class="small">Enter the date of the events described in the item, <strong>not</strong> the date of the containing document</em></label>
+                    <em class="small">Enter the date of the events described in the item, <strong>not</strong> the publication date of the containing document</em></label>
                 <input class="form-control" type="text" id="record_date" />
             </div>
             <div class="form-group row">
@@ -231,7 +236,7 @@ var setFormHeader = function (recData) {
 
     header = $('#record_header');
     if ( $.isEmptyObject(recData) ) {
-        header.html('Add new item<br /><em>A "item" is a description of one or more people (with their relationship) that appears in the document.<br />There may be associated time and place information&mdash;for example, if the item describes an event.</em>');
+        header.html('Add new item<br /><em>An "item" is a description of one or more people (with their relationship) that appears in the document.<br />There may be associated time and place information&mdash;for example, if the item describes an event.</em>');
         $('#rec_update').text('Create');
     } else {
         header.text(recData['header']);
@@ -327,12 +332,16 @@ var addEntrantInput = function($container, entData, tags) {
 var makeEntrantEditable = function ($container, entId) {
     $active = $container.find($(`.entrant-row[data-ent-id=${entId}]`));
 
-    $save_btn = $('<button/>', { 'class': 'btn btn-primary save-entrant entrant-ctl',
-        'save-entrant-id': entId });
+    $save_btn = $('<button/>', { 
+        'class': 'btn btn-primary save-entrant entrant-ctl',
+        'save-entrant-id': entId,
+        'title': 'Save changes' });
     $save_span = $('<span/>', {'class': 'fas fa-check-circle'});
         
-    $del_btn = $('<button/>', { 'class': 'btn btn-danger del-entrant entrant-ctl',
-        'del-entrant-id': entId });
+    $del_btn = $('<button/>', { 
+        'class': 'btn btn-danger del-entrant entrant-ctl',
+        'del-entrant-id': entId,
+        'title': 'Delete entry for this person' });
     $del_span = $('<span/>', {'class': 'fas fa-times-circle'});
         
     $save_btn.append($save_span);
@@ -342,7 +351,10 @@ var makeEntrantEditable = function ($container, entId) {
     $active.find($('.entrant-controls')).append($save_btn).append($del_btn);
     
     if (entId !== 'new') {
-        $cancel_btn = $('<button/>', { 'class': 'btn btn-secondary cancel-entrant entrant-ctl'});
+        $cancel_btn = $('<button/>', { 
+            'class': 'btn btn-secondary cancel-entrant entrant-ctl',
+            'title': 'Cancel current changes'
+        });
         $cancel_span = $('<span/>', {'class': 'fas fa-undo'});
 
         $cancel_btn.append($cancel_span);
