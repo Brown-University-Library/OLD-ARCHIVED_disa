@@ -15,7 +15,7 @@ def load_existing_users():
         db.session.add(row)
     db.session.commit()
 
-def make_current_users(jsonFile):
+def add_users(jsonFile):
     with open(jsonFile, 'r') as f:
         data = json.load(f)
     new_users = []
@@ -32,7 +32,7 @@ def make_current_users(jsonFile):
         print("Creating user: {}".format(user.email))
     db.session.commit()
 
-def update_password(jsonFile, passw):
+def update_user_password(jsonFile, passw):
     with open(jsonFile, 'r') as f:
         data = json.load(f)
     for user in data['passwords']:
