@@ -152,6 +152,12 @@ class Reference(db.Model):
              key=operator.itemgetter(0), reverse=True)
         return edits[0][1]
 
+    def display_date(self):
+        if self.date:
+            return self.date.strftime('%Y %B %d')
+        else:
+            return ''
+
     def __repr__(self):
         return '<Reference {0}>'.format(self.id)
 

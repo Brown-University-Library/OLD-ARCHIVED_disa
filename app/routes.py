@@ -455,12 +455,20 @@ def update_referent(rntId=None):
         return jsonify( { 'id': rntId } )
     data = request.get_json()
     if request.method == 'POST':
+        prs = models.Person()
+        db.session.add(prs)
+        db.session.commit()
         rnt = models.Referent(reference_id=data['record_id'])
+        rnt.person = prs
     if request.method == 'PUT':
         rnt = models.Referent.query.get(rntId)
     primary_name = update_referent_name(data['name'])
     rnt.names.append(primary_name)
     rnt.primary_name = primary_name
+    if request.method == 'POST':
+        prs.first_name = primary_name.first
+        prs.last_name = primary_name.last
+        db.session.add(prs)
     rnt.roles = [ get_or_create_referent_attribute(a, models.Role)
         for a in data['roles'] ]
     db.session.add(rnt)
@@ -532,7 +540,7 @@ def parse_person_descriptors(personObj, descField):
 
 @app.route('/people/')
 def person_index():
-    people = [ p for p in models.Person.query.all() ]
+    people = [ p for p in models.Person.query.all() if p.references != [] ]
     return render_template('person_index.html', people=people)
 
 @app.route('/people/<persId>')
