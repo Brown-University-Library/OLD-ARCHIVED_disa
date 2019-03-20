@@ -532,8 +532,8 @@ def parse_person_descriptors(personObj, descField):
 
 @app.route('/people/')
 def person_index():
-    enslaved = [ p for p in models.Person.filter_on_description('Enslaved') ]
-    return render_template('person_index.html', people=enslaved)
+    people = [ p for p in models.Person.query.all() ]
+    return render_template('person_index.html', people=people)
 
 @app.route('/people/<persId>')
 def get_person(persId):
@@ -547,7 +547,7 @@ def get_person(persId):
     titles = parse_person_descriptors(person, 'titles')
     relations = parse_person_relations(person)
     return render_template('person_display.html',
-        name=name, refs = person.references,
+        name=name, dbId=persId, refs = person.references,
         origins=origins, tribes=tribes, titles=titles,
         races=races, vocations=vocations, statuses=statuses,
         relations=relations)

@@ -395,6 +395,19 @@ class Person(db.Model):
         return cls.query.join(
             cls.references).join(Referent.roles).filter(Role.name==desc)
 
+    def display_name(self):
+        display = "{0} {1}".format(
+            self.first_name, self.last_name).strip()
+        if display == "":
+            return "Unknown"
+        else:
+            return display
+
+    def display_attr(self, attr):
+        vals = { desc.name for ref in self.references
+            for desc in getattr(ref, attr) }
+        return ', '.join(list(vals))
+
 class User(UserMixin, db.Model):
     __tablename__ = '1_users'
 
