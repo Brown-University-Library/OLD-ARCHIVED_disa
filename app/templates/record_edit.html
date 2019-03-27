@@ -492,11 +492,23 @@ var getEntrantData = function($container, entId, recId) {
     return data;
 }
 
+var autoexpandTextArea = function(textareaDomNode) {
+    const updateTextareaHeight = function() {
+        textareaDomNode.style.height = textareaDomNode.scrollHeight + 'px';
+    }
+    textareaDomNode.onkeyup = updateTextareaHeight;
+    updateTextareaHeight();
+}
+
 $( document ).ready(function() {
     var doc_id = getDocumentId();
     var rec_id = getRecId();
     var details_url = "{{ url_for('edit_entrant', entId=None)}}";
     var roles = JSON.parse('{{ roles | tojson | safe}}');
+
+    document.querySelectorAll('textarea')
+        .forEach(textarea => autoexpandTextArea(textarea));
+
     $('#recordtype_autocomplete').autocomplete({
         source: JSON.parse('{{ rec_types | tojson | safe}}'),
         minLength: 0,
