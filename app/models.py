@@ -152,6 +152,12 @@ class Reference(db.Model):
              key=operator.itemgetter(0), reverse=True)
         return edits[0][1]
 
+    def display_date(self):
+        if self.date:
+            return self.date.strftime('%Y %B %d')
+        else:
+            return ''
+
     def __repr__(self):
         return '<Reference {0}>'.format(self.id)
 
@@ -394,6 +400,19 @@ class Person(db.Model):
     def filter_on_description(cls, desc):
         return cls.query.join(
             cls.references).join(Referent.roles).filter(Role.name==desc)
+
+    def display_name(self):
+        display = "{0} {1}".format(
+            self.first_name, self.last_name).strip()
+        if display == "":
+            return "Unknown"
+        else:
+            return display
+
+    def display_attr(self, attr):
+        vals = { desc.name for ref in self.references
+            for desc in getattr(ref, attr) }
+        return ', '.join(list(vals))
 
 class User(UserMixin, db.Model):
     __tablename__ = '1_users'

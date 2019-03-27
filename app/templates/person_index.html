@@ -4,7 +4,7 @@
 {% endblock %}
 {% block content %}
 <div class="container-fluid">
-  <h2>Enslaved</h2>
+  <h2>Comprehensive List of People</h2>
   <div class="row">
     <div class="col-md-6">
       <table class="table">
@@ -12,6 +12,7 @@
           <tr>
             <th>ID</th>
             <th>Name</th>
+            <th>Status</th>
             <th></th>
           </tr>
         </thead>
@@ -19,7 +20,8 @@
           {% for pers in people %}
           <tr>
             <td>{{ pers.id }}</td>
-            <td>{{ "{0} {1}".format(pers.first_name, pers.last_name).strip() or "Unknown" }}</td>
+            <td>{{ pers.display_name() }}</td>
+            <td>{{ pers.display_attr('enslavements') }}</td>
             <td><a href="{{ url_for('get_person', persId=pers.id)}}">View</a></td>
           </tr>
           {% endfor %}

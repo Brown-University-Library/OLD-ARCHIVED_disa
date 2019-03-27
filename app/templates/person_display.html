@@ -14,13 +14,15 @@
 .relations {
   list-style-type: none;
 }
+
 </style>
 {% endblock %}
 {% block content %}
 <div class="container-fluid">
-  <div>
+  <header>
     <h2>{{ name }}</h2>
-  </div>
+    <p>ID: {{ dbId }}</p>
+  </header>
   <div class="row">
     <div class="col-md-2">
     <dl>
@@ -35,7 +37,7 @@
     <div class="col-md-2">
     <dl> 
       <dt>Status</dt>
-      <dd>{{ statuses }}</dd> 
+      <dd>{{ statuses }}</dd>
       <dt>Title</dt>
       <dd>{{ titles }}</dd>
       <dt>Vocation</dt>
@@ -71,7 +73,7 @@
         <tbody id="refs">
           {% for ref in refs %}
           <tr>
-            <td>{{ ref.reference.date.strftime('%Y %B %d') }}</td>
+            <td>{{ ref.reference.display_date() }}</td>
             <td>
             {% for role in ref.roles %}
               <span>{{ role.name }}</span>
