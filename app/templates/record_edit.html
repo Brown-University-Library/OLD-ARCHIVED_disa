@@ -508,26 +508,30 @@ var autoexpandTextArea = function(textareaDomNode) {
 
 // Wrap a selection in a text field in a HTML element
 
-var wrapInElement = function(inputFieldId, elementName) {
-  
+var wrapInElement = function(textFieldDomNode, elementName) {
   let selectedText = window.getSelection().toString();
-  
-  document
-      .getElementById(inputFieldId)
-      .setRangeText(`<${elementName}>${selectedText}</${elementName}>`);
+  textFieldDomNode.setRangeText(`<${elementName}>${selectedText}</${elementName}>`);
+  if (selectedText === '') {
+    const cursorPosition = textFieldDomNode.selectionStart + elementName.length + 2;
+    textFieldDomNode.focus();
+    textFieldDomNode.setSelectionRange(cursorPosition, cursorPosition);
+  }
 }
 
 // Create buttons for adding text styles to textareas
 
-var addTextFormattingButtons = function(inputFieldId) {
+var addTextFormattingButtons = function(textFieldDomNode) {
 
-    let textFieldDomNode = document.getElementById(inputFieldId);
+    // let textFieldDomNode = document.getElementById(inputFieldId);
     
     function createButton(buttonLabel, elementName) {
         let button = document.createElement('button');
         button.classList.add('text-format-button', 'btn', 'btn-primary', 'btn-sm');
         button.textContent = buttonLabel;
-        button.onclick = () => wrapInElement(inputFieldId, elementName);
+        button.onclick = function() {
+            wrapInElement(textFieldDomNode, elementName);
+            return false;  
+        }
         textFieldDomNode.parentElement.insertBefore(button, textFieldDomNode);
     }
 
