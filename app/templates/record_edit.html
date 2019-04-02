@@ -20,6 +20,10 @@
     margin-right: 5px;
 }
 
+.text-format-button { 
+    margin: auto 5px 5px;
+}
+
 </style>
 {% endblock %}
 
@@ -492,11 +496,65 @@ var getEntrantData = function($container, entId, recId) {
     return data;
 }
 
+// Auto-expand a text area to accommodate the text
+
+var autoexpandTextArea = function(textareaDomNode) {
+    const updateTextareaHeight = function() {
+        textareaDomNode.style.height = textareaDomNode.scrollHeight + 'px';
+    }
+    textareaDomNode.onkeyup = updateTextareaHeight;
+    updateTextareaHeight();
+}
+
+// Wrap a selection in a text field in a HTML element
+
+var wrapInElement = function(textFieldDomNode, elementName) {
+  let selectedText = window.getSelection().toString();
+  textFieldDomNode.setRangeText(`<${elementName}>${selectedText}</${elementName}>`);
+  if (selectedText === '') {
+    const cursorPosition = textFieldDomNode.selectionStart + elementName.length + 2;
+    textFieldDomNode.focus();
+    textFieldDomNode.setSelectionRange(cursorPosition, cursorPosition);
+  }
+}
+
+// Create buttons for adding text styles to textareas
+
+var addTextFormattingButtons = function(textFieldDomNode) {
+
+    // let textFieldDomNode = document.getElementById(inputFieldId);
+    
+    function createButton(buttonLabel, elementName) {
+        let button = document.createElement('button');
+        button.classList.add('text-format-button', 'btn', 'btn-primary', 'btn-sm');
+        button.textContent = buttonLabel;
+        button.onclick = function() {
+            wrapInElement(textFieldDomNode, elementName);
+            return false;  
+        }
+        textFieldDomNode.parentElement.insertBefore(button, textFieldDomNode);
+    }
+
+    createButton('bold', 'b');
+    createButton('italics', 'i');
+    createButton('heading', 'h1');
+}
+
 $( document ).ready(function() {
     var doc_id = getDocumentId();
     var rec_id = getRecId();
     var details_url = "{{ url_for('edit_entrant', entId=None)}}";
     var roles = JSON.parse('{{ roles | tojson | safe}}');
+
+    // Add text formatting buttons to textArea inputs
+    //  and make them auto-expand
+
+    document.querySelectorAll('textarea')
+        .forEach(textarea => {
+            autoexpandTextArea(textarea);
+            addTextFormattingButtons(textarea);
+        });
+
     $('#recordtype_autocomplete').autocomplete({
         source: JSON.parse('{{ rec_types | tojson | safe}}'),
         minLength: 0,
