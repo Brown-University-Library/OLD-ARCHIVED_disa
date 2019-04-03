@@ -447,6 +447,14 @@ def update_referent(rntId=None):
     if request.method == 'DELETE':
         rnt = models.Referent.query.get(rntId)
         ref = rnt.reference
+        rels_as_sbj = models.ReferentRelationship.query.filter_by(
+            subject_id=rnt.id).all()
+        rels_as_obj = models.ReferentRelationship.query.filter_by(
+            object_id=rnt.id).all()
+        for r in rels_as_sbj:
+            db.session.delete(r)
+        for r in rels_as_obj:
+            db.session.delete(r)
         db.session.delete(rnt)
         db.session.commit()
 
