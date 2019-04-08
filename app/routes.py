@@ -73,7 +73,11 @@ def editor_index():
 @app.route('/editor/documents/<citeId>')
 @login_required
 def edit_citation(citeId=None):
-    ct = models.CitationType.query.all()
+    included = [ 'Book', 'Book Section', 'Document', 'Interview',
+        'Journal Article', 'Magazine Article', 'Manuscript',
+        'Newspaper Article', 'Thesis', 'Webpage' ]
+    ct = models.CitationType.query.filter(
+        models.CitationType.name.in_(included)).all()
     ct_fields = { 
         c.id: [ {   'name': f.zotero_field.name,
                     'rank': f.rank,
@@ -165,7 +169,11 @@ def edit_entrant(entId=None):
 @login_required
 def read_document_data(docId=None):
     data = { 'doc': {} }
-    ct = models.CitationType.query.all()
+    included = [ 'Book', 'Book Section', 'Document', 'Interview',
+        'Journal Article', 'Magazine Article', 'Manuscript',
+        'Newspaper Article', 'Thesis', 'Webpage' ]
+    ct = models.CitationType.query.filter(
+        models.CitationType.name.in_(included)).all()
     data['doc_types'] = [ { 'id': c.id, 'name': c.name } for c in ct ]
     if docId == None:
         return jsonify(data)
