@@ -15,14 +15,16 @@ def load_multivalued_attributes():
         {'name': 'Captured', 'name_as_relationship': 'captured by'},
         {'name': 'Baptised', 'name_as_relationship': 'baptised by'},
         {'name': 'Emancipated', 'name_as_relationship': 'released by'},
-        {'name': 'Executed', 'name_as_relationship': 'execeuted by'},
+        {'name': 'Executed', 'name_as_relationship': 'executed by'},
         {'name': 'Parent', 'name_as_relationship': 'parent of'},
         {'name': 'Spouse', 'name_as_relationship': 'spouse of'},
         {'name': 'Child', 'name_as_relationship': 'child of'},
         {'name': 'Mother', 'name_as_relationship': 'mother of'},
         {'name': 'Father', 'name_as_relationship': 'father of'},
         {'name': 'Buyer', 'name_as_relationship': 'buyer of'},
-        {'name': 'Seller', 'name_as_relationship': 'seller of'}
+        {'name': 'Seller', 'name_as_relationship': 'seller of'},
+        {'name': 'Indetured', 'name_as_relationship': 'indentured by'},
+        {'name': 'Runaway', 'name_as_relationship': 'ran away with'}
     ]
 
     role_relationship_types = [

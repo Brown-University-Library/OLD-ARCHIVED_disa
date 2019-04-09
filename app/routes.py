@@ -593,7 +593,8 @@ def relationships_by_reference(refId):
     referents = [ { 'id': e.id, 'name': e.display_name() }
         for e in ref.referents ]
     relationships = [ { 'id': r.id, 'name': r.name_as_relationship }
-        for r in models.Role.query.all() ]
+        for r in models.Role.query.all()
+        if r.name_as_relationship is not None ]
     rnt_map = { f['id']: f['name'] for f in referents }
     rel_map = { r['id']: r['name'] for r in relationships }
     store = [
