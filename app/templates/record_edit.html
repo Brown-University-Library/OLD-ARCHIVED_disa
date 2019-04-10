@@ -82,6 +82,7 @@
             <div class="form-group row">
                 <label for="transcription">Transcription<br />
                     <em class="small">Write the full text of the item in this field, as close as possible to the original (e.g. using original spelling, etc.)</em></label>
+                    <br />
                 <textarea class="form-control" id="transcription"></textarea>
             </div>
             <button type="submit" class="btn btn-primary" id="rec_update">Update</button>
@@ -515,7 +516,8 @@ $( document ).ready(function() {
         toolbar: false,
         plugins: ['quickbars'],
         quickbars_selection_toolbar: 'bold italic underline',
-        contextmenu: 'bold italic underline'
+        contextmenu: 'bold italic underline',
+        width: '100%'
     });
 
     $('#recordtype_autocomplete').autocomplete({
