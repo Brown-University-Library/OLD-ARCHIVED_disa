@@ -191,15 +191,14 @@ def read_document_data(docId=None):
 @login_required
 def create_citation():
     data = request.get_json()
-    cite_types = [ { 'id': ct.id, 'name': ct.name }
-        for ct in models.CitationType.query.all() ]
-    unspec = [ ct['id'] for ct in cite_types
-        if ct['name'] == 'Document' ][0]
-    data['citation_type_id'] = data['citation_type_id'] or unspec
+    unspec = models.CitationType.query.filter_by(name='Document').first()
+    data['citation_type_id'] = data['citation_type_id'] or unspec.id
     cite = models.Citation(citation_type_id=data['citation_type_id'],
         comments=data['comments'], acknowledgements=data['acknowledgements'])
     db.session.add(cite)
     db.session.commit()
+    field_order_map = { f.zotero_field.name: f.rank
+        for f in cite.citation_type.zotero_type.template_fields }
     citation_display = []
     for field, val in data['fields'].items():
         if val == '':
@@ -207,13 +206,14 @@ def create_citation():
         zfield = models.ZoteroField.query.filter_by(name=field).first()
         cfield = models.CitationField(citation_id=cite.id,
             field_id=zfield.id, field_data=val)
-        citation_display.append(val)
+        citation_display.append( (field_order_map[zfield.name], val) )
         db.session.add(cfield)
     if len(citation_display) == 0:
         now = datetime.datetime.utcnow()
         cite.display = 'Document :: {}'.format(now.strftime('%Y %B %d'))
     else:
-        cite.display = ' '.join(citation_display)
+        vals = [ v[1] for v in sorted(citation_display) ]
+        cite.display = ' '.join(vals)
     db.session.add(cite)
     db.session.commit()
     return jsonify(
@@ -226,16 +226,15 @@ def update_citation_data(citeId):
     data = request.get_json()
     if citeId is None:
         return jsonify({})
-    cite_types = [ { 'id': dt.id, 'name': dt.name }
-        for dt in models.CitationType.query.all() ]
-    unspec = [ ct['id'] for ct in cite_types
-        if ct['name'] == 'Document' ][0]
-    data['citation_type_id'] = data['citation_type_id'] or unspec
+    unspec = models.CitationType.query.filter_by(name='Document').first()
+    data['citation_type_id'] = data['citation_type_id'] or unspec.id
     cite = models.Citation.query.get(citeId)
     cite.citation_type_id = data['citation_type_id']
     # doc.zotero_id = data['zotero_id']
     cite.comments = data['comments']
     cite.acknowledgements = data['acknowledgements']
+    field_order_map = { f.zotero_field.name: f.rank
+        for f in cite.citation_type.zotero_type.template_fields }
     citation_display = []
     cite.citation_data = []
     for field, val in data['fields'].items():
@@ -244,18 +243,23 @@ def update_citation_data(citeId):
         zfield = models.ZoteroField.query.filter_by(name=field).first()
         cfield = models.CitationField(citation_id=cite.id,
             field_id=zfield.id, field_data=val)
-        citation_display.append(val)
+        citation_display.append( (field_order_map[zfield.name], val) )
         db.session.add(cfield)
     if len(citation_display) == 0:
         now = datetime.datetime.utcnow()
         cite.display = 'Document :: {}'.format(now.strftime('%Y %B %d'))
     else:
-        cite.display = ' '.join(citation_display)
+        vals = [ v[1] for v in sorted(citation_display) ]
+        cite.display = ' '.join(vals)
     db.session.add(cite)
     db.session.commit()
 
     data = { 'doc': {} }
-    ct = models.CitationType.query.all()
+    included = [ 'Book', 'Book Section', 'Document', 'Interview',
+        'Journal Article', 'Magazine Article', 'Manuscript',
+        'Newspaper Article', 'Thesis', 'Webpage' ]
+    ct = models.CitationType.query.filter(
+        models.CitationType.name.in_(included)).all()
     data['doc_types'] = [ { 'id': c.id, 'name': c.name } for c in ct ]
     data['doc']['id'] = cite.id
     data['doc']['citation'] = cite.display
