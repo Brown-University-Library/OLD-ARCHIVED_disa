@@ -145,7 +145,8 @@ class Reference(db.Model):
         nullable=False)
     date = db.Column(db.DateTime())
     transcription = db.Column(db.UnicodeText())
-    referents = db.relationship('Referent', backref='reference', lazy=True)
+    referents = db.relationship(
+        'Referent', backref='reference', lazy=True, cascade="delete")
 
     def last_edit(self):
         edits = sorted([ (e.timestamp, e) for e in self.edits ],
@@ -247,7 +248,7 @@ class Referent(db.Model):
     person_id = db.Column(db.Integer, db.ForeignKey('1_people.id'),
         nullable=True)
     names = db.relationship('ReferentName',
-        primaryjoin=(id == ReferentName.referent_id) )
+        primaryjoin=(id == ReferentName.referent_id), cascade="delete" )
     primary_name = db.relationship('ReferentName',
         primaryjoin=(primary_name_id == ReferentName.id),
         post_update=True )
