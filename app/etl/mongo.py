@@ -691,6 +691,15 @@ def process_location(docData):
         locations.append( (location, loc[1]) )
     return locations
 
+def filter_email(fltr, coll, mapped={}):
+    if mapped == {}:
+        filtered = [ c for c in coll if c.email == fltr ]
+    else:
+        filtered = [ c for c in coll if c.email == mapped[fltr] ]
+    if len(filtered) > 1:
+        raise
+    return filtered[0]
+
 def process_administrative_metadata(metaData, users):
     user_map = {
         '103795391716629952261': 'linford_fisher@brown.edu',
@@ -704,11 +713,10 @@ def process_administrative_metadata(metaData, users):
         '103765728548502769566': 'ashley_champagne@brown.edu',
         '114667147260750536832': 'michael_simpson@brown.edu'
     }
-
     created_id = metaData['creator']
     editor_id = metaData['updatedBy']
-    creator = filter_collection(created_id, users, user_map)
-    editor = filter_collection(editor_id, users, user_map)
+    creator = filter_email(created_id, users, user_map)
+    editor = filter_email(editor_id, users, user_map)
     dt = datetime.datetime.strptime(
         metaData['lastModified'], '%Y-%m-%dT%H:%M:%S.%fZ')
     users = [ (creator, dt) ]

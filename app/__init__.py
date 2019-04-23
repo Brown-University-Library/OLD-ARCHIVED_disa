@@ -41,7 +41,7 @@ def mongo_migration(datafile):
 @app.cli.command()
 def rebuild():
     teardown.clear_data()
-    users.make_current_users('data/disa_users.json')
+    users.add_users('data/disa_users.json')
     setup.load_multivalued_attributes()
     setup.load_many_to_one()
     setup.load_many_to_many()

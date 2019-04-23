@@ -145,7 +145,8 @@ class Reference(db.Model):
         nullable=False)
     date = db.Column(db.DateTime())
     transcription = db.Column(db.UnicodeText())
-    referents = db.relationship('Referent', backref='reference', lazy=True)
+    referents = db.relationship(
+        'Referent', backref='reference', lazy=True, cascade="delete")
 
     def last_edit(self):
         edits = sorted([ (e.timestamp, e) for e in self.edits ],
@@ -226,7 +227,7 @@ class ReferentName(db.Model):
     __tablename__ = '6_referent_names'
 
     id = db.Column(db.Integer, primary_key=True)
-    referent_id = db.Column(db.Integer, db.ForeignKey('5_referents.id', ondelete='CASCADE'))
+    referent_id = db.Column(db.Integer, db.ForeignKey('5_referents.id'))
     name_type_id = db.Column(db.Integer, db.ForeignKey('1_name_types.id'))
     first = db.Column(db.String(255))
     last = db.Column(db.String(255))
@@ -240,7 +241,7 @@ class Referent(db.Model):
     age = db.Column(db.String(255))
     sex = db.Column(db.String(255))
     primary_name_id = db.Column(db.Integer, 
-        db.ForeignKey('6_referent_names.id', ondelete='CASCADE'),
+        db.ForeignKey('6_referent_names.id'),
         nullable=True)
     reference_id = db.Column(db.Integer, db.ForeignKey('4_references.id'),
         nullable=False)
@@ -339,10 +340,10 @@ class ReferentRelationship(db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey('1_roles.id'))
     sbj = db.relationship(Referent,
         primaryjoin=(subject_id == Referent.id),
-        backref='as_subject')
+        backref=db.backref('as_subject', cascade='delete'))
     obj = db.relationship(Referent,
         primaryjoin=(object_id == Referent.id),
-        backref='as_object')
+        backref=db.backref('as_object', cascade='delete'))
     related_as = db.relationship(Role,
         primaryjoin=(role_id == Role.id),
         backref='describes')
