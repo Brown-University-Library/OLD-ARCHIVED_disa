@@ -248,7 +248,8 @@ class Referent(db.Model):
     person_id = db.Column(db.Integer, db.ForeignKey('1_people.id'),
         nullable=True)
     names = db.relationship('ReferentName',
-        primaryjoin=(id == ReferentName.referent_id) )
+        primaryjoin=(id == ReferentName.referent_id),
+        backref='referent', cascade='delete')
     primary_name = db.relationship('ReferentName',
         primaryjoin=(primary_name_id == ReferentName.id),
         post_update=True )
