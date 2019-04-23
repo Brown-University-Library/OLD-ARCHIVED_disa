@@ -85,7 +85,9 @@
                     <br />
                 <textarea class="form-control" id="transcription"></textarea>
             </div>
-            <button type="submit" class="btn btn-primary" id="rec_update">Update</button>
+            <button type="submit" class="btn btn-primary" id="rec_update" onclick="tinyMCE.triggerSave()">
+                Update
+            </button>
         </form>
     </div>
     {% if rec %}
