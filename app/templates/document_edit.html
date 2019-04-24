@@ -17,6 +17,23 @@
     flex: 0 1 30%;
     margin: 2px 0 0 5px;
 }
+
+th.ref-id-col {
+  width: 20%;
+}
+
+th.ref-label-col {
+  width: 25%;
+}
+
+th.ref-date-col {
+  width: 25%;
+}
+
+.deactivate-delete {
+  margin-right: 10%;
+}
+
 </style>
 {% endblock %}
 
@@ -61,10 +78,10 @@
         <table class="table">
             <thead>
                 <tr>
-                  <th scope="col">ID</th>
-                  <th scope="col">Item type</th>
-                  <th scope="col">Edited</th>
-                  <th></th>
+                  <th class="ref-id-col" scope="col">ID</th>
+                  <th class="ref-label-col" scope="col">Item type</th>
+                  <th class="ref-date-col" scope="col">Edited</th>
+                  <th class="ref-ctrl-col" ></th>
                 </tr>
             </thead>
             <tbody id="references_table">
@@ -224,6 +241,26 @@ var updateDocumentData = function(docId, ctMap) {
     });
 }
 
+var activateReferenceDelete = function($delBtn) {
+  var $cancel_btn = $('<button/>', {
+    'class': 'btn btn-secondary deactivate-delete',
+    'title': 'Cancel current changes'
+  });
+  var $cancel_span = $('<span/>', {'class': 'fas fa-undo'});
+  $cancel_btn.append($cancel_span);
+  $delBtn.empty().text('Confirm delete').addClass('active');
+  $delBtn.before($cancel_btn);
+  return true;
+}
+
+var deactivateReferenceDelete = function($cancelBtn) {
+  var $del_span = $('<span/>', {'class': 'fas fa-times-circle'});
+  var $del_btn = $cancelBtn.next('.del-reference');
+  $cancelBtn.remove();
+  $del_btn.empty().append($del_span).removeClass('active');
+  return true;
+}
+
 var deleteReference = function($refRow, ctMap) {
     var ref_del_api = "{{ url_for('delete_reference', refId='STUB') }}"
         .replace('STUB', $refRow.attr('data-reference'));
@@ -231,8 +268,8 @@ var deleteReference = function($refRow, ctMap) {
         type: "DELETE",
         url: ref_del_api,
         success: function(data) {
-          initializeForm(data, ctMap);
           $refRow.remove();
+          initializeForm(data, ctMap);
           $('#document_form').accordion('option','active', false );
         }
     });
@@ -260,7 +297,15 @@ $( document ).ready(function() {
         updateCitationFields(
             cite_data['fields'], cite_type, cite_type_fields);
     });
-    $( "#references_table" ).on('click', '.del-reference', function(e) {
+    $( "#references_table" ).on('click', '.del-reference:not(.active)', function(e) {
+      e.preventDefault();
+      activateReferenceDelete($(this));
+    });
+    $( "#references_table" ).on('click', '.deactivate-delete', function(e) {
+      e.preventDefault();
+      deactivateReferenceDelete($(this));
+    });
+    $( "#references_table" ).on('click', '.del-reference.active', function(e) {
       e.preventDefault();
       var $ref_row = $(this).closest('tr');
       deleteReference($ref_row, cite_type_fields);
