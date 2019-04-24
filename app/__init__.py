@@ -20,7 +20,7 @@ from app import routes, models
 
 # CLI
 from app.etl import teardown, setup, mongo, users, inferencing
-from app.etl import denormalize
+from app.etl import denormalize, convert_citation_types
 import click
 
 @app.cli.command()
@@ -56,6 +56,11 @@ def browse_data():
     with open('app/static/data/denormalized.json','w') as f:
         data = denormalize.json_for_browse()
         json.dump(data, f)
+
+@app.cli.command()
+def convert_citations():
+    convert_citation_types.convert(
+        os.path.join(app.config['APP_DIR'], 'data') )
 
 # END CLI
 
