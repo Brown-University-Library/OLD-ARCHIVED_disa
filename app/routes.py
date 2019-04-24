@@ -431,6 +431,16 @@ def update_reference_data(refId=None):
         'value': ref.reference_type.name, 'id':ref.reference_type.id }
     return jsonify(data)
 
+@app.route('/data/reference/<refId>', methods=['DELETE'])
+def delete_reference(refId):
+    existing = models.Reference.query.get(refId)
+    if existing:
+        cite = existing.citation
+        db.session.delete(existing)
+        db.session.commit()
+        return read_document_data(cite.id)
+    return redirect(url_for('editor_index'), code=404)
+
 def update_referent_name(data):
     if data['id'] == 'name':
         name = models.ReferentName()

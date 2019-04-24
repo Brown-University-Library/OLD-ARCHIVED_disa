@@ -64,16 +64,19 @@
                   <th scope="col">ID</th>
                   <th scope="col">Item type</th>
                   <th scope="col">Edited</th>
+                  <th></th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="references_table">
             {% for item in doc.references %}
-                <tr>
+                <tr data-reference="{{ item.id }}">
                     <th scope="row">{{ item.id }}</th>
                     <td>
                         <a href="{{ url_for('edit_record', recId=item.id) }}">{{ item.reference_type.name }}</a>
                     </td>
                     <td>{{ item.last_edit().timestamp.strftime("%Y-%m-%d") }}</td>
+                    <td><button class="btn btn-danger del-reference"><span class="fas fa-times-circle"></span></button>
+                    </td>
                 </tr>
             {% endfor %}
             </tbody>
@@ -221,6 +224,20 @@ var updateDocumentData = function(docId, ctMap) {
     });
 }
 
+var deleteReference = function($refRow, ctMap) {
+    var ref_del_api = "{{ url_for('delete_reference', refId='STUB') }}"
+        .replace('STUB', $refRow.attr('data-reference'));
+    $.ajax({
+        type: "DELETE",
+        url: ref_del_api,
+        success: function(data) {
+          initializeForm(data, ctMap);
+          $refRow.remove();
+          $('#document_form').accordion('option','active', false );
+        }
+    });
+}
+
 $( document ).ready(function() {
     var doc_id = getDocumentId();
     var cite_type_fields = JSON.parse('{{ ct_fields | tojson | safe}}');
@@ -243,9 +260,14 @@ $( document ).ready(function() {
         updateCitationFields(
             cite_data['fields'], cite_type, cite_type_fields);
     });
+    $( "#references_table" ).on('click', '.del-reference', function(e) {
+      e.preventDefault();
+      var $ref_row = $(this).closest('tr');
+      deleteReference($ref_row, cite_type_fields);
+    });
     $( "#doc_update" ).on('click', function(e) {
-          e.preventDefault();
-        updateDocumentData(doc_id, cite_type_fields);
+      e.preventDefault();
+      updateDocumentData(doc_id, cite_type_fields);
     });
 });
 </script>
