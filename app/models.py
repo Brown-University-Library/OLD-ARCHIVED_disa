@@ -135,6 +135,27 @@ class CitationField(db.Model):
         primaryjoin=(field_id == ZoteroField.id),
         backref='citations')
 
+class CitationCollectionType(db.Model):
+    __tablename__ = '2_citation_collection_types'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+
+class CollectionTypeField(db.Model):
+    __tablename__ = '3_collectiontype_fields'
+
+    id = db.Column(db.Integer, primary_key=True)
+    collection_type_id = db.Column(
+        db.Integer, db.ForeignKey('2_citation_collection_types.id'))
+    zotero_field_id = db.Column(db.Integer, db.ForeignKey('1_zotero_fields.id'))
+    rank = db.Column(db.Integer)
+    collection_type = db.relationship(CitationCollectionType,
+        primaryjoin=(collection_type_id == CitationCollectionType.id),
+        backref='template')
+    fields = db.relationship(ZoteroField,
+        primaryjoin=(zotero_field_id == ZoteroField.id),
+        backref='collection_types')
+
 class CitationCollection(db.Model):
     __tablename__ = '3_citation_collections'
 
@@ -143,7 +164,7 @@ class CitationCollection(db.Model):
         db.Integer, db.ForeignKey('3_citation_collections.id'),
          nullable=True)
     collection_type_id = db.Column(db.Integer,
-        db.ForeignKey('2_citation_collection_types'))
+        db.ForeignKey('2_citation_collection_types.id'))
     name = db.Column(db.String(255))
     collection_within = db.relationship('CitationCollection', remote_side=[id])
     collection_type = db.relationship('CitationCollectionType',
@@ -152,15 +173,20 @@ class CitationCollection(db.Model):
     citations = db.relationship(
         'Citation', backref='collection', lazy=True)
 
-class CitationCollectionType(db.Model):
-    __tablename__ = '2_citation_collection_types'
+class CollectionField(db.Model):
+    __tablename__ = '4_collection_fields'
 
     id = db.Column(db.Integer, primary_key=True)
+    collection_id = db.Column(db.Integer,
+        db.ForeignKey('3_citation_collections.id'))
     field_id = db.Column(db.Integer, db.ForeignKey('1_zotero_fields.id'))
-    name = db.Column(db.String(255))
+    field_data = db.Column(db.String(255))
+    collection = db.relationship(CitationCollection,
+        primaryjoin=(collection_id == CitationCollection.id),
+        backref='fields')
     field = db.relationship(ZoteroField,
         primaryjoin=(field_id == ZoteroField.id),
-        backref='collection_types')
+        backref='collections')
 
 class Reference(db.Model):
     __tablename__ = '5_references'
