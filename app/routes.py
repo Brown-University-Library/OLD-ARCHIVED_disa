@@ -84,6 +84,17 @@ def edit_citation(citeId=None):
                     'display': f.zotero_field.display_name }
             for f in c.zotero_type.template_fields ]
                 for c in ct }
+    add_pages_field = ['Document', 'Book', 'Thesis', 'Manuscript']
+    for c in ct:
+        if c.name in add_pages_field:
+            pages = { 'name': 'pages', 'display':'Pages' }
+            fields = ct_fields[c.id]
+            date = [ f for f in fields if f['name'] == 'date'][0]
+            pages['rank'] = date['rank'] + 1
+            for f in fields:
+                if f['rank'] > date['rank']:
+                    f['rank'] += 1
+            ct_fields[c.id].append(pages)
     if not citeId:
         return render_template('document_edit.html',
             doc=None, ct_fields=ct_fields )
@@ -237,20 +248,24 @@ def update_citation_data(citeId):
         for f in cite.citation_type.zotero_type.template_fields }
     citation_display = []
     cite.citation_data = []
+    addendums = []
     for field, val in data['fields'].items():
         if val == '':
             continue
         zfield = models.ZoteroField.query.filter_by(name=field).first()
         cfield = models.CitationField(citation_id=cite.id,
             field_id=zfield.id, field_data=val)
-        citation_display.append( (field_order_map[zfield.name], val) )
+        try:
+            citation_display.append( (field_order_map[zfield.name], val) )
+        except KeyError:
+            addendums.append(val)
         db.session.add(cfield)
     if len(citation_display) == 0:
         now = datetime.datetime.utcnow()
         cite.display = 'Document :: {}'.format(now.strftime('%Y %B %d'))
     else:
         vals = [ v[1] for v in sorted(citation_display) ]
-        cite.display = ' '.join(vals)
+        cite.display = ', '.join(vals + addendums)
     db.session.add(cite)
     db.session.commit()
 

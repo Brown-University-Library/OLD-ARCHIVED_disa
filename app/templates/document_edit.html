@@ -39,7 +39,8 @@ th.ref-date-col {
 
 {% block content %}
 <div class="container">
-    <div id="document_form">
+    <div class="row">
+    <div id="document_form" class='col-md-11'>
         <h2 id="document_header"></h2>
         <form action="" method="">
             <div class="form-group row">
@@ -71,6 +72,10 @@ th.ref-date-col {
             <button type="submit" class="btn btn-primary" id="doc_update">Update</button>
         </form>
     </div>
+    <div class='col-md-1'>
+        <a href="{{ url_for('editor_index')}}">Back</a>
+    </div>
+</div>
 
     {% if doc %}
     <h2>Items</h2>
