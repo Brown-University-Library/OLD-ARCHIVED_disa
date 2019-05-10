@@ -310,6 +310,7 @@ def read_record_data(recId=None):
             'first': ent.primary_name.first,
             'last': ent.primary_name.last,
             'id': ent.id,
+            'person_id': ent.person_id,
             'roles': [ role.id for role in ent.roles ]
         }
             for ent in rec.referents ]
@@ -526,6 +527,7 @@ def update_referent(rntId=None):
         'first': rnt.primary_name.first,
         'last': rnt.primary_name.last,
         'id': rnt.id,
+        'person_id': rnt.person_id,
         'roles': [ role.id for role in rnt.roles ] })
 
 @app.route('/data/entrants/details/', methods=['PUT'])

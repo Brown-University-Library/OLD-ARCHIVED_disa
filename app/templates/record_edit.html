@@ -99,6 +99,7 @@
         <table class="table">
             <thead>
                 <tr>
+                  <th scope="col">ID</th>
                   <th scope="col" style="width:25%">First</th>
                   <th scope="col" style="width:25%">Last</th>
                   <th scope="col" style="width:25%">Description</th>
@@ -299,10 +300,12 @@ var addEntrantInput = function($container, entData, tags) {
     $tr = $('<tr/>', { 'class': 'entrant-row',
         'data-ent-id': entData['id'],
         'data-name-id': entData['name_id']});
-    $td1 = $('<td/>');
+    $td1 = $('<td/>', {'class': 'person-id',
+        'html': entData['person_id']});
     $td2 = $('<td/>');
     $td3 = $('<td/>');
-    $td4 = $('<td/>', { 'class': 'entrant-controls'});
+    $td4 = $('<td/>');
+    $td5 = $('<td/>', { 'class': 'entrant-controls'});
     $input1 = $('<input/>', {
         'class': 'form-control entrant-input name-first',
         'type': 'text',
@@ -320,12 +323,11 @@ var addEntrantInput = function($container, entData, tags) {
                                     'text': opt.value });
         $select.append($opt);
     }
-
-    $td1.append($input1);
-    $td2.append($input2);
-    $td3.append($select);
-    $td4.append($button);
-    $tr.append($td1).append($td2).append($td3).append($td4);
+    $td2.append($input1);
+    $td3.append($input2);
+    $td4.append($select);
+    $td5.append($button);
+    $tr.append($td1).append($td2).append($td3).append($td4).append($td5);
     $container.append($tr);
 
     $select.prop("multiple", true);
@@ -447,7 +449,8 @@ var updateEntrantRow = function ($container, entData, entId, editUrl ) {
     var $row, $select;
     $row = $container.find(`.entrant-row[data-ent-id=${entId}]`);
     $row.attr('data-ent-id', entData['id']);
-    $row.attr('data-name-id', entData['name_id'])
+    $row.attr('data-name-id', entData['name_id']);
+    $row.find('.person-id').html(entData['person_id']);
     $row.find('.name-first').val(entData['first']);
     $row.find('.name-last').val(entData['last']);
     $select = $row.find('.role-tags');
