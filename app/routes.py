@@ -607,7 +607,7 @@ def get_person(persId):
 
 @app.route('/source/<srcId>')
 def get_source(srcId):
-    return 'Foo:' + srcId
+    return redirect(url_for('edit_record', recId=srcId))
 
 @app.route('/record/relationships/<recId>')
 @login_required
