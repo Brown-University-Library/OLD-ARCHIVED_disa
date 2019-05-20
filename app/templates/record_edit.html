@@ -85,7 +85,7 @@
                     <br />
                 <textarea class="form-control" id="transcription"></textarea>
             </div>
-            <button type="submit" class="btn btn-primary" id="rec_update" onclick="tinyMCE.triggerSave()">
+            <button type="submit" class="btn btn-primary" id="rec_update">
                 Update
             </button>
         </form>
@@ -152,7 +152,8 @@ var setInputValues = function(recData) {
     if ( $.isEmptyObject(recData) ) {
         return;
     }
-    $('#transcription').text(recData['transcription']);;
+    $('#transcription').text(recData['transcription']);
+    tinyMCE.get('transcription').setContent(recData['transcription']);
     $('#record_date').val(recData['date']);
     updateLocationInputs(recData['locations']);
     updateRecordType($('#recordtype_autocomplete'), recData['record_type']);
@@ -612,8 +613,9 @@ $( document ).ready(function() {
       yearRange: "1491:2000"
     });
     $( "#rec_update" ).on('click', function(e) {
-          e.preventDefault();
-         updateRecordData(rec_id, doc_id);
+        e.preventDefault();
+        tinyMCE.triggerSave();
+        updateRecordData(rec_id, doc_id);
     });
     $('#entrant_component').on('click', '#add-person', function(e) {
         e.preventDefault();
