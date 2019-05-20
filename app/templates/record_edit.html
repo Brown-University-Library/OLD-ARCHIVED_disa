@@ -153,7 +153,7 @@ var setInputValues = function(recData) {
         return;
     }
     $('#transcription').text(recData['transcription']);
-    tinyMCE.get('transcription').setContent(recData['transcription']);
+    tinymce.get('transcription').setContent(recData['transcription']);
     $('#record_date').val(recData['date']);
     updateLocationInputs(recData['locations']);
     updateRecordType($('#recordtype_autocomplete'), recData['record_type']);
@@ -214,7 +214,7 @@ var collectInputValues = function(docId) {
         'value': $('#recordtype_autocomplete').val(),
         'label': $('#recordtype_autocomplete').val()
     }
-    data['national_context'] =  Number( $('#national_context').val() ),
+    data['national_context'] =  Number( $('#national_context').val() );
     data['locations'] = collectLocations();
     data['date'] = $('#record_date').val();
     data['citation_id'] = Number(docId);
@@ -614,7 +614,7 @@ $( document ).ready(function() {
     });
     $( "#rec_update" ).on('click', function(e) {
         e.preventDefault();
-        tinyMCE.triggerSave();
+        tinymce.triggerSave();
         updateRecordData(rec_id, doc_id);
     });
     $('#entrant_component').on('click', '#add-person', function(e) {
