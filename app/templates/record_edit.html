@@ -612,10 +612,16 @@ $( document ).ready(function() {
       changeYear: true,
       yearRange: "1491:2000"
     });
-    $( "#rec_update" ).on('click', function(e) {
+    $("#rec_update").on('click', function(e) {
         e.preventDefault();
-        tinymce.triggerSave();
-        updateRecordData(rec_id, doc_id);
+        if ($(this).attr('data-clicked') == 1) {
+            $(this).attr('data-clicked', 0);
+            return true;
+        } else {
+            $(this).attr('data-clicked', 1);
+            tinymce.triggerSave();
+            updateRecordData(rec_id, doc_id);
+        }
     });
     $('#entrant_component').on('click', '#add-person', function(e) {
         e.preventDefault();

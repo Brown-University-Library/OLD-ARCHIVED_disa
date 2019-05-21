@@ -19,6 +19,12 @@
               margin-right:30px;
             }
         </style>
+        <script src="{{ url_for('static', filename='lib/jquery/jquery-3.3.1.min.js') }}"></script>
+        <script
+            src="{{ url_for('static', filename='lib/jquery-ui-1.12.1/jquery-ui.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='lib/bootstrap-4.1.2-dist/js/bootstrap.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='lib/fontawesome-free-5.1.1-web/js/all.js') }}"></script>
+        <script src="{{ url_for('static', filename='lib/select2-dist/js/select2.min.js') }}"></script>
         {% block header %}{% endblock %}
     </head>
     <body>
@@ -48,12 +54,6 @@
         {% with messages = get_flashed_messages() %}
         {% endwith %}
         {% block content %}{% endblock %}
-        <script src="{{ url_for('static', filename='lib/jquery/jquery-3.3.1.min.js') }}"></script>
-        <script
-            src="{{ url_for('static', filename='lib/jquery-ui-1.12.1/jquery-ui.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='lib/bootstrap-4.1.2-dist/js/bootstrap.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='lib/fontawesome-free-5.1.1-web/js/all.js') }}"></script>
-        <script src="{{ url_for('static', filename='lib/select2-dist/js/select2.min.js') }}"></script>
         {% block scripts %}{% endblock %}
     </body>
 </html>
