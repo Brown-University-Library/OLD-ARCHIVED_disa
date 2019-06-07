@@ -386,9 +386,9 @@ var initiateEntrantWorkflow = function ($container, editUrl) {
         var $details_btn = $('<a/>', { 'class': 'btn btn-secondary details-entrant entrant-ctl',
             'text': 'Details',
             'href': `${editUrl}/${ent_id}` });
-        var $merge_btn = $('<button/>', { 'class': 'btn btn-warning merge-entrant entrant-ctl',
-            'hidden': 'hidden',
-            'text': 'Merge'});
+        var $merge_btn = $('<a/>', { 'class': 'btn btn-warning merge-entrant entrant-ctl',
+            'text': 'Merge',
+            'href': `/editor/people/${ent_id}/merge`});
         var $edit_btn = $('<button/>', { 'class': 'btn btn-primary edit-entrant entrant-ctl',
             'text': 'Edit'});
         $row = deactivateEntrantInput( $(this) );

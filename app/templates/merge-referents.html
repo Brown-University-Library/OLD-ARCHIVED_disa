@@ -1,0 +1,69 @@
+{% extends "editor.html" %}
+
+{% block header %}
+{{ super() }}
+  <script src="{{ url_for('static', filename='js/editor/merge-referents-page.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div id="merge_referents_page">
+  <form id="referent_search">
+    <h3>Filters</h3>
+    <table>
+      <tbody id="filter_list">
+        <template>
+          <tr id="search_filter_row">
+            <td><span class="search-referents-filter-value"></span></td>
+            <td><span class="search-referents-filter-field"></span></td>
+            <td><button class="search-referents-filter-remove">X</button></td>
+          </tr>
+        </template>
+      </tbody>
+      <tfoot id="filter_maker">
+        <tr>
+          <td><input class="search-referents-input-value"/></td>
+          <td>
+            <select class="search-referents-select-field">
+              <template>
+                <option id="filter_option" value=""></option>
+              </template>
+            </select>
+          </td>
+          <td><button class="filter-referents">Filter</button></td>
+        </tr>
+      </tfoot>
+    </table>
+  </form>
+  <div id="referent_search_results">
+    <h3>This document</h3>
+    <ul class="referent-search-results-local">
+      <template>
+        <li class="referent-search-results-row">
+          <span class="referent-search-results-row-id"></span>
+          <a class="referent-search-results-row-link" href="">
+            <span class="referent-search-results-row-display-name"></span>          
+          </a>
+        </li>
+      </template>
+    </ul>
+    <h3>All documents</h3>
+    <ul class="referent-search-results-global">
+    </ul>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts%}
+{{ super() }}
+<script type="text/javascript">
+  let endpoints = {
+    'people': "{{ url_for('search_people') }}",
+    'landing': "{{ url_for('land_merge_page') }}"
+  };
+  let referent_id = "{{ prsId }}";
+  let source = new Source($('#merge_referents_page'), endpoints);
+  let mpage = new MergeReferentsPage($('#merge_referents_page'), source,
+    referent_id);
+  mpage.init();
+</script>
+{% endblock %}

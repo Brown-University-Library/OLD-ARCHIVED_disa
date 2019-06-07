@@ -683,4 +683,68 @@ def delete_relationship(relId):
         stamp_edit(current_user, ref)
     return redirect(
         url_for('relationships_by_reference', refId = ref.id),
-        code=303 )    
+        code=303 )
+
+@app.route('/landing/merge/')
+@app.route('/landing/merge/<rntId>')
+def land_merge_page(rntId=None):
+    config = {
+        'filter_fields' : [
+            {'id': 'date', 'name': 'date'},
+            {'id': 'location', 'name': 'location'},
+            {'id': 'description', 'name': 'description'},
+            {'id': 'vocation', 'name': 'vocation'},
+            {'id': 'race', 'name': 'race'},
+            {'id': 'tribe', 'name': 'tribe'},
+            {'id': 'origin', 'name': 'origin'},
+            {'id': 'status', 'name': 'status'},
+            {'id': 'title', 'name': 'title'}
+        ]
+    }
+    return jsonify(config)
+
+@app.route('/editor/people/<prsId>/merge')
+def merge_referent(prsId):
+    return render_template('merge-referents.html', prsId=prsId)
+
+@app.route('/search/people/', methods=['GET'])
+# @login_required
+def search_people():
+    params = request.args
+    qry = db.session.query(models.Person) \
+        .join(models.Person.references) \
+        .join(models.Referent.reference)
+    for p in params:
+        if p == 'location':
+            qry = qry.join(models.Reference.locations) \
+            .join(models.ReferenceLocation.location) \
+            .filter(models.Location.name.like(params[p]))
+        elif p == 'description':
+            qry = qry.join(models.Referent.roles) \
+            .filter(models.Role.name.like(params[p]))
+        elif p == 'status':
+            qry = qry.join(models.Referent.enslavements) \
+            .filter(models.EnslavementType.name.like(params[p]))
+        elif p == 'race':
+            qry = qry.join(models.Referent.races) \
+            .filter(models.Race.name.like(params[p]))
+        elif p == 'title':
+            qry = qry.join(models.Referent.titles) \
+            .filter(models.Title.name.like(params[p]))
+        elif p == 'vocation':
+            qry = qry.join(models.Referent.vocations) \
+            .filter(models.Vocation.name.like(params[p]))
+        elif p == 'tribe':
+            qry = qry.join(models.Referent.tribes) \
+            .filter(models.Tribe.name.like(params[p]))
+        elif p == 'origin':
+            qry = qry.join(models.Referent.origins) \
+            .filter(models.Location.name.like(params[p]))
+    people = qry.all()
+    out = []
+    for p in people:
+        cites = [ r.reference.citation for r in p.references ]
+        citation_data = [ { 'id': c.id, 'name': c.display }
+            for c in cites ] 
+        out.append( {'name': p.display_name(), 'citations': citation_data} )
+    return jsonify( {'results': out} )
