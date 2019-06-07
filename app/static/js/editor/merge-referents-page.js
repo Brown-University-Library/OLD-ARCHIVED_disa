@@ -95,60 +95,66 @@ class Source {
   }
 }
 
-class ReferentRow {
-  
+class PersonRow {
+
+  constructor($elem, $reference, data) {
+    this._$root = $elem;
+    this._$person_name = $elem.find('.person-search-results-row-display-name');
+    this._$person_citations = $elem.find('.person-search-results-row-citations');
+
+    this._$person_name.text(data.name);
+    for (var i=0; i < data.citations.length; i++) {
+      let $ref = $reference.clone();
+      $ref.text(data.citations[i].name);
+      this._$person_citations.append($ref);
+    }
+  }
+
+  getRoot() {
+    return this._$root;
+  }
 }
 
-class ReferentManager {
+class PersonSearchResults {
+
   constructor($elem) {
     this._$root = $elem;
+    this._$local = $elem.find('.person-search-results-local');
+    this._$global = $elem.find('.person-search-results-global');
     this.$rows = [];
     this.templates = {};    
     this.setTemplates();
-  }
-
-  init( rowData ) {
-    for (var i=0; i < rowData.length; i++) {
-      
-    }
   }
 
   setTemplates() {
     let tmpl_map = this.templates;
     let $templates = this._$root.find('template');
     $templates.each(function() {
-      let $tmpl = $( $(this).prop('content') ).children().first();
-      $tmpl.detach();
-      tmpl_map[$tmpl.attr('id')] = $tmpl;
-      $tmpl.attr('id', '');
-      $(this).remove();
+      tmpl_map = getTemplate( $(this), tmpl_map );
     });
   }
 
-  show() {
-    this._$root.prop('hidden', false);
+  loadResults( results ) {
+    for (var i=0; i < results.length; i++) {
+      let row = new PersonRow(
+        this.templates.person_search_results_row.clone(),
+        this.templates.person_search_results_row_citation.clone(),
+        results[i]);
+      this._$global.append(row.getRoot());
+    }
   }
 
-  hide() {
-    this._$root.prop('hidden', true);
-  }
-
-  activateRow( rowId ) {
-  }
-
-  deactivateRow( rowId ) {
-  }
-
-  deactivate() {
-
+  clear() {
+    this._$local.empty();
+    this._$global.empty();
   }
 }
 
 class FilterRow {
   constructor($elem, rowData) {
     this._$root = $elem;
-    this._$filter_val = $elem.find('.search-referents-filter-value');
-    this._$filter_field = $elem.find('.search-referents-filter-field');
+    this._$filter_val = $elem.find('.search-person-filter-value');
+    this._$filter_field = $elem.find('.search-person-filter-field');
 
     this._$root.attr('data-field', rowData.field_name);
     this._$root.attr('data-field-value', rowData.filter_value);
@@ -182,8 +188,8 @@ class FilterMaker {
   constructor($elem, $optionTemplate) {
     this._$root = $elem;
     this._$opt_tmpl = $optionTemplate;
-    this._$field_val = $elem.find('.search-referents-input-value');
-    this._$field_select = $elem.find('.search-referents-select-field');
+    this._$field_val = $elem.find('.search-person-input-value');
+    this._$field_select = $elem.find('.search-person-select-field');
   }
 
   loadOptions( options ) {
@@ -210,7 +216,7 @@ class FilterMaker {
   }
 }
 
-class ReferentSearch {
+class PersonSearch {
   constructor($elem) {
     this._$root = $elem;
     this.$filter_list = $elem.find('#filter_list');
@@ -282,16 +288,21 @@ class MergeReferentsPage {
     this.data = {};
 
     this.source = source;
-    this.referent_search = new ReferentSearch($elem.find('#referent_search'));
-    // this.referent_results = new ReferentSearchResults(
-    //   $elem.find('#referent_search_results'));
+    this.person_search = new PersonSearch($elem.find('#person_search'));
+    this.person_results = new PersonSearchResults(
+      $elem.find('#person_search_results'));
 
     this.registerEvents();
   }
 
   initialPageLoad( data ) {
-    this.referent_search.init( data.filter_fields );
-    // this.referent_results.load_results( data.referents );
+    this.person_search.init( data.filter_fields );
+    // this.person_results.loadResults( data.referents );
+  }
+
+  loadSearchResults( data ) {
+    this.person_results.clear();
+    this.person_results.loadResults( data.results );
   }
 
   registerEvents() {
@@ -302,10 +313,10 @@ class MergeReferentsPage {
       let $btn = $( this );
 
       switch ( true ){
-        case $btn.hasClass('filter-referents'):
-          that.referent_search.addFilter();
-          if ( that.referent_search.updated ) {            
-            that.source.searchPeople( that.referent_search.readFilters() );
+        case $btn.hasClass('filter-person'):
+          that.person_search.addFilter();
+          if ( that.person_search.updated ) {            
+            that.source.searchPeople( that.person_search.readFilters() );
           }
           break;
         case $btn.hasClass('cancel-edit-reference'):
@@ -327,11 +338,25 @@ class MergeReferentsPage {
       that.initialPageLoad( data );
     });
     this._$root.on('search_completed', function(e, data){
-      console.log( data );
+      that.loadSearchResults( data );
     });
   }
 
   init() {
     this.source.getPageConfig( this.referent_id );
   }
+}
+
+function getTemplate($template, template_map) {
+  let $tmpl = $( $template.prop('content') ).children().first();
+  if ( $tmpl.find('template').length ){
+    $tmpl.find('template').each(function() {
+      template_map = getTemplate( $(this), template_map );
+    });      
+  }
+  $tmpl.detach();
+  template_map[$tmpl.attr('id')] = $tmpl;
+  $tmpl.attr('id', '');
+  $template.remove();
+  return template_map;
 }
