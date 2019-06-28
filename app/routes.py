@@ -46,7 +46,7 @@ def sort_documents(wrappedDocs):
     merge = {}
     for w in wrappedDocs:
         if w[0].id not in merge or merge[w[0].id][0] < w[2]:
-            merge[w[0].id] = (w[2], w[0])
+            merge[w[0].id] = (w[2], w[3], w[0])
         else:
             continue
     return sorted([ merge[w] for w in merge], reverse=True)
@@ -58,7 +58,7 @@ def editor_index():
     no_refs = [ (cite, current_user.id, datetime.datetime.utcnow())
         for cite in all_cites if len(cite.references) == 0 ]
     has_refs = [ cite for cite in all_cites if len(cite.references) > 0 ]
-    wrapped_refs = [ (cite, edit.user_id, edit.timestamp)
+    wrapped_refs = [ (cite, edit.user_id, edit.timestamp, edit.edited_by.email)
                         for cite in has_refs
                             for ref in cite.references
                                 for edit in ref.edits ]
