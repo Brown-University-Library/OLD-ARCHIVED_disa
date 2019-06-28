@@ -11,12 +11,13 @@ def process_reference(entrant):
     rec = entrant.reference
     locs = [ (loc.location_rank, loc.location.name)
                 for loc in rec.locations ]
+    date = rec.date or datetime.datetime(year=1492,day=1,month=1)
     ref_data = {
         'roles': collections.defaultdict(list),
         'date': {
-            'year': rec.date.year,
-            'month': rec.date.month,
-            'day': rec.date.day
+            'year': date.year,
+            'month': date.month,
+            'day': date.day
         },
         'locations': [ l[1] for l in sorted(locs, reverse=True) ],
         'comments': rec.transcription
@@ -113,7 +114,7 @@ def json_for_browse():
         first_date = datetime.datetime(year=2018,day=1,month=1)
         for ref in p.references:
             citation = ref.reference.citation.display
-            new_date = ref.reference.date
+            new_date = ref.reference.date or first_date
             if new_date < first_date:
                 first_date = new_date
             existing_ref_data = data['documents'][citation]
