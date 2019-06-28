@@ -6,6 +6,11 @@
 #new_document_button {
     margin-top: 5px;
 }
+
+.citation-titles {
+    width: 50%;
+}
+
 </style>
 {% endblock %}
 
@@ -20,7 +25,7 @@
             <thead>
                 <tr>
                   <th scope="col">ID</th>
-                  <th scope="col">Citation</th>
+                  <th class='citation-titles' scope="col">Citation</th>
                   <th scope="col">Items</th>
                   <th scope="col">Edited</th>
                 </tr>
@@ -33,7 +38,7 @@
                         <a href="{{ url_for('edit_citation', citeId=doc.id) }}">{{ doc.display }}</a>
                     </td>
                     <td>{{ doc.references|length }}</td>
-                    <td>{{ date.strftime('%Y-%m-%d') }}<br/>{{ date.strftime('%I:%M %p') }}</td>
+                    <td>{{ date.strftime('%Y-%m-%d %I:%M %p') }}</td>
                 </tr>
             {% endfor %}
             </tbody>
@@ -46,7 +51,7 @@
             <thead>
                 <tr>
                   <th scope="col">ID</th>
-                  <th scope="col">Citation</th>
+                  <th class='citation-titles' scope="col">Citation</th>
                   <th scope="col">Items</th>
                   <th scope="col">Editor</th>
                   <th scope="col">Time</th>
