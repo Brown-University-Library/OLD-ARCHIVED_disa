@@ -55,7 +55,7 @@ def sort_documents(wrappedDocs):
 @login_required
 def editor_index():
     all_cites = models.Citation.query.all()
-    no_refs = [ (cite, current_user.id, datetime.datetime.utcnow())
+    no_refs = [ (cite, current_user.id, datetime.datetime.now(), '')
         for cite in all_cites if len(cite.references) == 0 ]
     has_refs = [ cite for cite in all_cites if len(cite.references) > 0 ]
     wrapped_refs = [ (cite, edit.user_id, edit.timestamp, edit.edited_by.email)
