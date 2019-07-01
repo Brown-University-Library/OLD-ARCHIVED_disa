@@ -27,18 +27,20 @@
                   <th scope="col">ID</th>
                   <th class='citation-titles' scope="col">Citation</th>
                   <th scope="col">Items</th>
-                  <th scope="col">Edited</th>
+                  <th scope="col">Editor</th>
+                  <th scope="col">Time</th>
                 </tr>
             </thead>
             <tbody>
-            {% for date, email, doc in user_documents %}
+            {% for date, email, doc in user_documents[:10] %}
                 <tr>
                     <th scope="row">{{ doc.id }}</th>
                     <td>
                         <a href="{{ url_for('edit_citation', citeId=doc.id) }}">{{ doc.display }}</a>
                     </td>
                     <td>{{ doc.references|length }}</td>
-                    <td>{{ date.strftime('%Y-%m-%d %I:%M %p') }}</td>
+                    <td>{{ email }}</td>
+                    <td>{{ date.strftime('%Y-%m-%d') }}<br/>{{ date.strftime('%I:%M %p') }}</td>
                 </tr>
             {% endfor %}
             </tbody>
