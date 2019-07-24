@@ -6,6 +6,7 @@ from app import app, db, models, forms
 
 import datetime
 import collections
+from operator import itemgetter
 
 def stamp_edit(user, ref):
     edit = models.ReferenceEdit(reference_id=ref.id,
@@ -69,10 +70,10 @@ def editor_index():
     return render_template('document_index.html',
         user_documents=srtd_user, documents=srtd_all)
 
-@app.route('/editor/documents')
-@app.route('/editor/documents/<citeId>')
+
+@app.route('/editor/citations/<citeId>')
 @login_required
-def edit_citation(citeId=None):
+def edit_citation(citeId='new'):
     included = [ 'Book', 'Book Section', 'Document', 'Interview',
         'Journal Article', 'Magazine Article', 'Manuscript',
         'Newspaper Article', 'Thesis', 'Webpage' ]
@@ -95,13 +96,47 @@ def edit_citation(citeId=None):
                 if f['rank'] > date['rank']:
                     f['rank'] += 1
             ct_fields[c.id].append(pages)
-    if not citeId:
-        return render_template('document_edit.html',
-            doc=None, ct_fields=ct_fields )
-    cite = models.Citation.query.get(citeId)
-    # citation_data = { f.field.name: f.field_data for f in cite.citation_data }
-    return render_template('document_edit.html',
-        doc=cite, ct_fields=ct_fields )
+    config = {
+        'citationtype_fields': {
+            str(cid): sorted(ct_fields[cid], key=itemgetter('rank'))
+                for cid in ct_fields },
+        'citation_types': [
+            { 'id': c.id, 'name': c.name} for c in ct ],
+        'references': []
+    }
+    citation = {
+        'citation_id': '',
+        'display': '',
+        'acknowledgements': '',
+        'comments': '',
+        'citation_type': '',
+        'citation_fields': []
+    }
+    default = [ c for c in ct if c.name == 'Document'][0]
+    if citeId == 'new':
+        citation['citation_id'] = citeId
+        citation['citation_type'] = default.id
+    else:
+        cite = models.Citation.query.get(citeId)
+        citation['citation_id'] = cite.id
+        citation['display'] = cite.display
+        citation['comments'] = cite.comments
+        citation['acknowledgements'] = cite.acknowledgements
+        if cite.citation_type.id not in { c['id'] for c in config['citation_types'] }:
+            citation['citation_type'] = default.id
+        else:
+            citation['citation_type'] = cite.citation_type.id
+        citation['citation_fields'] = [
+            { 'name': f.field.name, 'value': f.field_data }
+                for f in cite.citation_data ]
+        config['references'] = [ { 'id': ref.id,
+                'reference_type': ref.reference_type.name,
+                'last_edit':
+                    ref.last_edit().timestamp.strftime("%Y-%m-%d")
+            } for ref in cite.references ]
+    config['citation'] = citation
+    return render_template('editor/citation.html', page_config=config)
+
 
 @app.route('/editor/records')
 @app.route('/editor/records/<recId>')
