@@ -55,7 +55,7 @@
               <ul class="relations">
                 {% for person in rel.related %}
                 <li>
-                  <a href="{{ url_for('get_person', persId=person.id) }}">{{ person.name }}</a>
+                  <a href="{{ url_for('main.get_person', persId=person.id) }}">{{ person.name }}</a>
                 </li>
                 {% endfor%}
               </ul>
@@ -85,7 +85,7 @@
               {% endfor %}
             </td>
             <td>
-              <a href="{{ url_for('get_source', srcId=ref.reference_id) }}">View source</a>
+              <a href="{{ url_for('main.get_source', srcId=ref.reference_id) }}">View source</a>
           </tr>
           {% endfor %}
         </tbody>

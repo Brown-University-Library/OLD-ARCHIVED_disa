@@ -1,6 +1,6 @@
 import operator
 
-from app import db, login
+from . import db, login_manager
 
 from werkzeug import security
 from flask_login import UserMixin
@@ -436,7 +436,7 @@ class User(UserMixin, db.Model):
         except:
             return None
 
-@login.user_loader
+@login_manager.user_loader
 def load_user(id):
     return User.query.get(int(id))
 

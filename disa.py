@@ -2,15 +2,15 @@ import os
 import json
 from flask_migrate import Migrate
 from app import create_app, db
-from app import routes, models
+from app import models
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 migrate = Migrate(app, db)
 
 
 # CLI
-from app.etl import teardown, setup, mongo, users, inferencing
-from app.etl import denormalize, convert_citation_types
+from etl import teardown, setup, mongo, users, inferencing
+from etl import denormalize, convert_citation_types
 import click
 
 @app.cli.command()

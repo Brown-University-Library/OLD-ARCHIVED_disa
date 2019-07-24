@@ -56,7 +56,7 @@ label.radio-inline {
             <h3>Individual Details</h3>
         </div>
         <div class='col-md-1'>
-            <a href="{{ url_for('edit_record', recId=rec.id)}}">Back</a>
+            <a href="{{ url_for('editor.edit_record', recId=rec.id)}}">Back</a>
         </div>
     </div>
     <div id="entrant_form">
@@ -410,7 +410,7 @@ var getFormData = function( $container ) {
 }
 
 var readEntrantData = function(entId, nameTypes) {
-    var ent_data_api = "{{ url_for('read_referent_data', rntId=None ) }}" + entId;
+    var ent_data_api = "{{ url_for('dataserv.read_referent_data', rntId=None ) }}" + entId;
     var out = null;
     $.get(ent_data_api, function(data) {
         initializeForm(data['ent'], nameTypes);
@@ -418,7 +418,7 @@ var readEntrantData = function(entId, nameTypes) {
 }
 
 var updateEntrantDetails = function(entId, dataObj) {
-    var ent_data_api = "{{ url_for('update_referent_details', rntId=None )}}" + entId;
+    var ent_data_api = "{{ url_for('dataserv.update_referent_details', rntId=None )}}" + entId;
     $.ajax({
         type: "PUT",
         url: ent_data_api,

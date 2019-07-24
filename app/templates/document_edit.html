@@ -73,7 +73,7 @@ th.ref-date-col {
         </form>
     </div>
     <div class='col-md-1'>
-        <a href="{{ url_for('editor_index')}}">Back</a>
+        <a href="{{ url_for('editor.editor_index')}}">Back</a>
     </div>
 </div>
 
@@ -94,7 +94,7 @@ th.ref-date-col {
                 <tr data-reference="{{ item.id }}">
                     <th scope="row">{{ item.id }}</th>
                     <td>
-                        <a href="{{ url_for('edit_record', recId=item.id) }}">{{ item.reference_type.name }}</a>
+                        <a href="{{ url_for('editor.edit_record', recId=item.id) }}">{{ item.reference_type.name }}</a>
                     </td>
                     <td>{{ item.last_edit().timestamp.strftime("%Y-%m-%d") }}</td>
                     <td><button class="btn btn-danger del-reference"><span class="fas fa-times-circle"></span></button>
@@ -105,7 +105,7 @@ th.ref-date-col {
         </table>
         {% endif %}
         <div id="new_document_button" class="d-flex flex-row-reverse">
-            <a class="btn btn-primary" href="{{ url_for('edit_record', doc=doc.id) }}">Add an item</a>
+            <a class="btn btn-primary" href="{{ url_for('editor.edit_record', doc=doc.id) }}">Add an item</a>
         </div>
     {% endif %}
 </div>
