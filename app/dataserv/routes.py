@@ -22,8 +22,8 @@ def stamp_edit(user, ref):
     db.session.commit()
 
 
-@dataserv.route('/data/documents/', methods=['GET'])
-@dataserv.route('/data/documents/<docId>', methods=['GET'])
+@dataserv.route('/documents/', methods=['GET'])
+@dataserv.route('/documents/<docId>', methods=['GET'])
 def read_document_data(docId=None):
     data = { 'doc': {} }
     included = [ 'Book', 'Book Section', 'Document', 'Interview',
@@ -45,7 +45,7 @@ def read_document_data(docId=None):
     return jsonify(data)
 
 
-@dataserv.route('/data/documents/', methods=['POST'])
+@dataserv.route('/documents/', methods=['POST'])
 def create_citation():
     data = request.get_json()
     unspec = models.CitationType.query.filter_by(name='Document').first()
@@ -77,8 +77,8 @@ def create_citation():
         { 'redirect': url_for('edit_citation', citeId=cite.id) })
 
 
-@dataserv.route('/data/documents/', methods=['PUT'])
-@dataserv.route('/data/documents/<citeId>', methods=['PUT'])
+@dataserv.route('/documents/', methods=['PUT'])
+@dataserv.route('/documents/<citeId>', methods=['PUT'])
 def update_citation_data(citeId):
     data = request.get_json()
     if citeId is None:
@@ -131,8 +131,8 @@ def update_citation_data(citeId):
     return jsonify(data)
 
 
-@dataserv.route('/data/records/', methods=['GET'])
-@dataserv.route('/data/records/<recId>', methods=['GET'])
+@dataserv.route('/records/', methods=['GET'])
+@dataserv.route('/records/<recId>', methods=['GET'])
 def read_record_data(recId=None):
     data = { 'rec': {}, 'entrants': [] }
     if recId == None:
@@ -165,8 +165,8 @@ def read_record_data(recId=None):
     return jsonify(data)
 
 
-@dataserv.route('/data/entrants/', methods=['GET'])
-@dataserv.route('/data/entrants/<rntId>', methods=['GET'])
+@dataserv.route('/entrants/', methods=['GET'])
+@dataserv.route('/entrants/<rntId>', methods=['GET'])
 def read_referent_data(rntId=None):
     data = { 'ent': {} }
     if rntId == None:
@@ -240,8 +240,8 @@ def process_record_locations(locData, recObj):
     db.session.commit()
     return recObj
 
-@dataserv.route('/data/records/', methods=['POST'])
-@dataserv.route('/data/records/<refId>', methods=['PUT'])
+@dataserv.route('/records/', methods=['POST'])
+@dataserv.route('/records/<refId>', methods=['PUT'])
 def update_reference_data(refId=None):
     data = request.get_json()
     reference_type = get_or_create_type(
@@ -291,7 +291,7 @@ def update_reference_data(refId=None):
         'value': ref.reference_type.name, 'id':ref.reference_type.id }
     return jsonify(data)
 
-@dataserv.route('/data/reference/<refId>', methods=['DELETE'])
+@dataserv.route('/reference/<refId>', methods=['DELETE'])
 def delete_reference(refId):
     existing = models.Reference.query.get(refId)
     if existing:
@@ -310,6 +310,7 @@ def update_referent_name(data):
     name.last = data['last']
     given = models.NameType.query.filter_by(name='Given').first()
     name.name_type_id = data.get('name_type', given.id)
+    db.session.add(name)
     return name   
 
 def get_or_create_referent_attribute(data, attrModel):
@@ -322,8 +323,8 @@ def get_or_create_referent_attribute(data, attrModel):
     else:
         return existing 
 
-@dataserv.route('/data/entrants/', methods=['POST'])
-@dataserv.route('/data/entrants/<rntId>', methods=['PUT', 'DELETE'])
+@dataserv.route('/entrants/', methods=['POST'])
+@dataserv.route('/entrants/<rntId>', methods=['PUT', 'DELETE'])
 def update_referent(rntId=None):
     if request.method == 'DELETE':
         rnt = models.Referent.query.get(rntId)
@@ -373,8 +374,8 @@ def update_referent(rntId=None):
         'person_id': rnt.person_id,
         'roles': [ role.id for role in rnt.roles ] })
 
-@dataserv.route('/data/entrants/details/', methods=['PUT'])
-@dataserv.route('/data/entrants/details/<rntId>', methods=['PUT'])
+@dataserv.route('/entrants/details/', methods=['PUT'])
+@dataserv.route('/entrants/details/<rntId>', methods=['PUT'])
 def update_referent_details(rntId):
     rnt = models.Referent.query.get(rntId)
     data = request.get_json()
@@ -402,9 +403,9 @@ def update_referent_details(rntId):
     stamp_edit(current_user, rnt.reference)
 
     return jsonify(
-        { 'redirect': url_for('edit_record', recId=rnt.reference_id) })
+        { 'redirect': url_for('editor.edit_record', recId=rnt.reference_id) })
 
-@dataserv.route('/data/sections/<refId>/relationships/')
+@dataserv.route('/sections/<refId>/relationships/')
 def relationships_by_reference(refId):
     ref = models.Reference.query.get(refId)
     referents = [ { 'id': e.id, 'name': e.display_name() }
@@ -431,7 +432,7 @@ def relationships_by_reference(refId):
         'relationships': relationships }
     return jsonify(data)
 
-@dataserv.route('/data/relationships/', methods=['POST'])
+@dataserv.route('/relationships/', methods=['POST'])
 def create_relationship():
     data = request.get_json()
     ref = models.Reference.query.get(data['section'])
@@ -453,10 +454,10 @@ def create_relationship():
         db.session.commit()
         stamp_edit(current_user, ref)
     return redirect(
-        url_for('relationships_by_reference', refId = ref.id),
+        url_for('dataserv.relationships_by_reference', refId = ref.id),
         code=303 )
 
-@dataserv.route('/data/relationships/<relId>', methods=['DELETE'])
+@dataserv.route('/relationships/<relId>', methods=['DELETE'])
 def delete_relationship(relId):
     data = request.get_json()
     ref = models.Reference.query.get(data['section'])
@@ -466,5 +467,5 @@ def delete_relationship(relId):
         db.session.commit()
         stamp_edit(current_user, ref)
     return redirect(
-        url_for('relationships_by_reference', refId = ref.id),
+        url_for('dataserv.relationships_by_reference', refId = ref.id),
         code=303 )

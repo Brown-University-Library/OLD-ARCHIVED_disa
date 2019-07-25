@@ -25,7 +25,7 @@ def sort_documents(wrappedDocs):
     return sorted([ merge[w] for w in merge], reverse=True)
 
 
-@editor.route('/editor', methods=['GET'])
+@editor.route('', methods=['GET'])
 def editor_index():
     all_cites = models.Citation.query.all()
     no_refs = [ (cite, current_user.id, datetime.datetime.now(), '')
@@ -43,7 +43,7 @@ def editor_index():
         user_documents=srtd_user, documents=srtd_all)
 
 
-@editor.route('/editor/citations/<citeId>')
+@editor.route('/citations/<citeId>')
 def edit_citation(citeId='new'):
     included = [ 'Book', 'Book Section', 'Document', 'Interview',
         'Journal Article', 'Magazine Article', 'Manuscript',
@@ -109,8 +109,8 @@ def edit_citation(citeId='new'):
     return render_template('editor/citation.html', page_config=config)
 
 
-@editor.route('/editor/records')
-@editor.route('/editor/records/<recId>')
+@editor.route('/records')
+@editor.route('/records/<recId>')
 def edit_record(recId=None):
     locs = models.ReferenceLocation.query.all()
     rec_types = [ { 'id': rt.id, 'value': rt.name, 'name': rt.name }
@@ -147,8 +147,8 @@ def edit_record(recId=None):
             towns=towns, addl_loc=addl_loc)
 
 
-@editor.route('/editor/person')
-@editor.route('/editor/person/<entId>')
+@editor.route('/person')
+@editor.route('/person/<entId>')
 def edit_entrant(entId=None):
     nametypes = [ { 'id': role.id, 'value': role.name, 'label': role.name }
         for role in models.NameType.query.all()]
