@@ -106,6 +106,12 @@ def edit_citation(citeId='new'):
                     ref.last_edit().timestamp.strftime("%Y-%m-%d")
             } for ref in cite.references ]
     config['citation'] = citation
+    config['endpoints'] = {
+        'updateCitation': url_for('dataserv.update_citation', citeId=citeId),
+        'createCitation': url_for('dataserv.create_citation'),
+        'deleteReference': url_for('dataserv.delete_citation_reference',
+            citeId=citeId, refId=None)
+    }
     return render_template('editor/citation.html', page_config=config)
 
 

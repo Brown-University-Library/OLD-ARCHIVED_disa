@@ -79,7 +79,7 @@ def create_citation():
 
 @dataserv.route('/documents/', methods=['PUT'])
 @dataserv.route('/documents/<citeId>', methods=['PUT'])
-def update_citation_data(citeId):
+def update_citation(citeId):
     data = request.get_json()
     if citeId is None:
         return jsonify({})
@@ -290,6 +290,25 @@ def update_reference_data(refId=None):
     data['rec']['record_type'] = {'label': ref.reference_type.name,
         'value': ref.reference_type.name, 'id':ref.reference_type.id }
     return jsonify(data)
+
+
+@dataserv.route('/citations/<citeId>/references/')
+@dataserv.route('/citations/<citeId>/references/<refId>',
+    methods=['DELETE'])
+def delete_citation_reference(citeId, refId=None):
+    existing = models.Reference.query.get(refId)
+    if existing:
+        cite = existing.citation
+        db.session.delete(existing)
+        db.session.commit()
+    cite = models.Citation.query.get(citeId)
+    references = [
+        { 'id': ref.id,
+        'reference_type': ref.reference_type.name,
+        'last_edit': ref.last_edit().timestamp.strftime("%Y-%m-%d")
+        } for ref in cite.references ]
+    return jsonify( {'references': references } )
+
 
 @dataserv.route('/reference/<refId>', methods=['DELETE'])
 def delete_reference(refId):

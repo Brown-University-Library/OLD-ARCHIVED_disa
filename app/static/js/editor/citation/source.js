@@ -1,15 +1,16 @@
 class DISASource {
 
-  constructor(baseURL, endpoints, csrfToken) {
-    this._base = baseURL;
+  constructor($endpoints, $csrfToken) {
     this._app = {};
+    this.endpoints = this.getEndpoints($endpoints);
+    this._csrf = $csrfToken.attr('data-csrf');
 
     $.ajaxSetup({
       beforeSend: function(xhr, settings) {
         xhr.setRequestHeader("Access-Control-Allow-Origin", "http://0.0.0.0:5000");
 
         if (RegExp('^(POST|PUT|PATCH|DELETE)$').test(settings.type) && !this.crossDomain) {
-          xhr.setRequestHeader("X-CSRFToken", csrfToken);
+          xhr.setRequestHeader("X-CSRFToken", this._csrf);
         }
       }
     });
@@ -17,6 +18,16 @@ class DISASource {
 
   registerApp( app ) {
     this._app = app;
+  }
+
+  getEndpoints( $endpoints ) {
+    let endpoint_map = {};
+
+    $endpoints.find('.endpoint').each(function() {
+      endpoint_map[$(this).attr('data-name')] = $(this).attr('data-url');
+    });
+
+    return endpoint_map;
   }
 
   request( endpoint, method, callback, payload ) {
@@ -38,19 +49,19 @@ class DISASource {
   }
 
 
-  deleteReference(citeId, refId) {
-    var endpoint = this._base + `data/citation/${citeId}/references/${refId}`;
+  deleteReference(refId) {
+    var endpoint = this.endpoints.deleteReference + refId;
     this.request(endpoint, 'DELETE', 'referenceDeleted');
   }
 
 
   createCitation(data) {
-    var endpoint = this._base + `data/citations/`;
+    var endpoint = this.endpoints.createCitation;
     this.request(endpoint, 'POST', 'citationSaved', data);
   }
 
-  updateCitation(citeId, data) {
-    var endpoint = this._base + `data/citations/${citeId}`;
+  updateCitation(data) {
+    var endpoint = this.endpoints.updateCitation;
     this.request(endpoint, 'PUT', 'citationSaved', data);
   }
 }

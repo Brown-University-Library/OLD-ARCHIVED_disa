@@ -167,6 +167,11 @@ th.ref-date-col {
           </li>
         {% endfor %}
       </ul>
+      <ul id="data-endpoints" class="configuration">
+        {% for ep, url in page_config['endpoints'].items() %}
+          <li class="endpoint" data-name="{{ ep }}" data-url="{{ url }}"></li>
+        {% endfor %}
+      </ul>
       <p id="config_data_json" data-json='{{ page_config|tojson|safe }}'></p>
     </div>
   </div>
@@ -177,13 +182,7 @@ th.ref-date-col {
 {{ super() }}
 
 <script type="text/javascript">
-  let endpoints = {
-    'references': 'data/references/',
-    'landing': 'data/land/citations/',
-    'citations': 'data/citations/'
-  };
-  let source = new DISASource('http://localhost:5000/', endpoints,
-    ($('#csrf_token').attr('data-csrf')) );
+  let source = new DISASource($('#data-endpoints'), $('#csrf_token'));
   let cpage = new CitationPage($('#citation_page'), source);
   source.registerApp(cpage);
 </script>

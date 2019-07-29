@@ -355,7 +355,7 @@ class CitationPage {
     if (this.citation_id === 'new') {
       this._source.createNewCitation(data);
     } else {
-      this._source.updateCitation(this.citation_id, data);
+      this._source.updateCitation(data);
     }
   }
 
@@ -387,11 +387,12 @@ class CitationPage {
   }
 
   deleteReference(refId) {
-    this._source.deleteReference(this.citation_id, refId);
+    this._source.deleteReference(refId);
   }
 
   referenceDeleted(data) {
     this._ref_mgmt.load(data.references);
+    this._$edit_btn.prop('disabled', false);
   }
 
   resetReferences() {
