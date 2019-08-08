@@ -46,7 +46,7 @@ class CitationFieldManager {
     this._field_map = {};
     this._$field_list.empty();
 
-    this._$type_selector.val(this._data.citation_type);
+    // this._$type_selector.val(this._data.citation_type);
     for (const field of this._field_type_map[this._data.citation_type] ) {
       let $field = this._$template_field.clone();
       let citation_field = new CitationField($field, field);
@@ -86,7 +86,8 @@ class CitationForm {
     // this._$form_groups = $elem.find('.citation-form-group');
     this._$cmmt = $elem.find('#comments_input');
     this._$ackn = $elem.find('#acknowledgements_input');
-    this._$cancel_btn = $elem.find('#cancel_edit');
+    this._$discard_btn = $elem.find('.discard-new-citation');
+    this._$cancel_btn = $elem.find('.cancel-edit-citation');
     this._data = {};
     this._cmgmt = new CitationFieldManager(
       this._$root.find('#citation_field_mgmt'), $template, config);
@@ -102,6 +103,13 @@ class CitationForm {
     });
   }
 
+  changeCitationType(cType) {
+    this._cmgmt.load({
+      'citation_type': cType,
+      'citation_fields': this._data.citation_fields
+    });
+  }
+
   read() {
     let cdata = this._cmgmt.read();
     this._data.citation_type = cdata.citation_type;
@@ -114,15 +122,17 @@ class CitationForm {
 
   activate() {
     if (this._data.citation_id === 'new') {
-      this._$cancel_btn.prop('disabled', true);
+      this._$discard_btn.removeClass('hidden');
+      this._$cancel_btn.addClass('hidden');
     } else {
-      this._$cancel_btn.prop('disabled', false);
+      this._$discard_btn.addClass('hidden');
+      this._$cancel_btn.removeClass('hidden');
     }
-    this._$root.prop('hidden', false);
+    this._$root.removeClass('hidden');
   }
 
   deactivate() {
-    this._$root.prop('hidden', true);
+    this._$root.addClass('hidden');
   }
 
   reset() {
@@ -257,26 +267,49 @@ class ReferenceManager {
 
 class CitationDisplay {
 
-  constructor($elem) {
+  constructor($elem, dataTemplate) {
     this._$root = $elem;
-    this._$new_display = $elem.find('#new_citation_display');
-    this._$existing_display = $elem.find('#existing_citation_display');
+    this._$data_template = dataTemplate;
+    this._$new_header = $elem.find('#display_header_new');
+    this._$existing_header = $elem.find('#display_header_existing');
+    this._$data_display = $elem.find('#citation_display_data');
+  }
+
+  displayCitationData(fieldData) {
+    this._$data_display.empty();
+    for (var i=0; i < fieldData.length; i++) {
+      let data_field = fieldData[i];
+      let $data_elem = this._$data_template.clone();
+      $data_elem.find('.display-field-name').text(
+        data_field.name.toUpperCase());
+      $data_elem.find('.display-field-value').text(
+        data_field.value ? data_field.value : 'None');
+      this._$data_display.append($data_elem);
+    }
   }
 
   show(citation) {
     if (citation.citation_id === 'new') {
-      this._$new_display.prop('hidden',false);
-      this._$existing_display.prop('hidden',true);
+      this._$new_header.removeClass('hidden');
+      this._$existing_header.addClass('hidden');
+      this._$data_display.addClass('hidden');
     } else {
-      this._$new_display.prop('hidden',true);
-      this._$existing_display.text(citation.display);
-      this._$existing_display.prop('hidden',false);      
+      let citation_data = citation.citation_fields.slice(0);
+      citation_data.push(
+        {'name': 'Comments', 'value': citation.comments });
+      citation_data.push(
+        {'name': 'Acknowledgements', 'value': citation.acknowledgements });
+      this.displayCitationData(citation_data);
+      this._$new_header.addClass('hidden');
+      this._$existing_header.text(citation.display);
+      this._$existing_header.removeClass('hidden');
+      this._$data_display.removeClass('hidden');      
     }
-      this._$root.prop('hidden',false);
+      this._$root.removeClass('hidden');
   }
 
   hide() {
-    this._$root.prop('hidden',true);
+    this._$data_display.addClass('hidden');
   }
 }
 
@@ -292,7 +325,8 @@ class CitationPage {
     this.$templates = this.getPageTemplates(this._$root);    
     this._data = this.getPageConfigurationData(this._$root);
 
-    this._cite_display = new CitationDisplay($elem.find('#citation_display'));
+    this._cite_display = new CitationDisplay($elem.find('#citation_display'),
+      this.$templates.display_data);
     this._cite_form = new CitationForm($elem.find('#citation_form'),
       this.$templates.citation_field, this._data.citationtype_fields);
     this._ref_mgmt = new ReferenceManager($elem.find('#reference_manager'),
@@ -309,7 +343,7 @@ class CitationPage {
       let $tmpl = $( $(this).prop('content') ).children().first();
       $tmpl.detach();
       template_map[$tmpl.attr('id')] = $tmpl;
-      $tmpl.attr('id', '');
+      $tmpl.removeAttr('id');
       $(this).remove();
     });
 
@@ -333,16 +367,17 @@ class CitationPage {
       this._cite_form.activate();
       this._ref_mgmt.hide();
     } else {
-      this._$edit_btn.prop('hidden', false);
+      this._$edit_btn.removeClass('hidden');
       this._cite_form.deactivate();
       this._ref_mgmt.show();
     }
   }
 
   editCitation() {
+    this._cite_display.hide();
     this._cite_form.activate();
     this._ref_mgmt.deactivate();
-    this._$edit_btn.prop('hidden', true);
+    this._$edit_btn.addClass('hidden');
   }
 
   saveCitation() {
@@ -360,8 +395,7 @@ class CitationPage {
   }
 
   citationSaved(data) {
-    console.log(data);
-    this._data.citation = data; 
+    this._data.citation = data.citation; 
     if (this.citation_id === 'new') {
       this.citation_id = data.citation_id;
     }
@@ -372,13 +406,13 @@ class CitationPage {
     this._cite_display.show(this._data.citation);
     this._cite_form.deactivate();
     this._cite_form.load(this._data.citation);
-    this._$edit_btn.prop('hidden', false);
+    this._$edit_btn.removeClass('hidden');
     this._ref_mgmt.activate();
   }
 
   changeCitationType(cType) {
-    this._data.citation.citation_type = cType;
-    this._cite_form.load(this._data.citation);
+    // this._data.citation.citation_type = cType;
+    this._cite_form.changeCitationType(cType);
   }
 
   editReference(refId) {
@@ -414,7 +448,7 @@ class CitationPage {
         case $btn.hasClass('save-citation'):
           app.saveCitation();
           break;
-        case $btn.hasClass('cancel-citation'):
+        case $btn.hasClass('cancel-edit-citation'):
           app.resetCitation();
           break;
         case $btn.hasClass('delete-reference'):

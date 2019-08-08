@@ -4,8 +4,34 @@
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='lib/bootstrap-4.1.2-dist/css/bootstrap.min.css') }}">
 <style>
-#citation_display {
-    font-size: 150%;
+
+.hidden {
+  display: none;
+}
+
+dl {
+  width: 100%;
+  margin-left: 3%;
+  overflow: hidden;
+  font-size: 90%;
+}
+
+dt {
+  float:left;
+  width: 30%;
+}
+
+dt::after {
+  content: ": ";
+}
+
+dd {
+  float: left;
+  width: 70%;
+}
+
+#citation_display_header {
+  font-size: 200%
 }
 
 #citation_field_list {
@@ -38,9 +64,11 @@ th.ref-date-col {
 .disa-app {
   display: block;
 }
+
 .control-hide {
   display: none;
 }
+
 </style>
 <script src="{{ url_for('static', filename='js/editor/citation/source.js') }}"></script>
 <script src="{{ url_for('static', filename='js/editor/citation/citation.js') }}"></script>
@@ -52,70 +80,85 @@ th.ref-date-col {
   <div id="citation_page" class="disa-app"
       data-citation-id="{{ page_config['citation']['citation_id'] }}">
     <div class="row">
-      <div class='col-md-11'>
+      <div class="col-md-11">
         <div class="row">
-          <div class='col-md-10'>
-            <h2 id="citation_display">
-              <span id="new_citation_display" style="font-size: 50%">
-                <em>Fill out this form only when entering a document for the first time. If your document has been already entered, find your document in the <a href="/editor">recent document list</a> and add an item.</em>
-              </span>
-              <span id="existing_citation_display"></span>
-            </h2>
-          </div>
-          <div class='col-md-2'>
-            <button id="edit_citation" class="btn btn-primary edit-citation">Edit</button>
+          <div class="col-md-12">
+            <div id="citation_display" class="hidden">
+              <div class="row">
+                <h1 id="citation_display_header">
+                  <span id="display_header_new" style="font-size: 50%">
+                    <em>Fill out this form only when entering a document for the first time. If your document has been already entered, find your document in the <a href="/editor">recent document list</a> and add an item.</em>
+                  </span>
+                  <span id="display_header_existing"></span>
+                </h1>
+              </div>
+              <div class="row">
+                <dl id="citation_display_data">
+                  <template>
+                    <div id="display_data" class="display-citation-data">
+                      <dt class="display-field-name"></dt>
+                      <dd class="display-field-value"></dd>
+                    </div>
+                  </template>
+                </dl>
+              </div>
+            </div>
           </div>
         </div>
-        <form id="citation_form" action="" method="" hidden>
-          <div id="citation_field_mgmt">
-            <div class="form-group row">
-              <label>Document type<br />
-                <em class="small text-muted">Select the document type that most clearly describes the document you're adding</em>
-              </label>
-              <select id="citation_type_selector" class="form-control">
-                {% for ctype in page_config.citation_types %}
-                <option value="{{ ctype.id }}">{{ ctype.name }}</option>
-                {% endfor %}
-              </select>
+        <div class="row">
+          <form id="citation_form" action="" method="" class="hidden">
+            <div class='col-md-12'>
+              <div id="citation_field_mgmt">
+                <div class="form-group row">
+                  <label>Document type<br />
+                    <em class="small text-muted">Select the document type that most clearly describes the document you're adding</em>
+                  </label>
+                  <select id="citation_type_selector" class="form-control">
+                    {% for ctype in page_config.citation_types %}
+                    <option value="{{ ctype.id }}">{{ ctype.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="form-group row">
+                  <label for="citation_field_list">Citation information<br />
+                    <em class="small text-muted">Information related to the publication of the document (e.g. the date of publication of the newspaper, not a date listed within an article)</em>
+                  </label>
+                  <ul id="citation_field_list">
+                    <template>
+                      <li id="citation_field" class="citation-field" data-citation-field="">
+                        <input class="citation-field-input" type="text"/>
+                      </li>
+                    </template>
+                  </ul>
+                </div>
+              </div>
+              <div class="form-group row" hidden>
+                  <label for="zotero">Zotero ID</label>
+                  <input type="text" class="form-control" id="zotero" />
+              </div>
+              <div class="form-group row" id="comments">
+                <label for="comments_input">Comments</label>
+                <textarea class="form-control" id="comments_input"></textarea>
+              </div>
+              <div class="form-group row" id="acknowledgements">
+                <label for="acknowledgements_input">Acknowledgements<br />
+                <em class="small text-muted">If you've received the document from an individual or organization for the purposes of this project, please acknowledge their contribution (e.g. "Thank you to the Jennifer Shaw family")</em></label>
+                <textarea class="form-control" id="acknowledgements_input"></textarea>
+              </div>
+              <div class="row">
+                <button type="button" class="btn btn-warning discard-new-citation">Discard</button>
+                <button type="button" class="btn btn-warning cancel-edit-citation">Cancel</button>
+                <button type="button" class="btn btn-primary save-citation">Save</button>
+              </div>
             </div>
-            <div class="form-group row">
-              <label for="citation_field_list">Citation information<br />
-                <em class="small text-muted">Information related to the publication of the document (e.g. the date of publication of the newspaper, not a date listed within an article)</em>
-              </label>
-              <ul id="citation_field_list">
-                <template>
-                  <li id="citation_field" class="citation-field" data-citation-field="">
-                    <input class="citation-field-input" type="text"/>
-                  </li>
-                </template>
-              </ul>
-            </div>
-          </div>
-          <div class="form-group row" hidden>
-              <label for="zotero">Zotero ID</label>
-              <input type="text" class="form-control" id="zotero" />
-          </div>
-          <div class="form-group row" id="comments">
-            <label for="comments_input">Comments</label>
-            <textarea class="form-control" id="comments_input"></textarea>
-          </div>
-          <div class="form-group row" id="acknowledgements">
-            <label for="acknowledgements_input">Acknowledgements<br />
-            <em class="small text-muted">If you've received the document from an individual or organization for the purposes of this project, please acknowledge their contribution (e.g. "Thank you to the Jennifer Shaw family")</em></label>
-            <textarea class="form-control" id="acknowledgements_input"></textarea>
-          </div>
-          <div class="row">
-            <button type="button" class="btn btn-warning discard-citation">Discard</button>
-            <button type="button" class="btn btn-warning cancel-citation">Cancel</button>
-            <button type="button" class="btn btn-primary save-citation">Save</button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
       <div class='col-md-1'>
-        <a href="{{ url_for('editor.editor_index')}}">Back</a>
+        <button id="edit_citation" class="btn btn-primary edit-citation">Edit</button>
       </div>
     </div>
-    <div id="reference_manager">
+    <div id="reference_manager" class="row">
       <h3>Items</h3>
       <p id="empty_reference_display">None</p>
       <table class="table">

@@ -84,9 +84,9 @@ def update_citation(citeId):
     if citeId is None:
         return jsonify({})
     unspec = models.CitationType.query.filter_by(name='Document').first()
-    data['citation_type_id'] = data['citation_type_id'] or unspec.id
+    data['citation_type_id'] = int(data['citation_type']) or unspec.id
     cite = models.Citation.query.get(citeId)
-    cite.citation_type_id = data['citation_type_id']
+    cite.citation_type_id = data['citation_type']
     # doc.zotero_id = data['zotero_id']
     cite.comments = data['comments']
     cite.acknowledgements = data['acknowledgements']
@@ -95,7 +95,9 @@ def update_citation(citeId):
     citation_display = []
     cite.citation_data = []
     addendums = []
-    for field, val in data['fields'].items():
+    for fieldData in data['citation_fields']:
+        field = fieldData['name']
+        val =  fieldData['value']
         if val == '':
             continue
         zfield = models.ZoteroField.query.filter_by(name=field).first()
@@ -115,20 +117,16 @@ def update_citation(citeId):
     db.session.add(cite)
     db.session.commit()
 
-    data = { 'doc': {} }
-    included = [ 'Book', 'Book Section', 'Document', 'Interview',
-        'Journal Article', 'Magazine Article', 'Manuscript',
-        'Newspaper Article', 'Thesis', 'Webpage' ]
-    ct = models.CitationType.query.filter(
-        models.CitationType.name.in_(included)).all()
-    data['doc_types'] = [ { 'id': c.id, 'name': c.name } for c in ct ]
-    data['doc']['id'] = cite.id
-    data['doc']['citation'] = cite.display
-    # data['doc']['zotero_id'] = doc.zotero_id
-    data['doc']['comments'] = cite.comments
-    data['doc']['acknowledgements'] = cite.acknowledgements
-    data['doc']['citation_type_id'] = cite.citation_type_id
-    return jsonify(data)
+    citation = {
+        'citation_id': cite.id,
+        'display': cite.display,
+        'acknowledgements': cite.acknowledgements,
+        'comments': cite.comments,
+        'citation_type': cite.citation_type.id,
+        'citation_fields': [ { 'name': f.field.name, 'value': f.field_data }
+            for f in cite.citation_data ]
+    }
+    return jsonify({ 'citation': citation })
 
 
 @dataserv.route('/records/', methods=['GET'])
