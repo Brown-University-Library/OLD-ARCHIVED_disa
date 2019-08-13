@@ -46,7 +46,7 @@ class CitationFieldManager {
     this._field_map = {};
     this._$field_list.empty();
 
-    // this._$type_selector.val(this._data.citation_type);
+    this._$type_selector.val(this._data.citation_type);
     for (const field of this._field_type_map[this._data.citation_type] ) {
       let $field = this._$template_field.clone();
       let citation_field = new CitationField($field, field);
