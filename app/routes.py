@@ -188,13 +188,25 @@ def read_document_data(docId=None):
     data['doc_types'] = [ { 'id': c.id, 'name': c.name } for c in ct ]
     if docId == None:
         return jsonify(data)
-    doc = models.Citation.query.get(docId)
-    data['doc']['id'] = doc.id
+    if docId == 'copy':
+        last_edit = edit = models.ReferenceEdit.query.filter_by(
+            user_id=current_user.id).order_by(
+            models.ReferenceEdit.timestamp.desc()).first()
+        if not last_edit or not last_edit.edited:
+            return jsonify(data)
+        doc = models.Citation.query.get(last_edit.edited.citation_id)
+    else:
+        doc = models.Citation.query.get(docId)
+        data['doc']['id'] = doc.id
     data['doc']['citation'] = doc.display
     # data['doc']['zotero_id'] = doc.zotero_id   
     data['doc']['comments'] = doc.comments
     data['doc']['acknowledgements'] = doc.acknowledgements
-    data['doc']['citation_type_id'] = doc.citation_type_id
+    if doc.citation_type_id not in [ c.id for c in ct ]:
+        doctype_document = [ c for c in ct if c.name == 'Document'][0]
+        data['doc']['citation_type_id'] = doctype_document.id
+    else:
+        data['doc']['citation_type_id'] = doc.citation_type_id
     data['doc']['fields'] = { f.field.name: f.field_data for f in doc.citation_data }
     return jsonify(data)
 

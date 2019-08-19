@@ -43,6 +43,11 @@ th.ref-date-col {
     <div id="document_form" class='col-md-11'>
         <h2 id="document_header"></h2>
         <form action="" method="">
+            {% if not doc %}
+            <div class="form-group row d-flex flex-row-reverse">
+              <button class="btn btn-warning" id="copy_previous">Copy Last Citation</button>
+            </div>
+            {% endif %}
             <div class="form-group row">
                 <label for="document_type">Document type<br />
                     <em class="small text-muted">Select the document type that most clearly describes the document you're adding</em></label>
@@ -219,8 +224,12 @@ var initializeForm = function (data, ctMap) {
     }
 }
 
-var readDocumentData = function(docId, ctMap) {
-    var doc_data_api = "{{ url_for('read_document_data', docId=None ) }}" + docId;
+var readDocumentData = function(docId, ctMap, copy) {
+    if (copy) {
+        var doc_data_api = "{{ url_for('read_document_data', docId='copy' ) }}";
+    } else {
+        var doc_data_api = "{{ url_for('read_document_data', docId=None ) }}" + docId;
+    }
     $.get(doc_data_api, function(data) {
         initializeForm(data, ctMap);
     });
@@ -283,7 +292,7 @@ var deleteReference = function($refRow, ctMap) {
 $( document ).ready(function() {
     var doc_id = getDocumentId();
     var cite_type_fields = JSON.parse('{{ ct_fields | tojson | safe}}');
-    readDocumentData(doc_id, cite_type_fields);
+    readDocumentData(doc_id, cite_type_fields, false);
     $( "#document_form" ).accordion({
         collapsible: true,
         header: "h2",
@@ -318,6 +327,11 @@ $( document ).ready(function() {
     $( "#doc_update" ).on('click', function(e) {
       e.preventDefault();
       updateDocumentData(doc_id, cite_type_fields);
+    });
+    $( "#copy_previous" ).on('click', function(e) {
+      e.preventDefault();
+      $(this).parent().remove();
+      readDocumentData(doc_id, cite_type_fields, true);
     });
 });
 </script>
