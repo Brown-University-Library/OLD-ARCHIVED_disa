@@ -70,8 +70,12 @@ th.ref-date-col {
 }
 
 </style>
-<script src="{{ url_for('static', filename='js/editor/citation/source.js') }}"></script>
-<script src="{{ url_for('static', filename='js/editor/citation/citation.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/editor/flowcontrol.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/editor/citation/source.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/editor/citation/citation.display.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/editor/citation/citation.references.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/editor/citation/citation.form.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/editor/citation/citation.app.js') }}"></script>
 {% endblock %}
 
 
@@ -195,9 +199,9 @@ th.ref-date-col {
         <a class="btn btn-primary add-reference" href="">Add an item</a>
       </div>
     </div>
-    <div id="configuration_data" hidden>
+    <div id="config" hidden>
       <p id="csrf_token" data-csrf="{{ csrf_token() }}"></p>
-      <ul id="citationtype_fields" class="configuration">
+      <ul id="citationtype_fields">
         {% for ctype in citationtype_fields %}
           <li class='citationtype-data' data-name="{{ ctype['name'] }}">
             <ul>
@@ -210,7 +214,7 @@ th.ref-date-col {
           </li>
         {% endfor %}
       </ul>
-      <ul id="data-endpoints" class="configuration">
+      <ul id="data-endpoints">
         {% for ep, url in page_config['endpoints'].items() %}
           <li class="endpoint" data-name="{{ ep }}" data-url="{{ url }}"></li>
         {% endfor %}
@@ -225,8 +229,16 @@ th.ref-date-col {
 {{ super() }}
 
 <script type="text/javascript">
+  let config = new Config($('#config'));
   let source = new DISASource($('#data-endpoints'), $('#csrf_token'));
-  let cpage = new CitationPage($('#citation_page'), source);
+  let cdisplay = new CitationDisplay($('#citation_display'));
+  let cform = new CitationForm($('#citation_form'));
+  let refmgr = new ReferenceManager($('#reference_manager'));
+
+  cform.configure(config);
+
+  let cpage = new CitationApp($('#citation_page'), config, source,
+                                  cdisplay, cform, refmgr);  
   source.registerApp(cpage);
 </script>
 {% endblock %}
