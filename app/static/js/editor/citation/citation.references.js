@@ -55,6 +55,8 @@ class ReferenceManager extends Flow {
     this._url_base = urlBaseReference;
     this._data = [];
     this._reference_map = {};
+
+    this.setEvents();
   }
 
   load(data) {
@@ -120,5 +122,30 @@ class ReferenceManager extends Flow {
     for (const ref in this._reference_map) {
       this._reference_map[ref].disable();
     }
+  }
+
+  setEvents() {
+    let cmp = this;
+
+    this._$root.on('click', 'button', function(e){
+      e.preventDefault();
+      let $btn = $( this );
+
+      switch ( true ){
+        case $btn.hasClass('delete-reference'):
+          cmp._app.editReference($btn.closest('.reference')
+            .attr('data-reference-id'));
+          break;
+        case $btn.hasClass('confirm-delete-reference'):
+          cmp._app.deleteReference($btn.closest('.reference')
+            .attr('data-reference-id'));
+          break;
+        case $btn.hasClass('cancel-delete-reference'):
+          cmp._app.resetReferences();
+          break;
+        default:
+          return;
+      }
+    });
   }
 }

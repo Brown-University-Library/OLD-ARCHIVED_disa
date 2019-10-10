@@ -98,6 +98,8 @@ class CitationForm extends Flow {
     this._cmgmt = new CitationFieldManager(
       this._$root.find('#citation_field_mgmt'),
       this._$templates.citation_field, citationTypeFieldMap);
+
+    this.setEvents();
   }
 
   configure(config) {
@@ -149,5 +151,31 @@ class CitationForm extends Flow {
   reset() {
     this.load(this._data);
     this.deactivate();
+  }
+
+  setEvents() {
+    let cmp = this;
+
+    this._$root.on('click', 'button', function(e){
+      e.preventDefault();
+      let $btn = $( this );
+
+      switch ( true ){
+        case $btn.hasClass('save-citation'):
+          cmp._app.saveCitation();
+          break;
+        case $btn.hasClass('cancel-edit-citation'):
+          cmp._app.resetCitation();
+          break;
+        default:
+          return;
+      }
+    });
+
+    this._$root.on('change', '#citation_type_selector', function(e){
+      e.preventDefault();
+      let $ctrl = $( this );
+      cmp._app.changeCitationType($ctrl.val());
+    });
   }
 }

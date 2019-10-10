@@ -237,8 +237,11 @@ th.ref-date-col {
 
   cform.configure(config);
 
-  let cpage = new CitationApp($('#citation_page'), config, source,
+  let capp = new CitationApp($('#citation_page'), config, source,
                                   cdisplay, cform, refmgr);  
-  source.registerApp(cpage);
+  source.setApp(capp);
+  cdisplay.setApp(capp);
+  cform.setApp(capp);
+  refmgr.setApp(capp);
 </script>
 {% endblock %}

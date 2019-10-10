@@ -10,7 +10,7 @@ class CitationApp {
     this._cite_form = cForm;
     this._ref_mgmt = refMgmt;
 
-    this.registerEvents();
+    this.setEvents();
     this.load();
   }
 
@@ -90,7 +90,7 @@ class CitationApp {
     this._$edit_btn.prop('disabled', false);
   }
 
-  registerEvents() {
+  setEvents() {
     let app = this;
 
     this._$root.on('click', 'button', function(e){
@@ -101,32 +101,9 @@ class CitationApp {
         case $btn.hasClass('edit-citation'):
           app.editCitation();
           break;
-        case $btn.hasClass('save-citation'):
-          app.saveCitation();
-          break;
-        case $btn.hasClass('cancel-edit-citation'):
-          app.resetCitation();
-          break;
-        case $btn.hasClass('delete-reference'):
-          app.editReference($btn.closest('.reference')
-            .attr('data-reference-id'));
-          break;
-        case $btn.hasClass('confirm-delete-reference'):
-          app.deleteReference($btn.closest('.reference')
-            .attr('data-reference-id'));
-          break;
-        case $btn.hasClass('cancel-delete-reference'):
-          app.resetReferences();
-          break;
         default:
           return;
       }
-    });
-
-    this._$root.on('change', '#citation_type_selector', function(e){
-      e.preventDefault();
-      let $ctrl = $( this );
-      app.changeCitationType($ctrl.val());
     });
   }
 }
