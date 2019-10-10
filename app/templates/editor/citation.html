@@ -71,7 +71,7 @@ th.ref-date-col {
 
 </style>
 <script type="text/javascript" src="{{ url_for('static', filename='js/editor/flowcontrol.js') }}"></script>
-<script type="text/javascript" src="{{ url_for('static', filename='js/editor/citation/source.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/editor/citation/citation.source.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/editor/citation/citation.display.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/editor/citation/citation.references.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/editor/citation/citation.form.js') }}"></script>
@@ -230,7 +230,7 @@ th.ref-date-col {
 
 <script type="text/javascript">
   let config = new Config($('#config'));
-  let source = new DISASource($('#data-endpoints'), $('#csrf_token'));
+  let source = new CitationSource($('#data-endpoints'), $('#csrf_token'));
   let cdisplay = new CitationDisplay($('#citation_display'));
   let cform = new CitationForm($('#citation_form'));
   let refmgr = new ReferenceManager($('#reference_manager'));
