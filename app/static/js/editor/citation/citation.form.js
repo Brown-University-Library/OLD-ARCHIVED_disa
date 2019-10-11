@@ -83,7 +83,7 @@ class CitationFieldManager {
   }
 }
 
-class CitationForm extends Flow {
+class CitationForm extends Control {
 
   constructor($elem, citationTypeFieldMap) {
     super()

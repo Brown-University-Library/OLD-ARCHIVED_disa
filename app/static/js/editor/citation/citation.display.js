@@ -1,4 +1,4 @@
-class CitationDisplay extends Flow {
+class CitationDisplay extends Control {
 
   constructor($elem) {
     super()

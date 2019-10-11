@@ -40,6 +40,15 @@ dd {
     list-style: none;
     padding-right: 20px;
 }
+
+#new_reference {
+  margin-left: auto;
+}
+
+.citation-commands {
+  margin-left: auto;
+}
+
 .citation-field {
     flex: 0 1 30%;
     margin: 2px 0 0 5px;
@@ -150,9 +159,11 @@ th.ref-date-col {
                 <textarea class="form-control" id="acknowledgements_input"></textarea>
               </div>
               <div class="row">
-                <button type="button" class="btn btn-warning discard-new-citation">Discard</button>
-                <button type="button" class="btn btn-warning cancel-edit-citation">Cancel</button>
-                <button type="button" class="btn btn-primary save-citation">Save</button>
+                <div class="citation-commands">
+                  <button type="button" class="btn btn-warning discard-new-citation">Discard</button>
+                  <button type="button" class="btn btn-warning cancel-edit-citation">Cancel</button>
+                  <button type="button" class="btn btn-primary save-citation">Save</button>
+                </div>
               </div>
             </div>
           </form>
@@ -162,41 +173,47 @@ th.ref-date-col {
         <button id="edit_citation" class="btn btn-primary edit-citation">Edit</button>
       </div>
     </div>
-    <div id="reference_manager" class="row">
-      <h3>Items</h3>
-      <p id="empty_reference_display">None</p>
-      <table class="table">
-        <thead id="reference_list_header">
-          <tr>
-            <th class="ref-id-col" scope="col">ID</th>
-            <th class="ref-label-col" scope="col">Item type</th>
-            <th class="ref-date-col" scope="col">Edited</th>
-            <th class="ref-ctrl-col" ></th>
-          </tr>
-        </thead>
-        <tbody id="reference_list">
-          <template>
-            <tr id="reference_row" class="reference">
-              <th class="reference-id" scope="row"></th>
-              <td><a class="reference-link" href=""></a></td>
-              <td class="reference-edited"></td>
-              <td class="reference-controls">
-                <button class="btn btn-secondary cancel-delete-reference">
-                  <span class="fas fa-undo"></span>
-                </button>
-                <button class="btn btn-danger delete-reference">
-                  <span class="fas fa-times-circle"></span>
-                </button>
-                <button class="btn btn-danger confirm-delete-reference">
-                  <span>Confirm delete</span>
-                </button>
-              </td>
-            </tr>
-          </template>
-        </tbody>
-      </table>
-      <div id="new_reference" class="d-flex flex-row-reverse">
-        <a class="btn btn-primary add-reference" href="">Add an item</a>
+    <div class="row">
+      <div class="col-md-12">
+        <div id="reference_control">
+          <h3>Items</h3>
+          <p id="empty_reference_display">None</p>
+          <table class="table">
+            <thead id="reference_list_header">
+              <tr>
+                <th class="ref-id-col" scope="col">ID</th>
+                <th class="ref-label-col" scope="col">Item type</th>
+                <th class="ref-date-col" scope="col">Edited</th>
+                <th class="ref-ctrl-col" ></th>
+              </tr>
+            </thead>
+            <tbody id="reference_list">
+              <template>
+                <tr id="reference_row" class="reference">
+                  <th class="reference-id" scope="row"></th>
+                  <td><a class="reference-link" href=""></a></td>
+                  <td class="reference-edited"></td>
+                  <td class="reference-controls">
+                    <button class="btn btn-secondary cancel-delete-reference">
+                      <span class="fas fa-undo"></span>
+                    </button>
+                    <button class="btn btn-danger delete-reference">
+                      <span class="fas fa-times-circle"></span>
+                    </button>
+                    <button class="btn btn-danger confirm-delete-reference">
+                      <span>Confirm delete</span>
+                    </button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+        <div class="row">
+          <div id="new_reference">
+            <a class="btn btn-primary add-reference" href="">Add an item</a>
+          </div>
+        </div>
       </div>
     </div>
     <div id="config" hidden>
@@ -233,15 +250,15 @@ th.ref-date-col {
   let source = new CitationSource($('#data-endpoints'), $('#csrf_token'));
   let cdisplay = new CitationDisplay($('#citation_display'));
   let cform = new CitationForm($('#citation_form'));
-  let refmgr = new ReferenceManager($('#reference_manager'));
+  let refctrl = new ReferenceControl($('#reference_control'));
 
   cform.configure(config);
 
   let capp = new CitationApp($('#citation_page'), config, source,
-                                  cdisplay, cform, refmgr);  
+                                  cdisplay, cform, refctrl);
   source.setApp(capp);
   cdisplay.setApp(capp);
   cform.setApp(capp);
-  refmgr.setApp(capp);
+  refctrl.setApp(capp);
 </script>
 {% endblock %}

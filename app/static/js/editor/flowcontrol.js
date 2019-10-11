@@ -1,4 +1,4 @@
-class Flow {
+class Control {
 
   constructor(){}
 

@@ -43,7 +43,7 @@ class Reference {
   }
 }
 
-class ReferenceManager extends Flow {
+class ReferenceControl extends Control {
 
   constructor($elem, urlBaseReference) {
     super()

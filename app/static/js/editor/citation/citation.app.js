@@ -1,6 +1,6 @@
 class CitationApp {
 
-  constructor($elem, config, source, cDisplay, cForm, refMgmt) {
+  constructor($elem, config, source, cDisplay, cForm, refCtrl) {
     this._$root = $elem;
     this._source = source;
     this._data = config._data;
@@ -8,7 +8,7 @@ class CitationApp {
     this.citation_id = $elem.attr('data-citation-id');
     this._cite_display = cDisplay;
     this._cite_form = cForm;
-    this._ref_mgmt = refMgmt;
+    this._ref_ctrl = refCtrl;
 
     this.setEvents();
     this.load();
@@ -18,22 +18,22 @@ class CitationApp {
     this._data = data || this._data;
     this._cite_display.show(this._data.citation);
     this._cite_form.load(this._data.citation);
-    this._ref_mgmt.load(this._data.references);
+    this._ref_ctrl.load(this._data.references);
     if (this.citation_id === 'new') {
       this._$edit_btn.prop('hidden', true);      
       this._cite_form.activate();
-      this._ref_mgmt.hide();
+      this._ref_ctrl.hide();
     } else {
       this._$edit_btn.removeClass('hidden');
       this._cite_form.deactivate();
-      this._ref_mgmt.show();
+      this._ref_ctrl.show();
     }
   }
 
   editCitation() {
     this._cite_display.hide();
     this._cite_form.activate();
-    this._ref_mgmt.deactivate();
+    this._ref_ctrl.deactivate();
     this._$edit_btn.addClass('hidden');
   }
 
@@ -64,7 +64,7 @@ class CitationApp {
     this._cite_form.deactivate();
     this._cite_form.load(this._data.citation);
     this._$edit_btn.removeClass('hidden');
-    this._ref_mgmt.activate();
+    this._ref_ctrl.activate();
   }
 
   changeCitationType(cType) {
@@ -72,7 +72,7 @@ class CitationApp {
   }
 
   editReference(refId) {
-    this._ref_mgmt.activateReference(refId);
+    this._ref_ctrl.activateReference(refId);
     this._$edit_btn.prop('disabled', true);
   }
 
@@ -81,12 +81,12 @@ class CitationApp {
   }
 
   referenceDeleted(data) {
-    this._ref_mgmt.load(data.references);
+    this._ref_ctrl.load(data.references);
     this._$edit_btn.prop('disabled', false);
   }
 
   resetReferences() {
-    this._ref_mgmt.activate();
+    this._ref_ctrl.activate();
     this._$edit_btn.prop('disabled', false);
   }
 
