@@ -5,6 +5,7 @@ class CitationApp {
     this._source = source;
     this._data = config._data;
     this._$edit_btn = $elem.find('#edit_citation');
+    this._$new_ref_btn = $elem.find('#new_reference');
     this.citation_id = $elem.attr('data-citation-id');
     this._cite_display = cDisplay;
     this._cite_form = cForm;
@@ -33,8 +34,9 @@ class CitationApp {
   editCitation() {
     this._cite_display.hide();
     this._cite_form.activate();
-    this._ref_ctrl.deactivate();
+    this._ref_ctrl.hide();
     this._$edit_btn.addClass('hidden');
+    this._$new_ref_btn.addClass('hidden');
   }
 
   saveCitation() {
@@ -64,7 +66,8 @@ class CitationApp {
     this._cite_form.deactivate();
     this._cite_form.load(this._data.citation);
     this._$edit_btn.removeClass('hidden');
-    this._ref_ctrl.activate();
+    this._$new_ref_btn.removeClass('hidden');
+    this._ref_ctrl.show();
   }
 
   changeCitationType(cType) {
@@ -74,6 +77,7 @@ class CitationApp {
   editReference(refId) {
     this._ref_ctrl.activateReference(refId);
     this._$edit_btn.prop('disabled', true);
+    this._$new_ref_btn.prop('disabled', true);
   }
 
   deleteReference(refId) {
@@ -83,11 +87,13 @@ class CitationApp {
   referenceDeleted(data) {
     this._ref_ctrl.load(data.references);
     this._$edit_btn.prop('disabled', false);
+    this._$new_ref_btn.prop('disabled', false);
   }
 
   resetReferences() {
     this._ref_ctrl.activate();
     this._$edit_btn.prop('disabled', false);
+    this._$new_ref_btn.prop('disabled', false);
   }
 
   setEvents() {

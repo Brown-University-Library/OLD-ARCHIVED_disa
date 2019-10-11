@@ -209,35 +209,33 @@ th.ref-date-col {
             </tbody>
           </table>
         </div>
-        <div class="row">
-          <div id="new_reference">
-            <a class="btn btn-primary add-reference" href="">Add an item</a>
-          </div>
-        </div>
       </div>
     </div>
-    <div id="config" hidden>
-      <p id="csrf_token" data-csrf="{{ csrf_token() }}"></p>
-      <ul id="citationtype_fields">
-        {% for ctype in citationtype_fields %}
-          <li class='citationtype-data' data-name="{{ ctype['name'] }}">
-            <ul>
-              {% for field in ctype['values'] %}
-                <li class='citationtype-field-data' 
-                  data-display="{{ field['display'] }}"
-                  data-name="{{ field['name'] }}"></li>
-              {% endfor %}
-            </ul>
-          </li>
-        {% endfor %}
-      </ul>
-      <ul id="data-endpoints">
-        {% for ep, url in page_config['endpoints'].items() %}
-          <li class="endpoint" data-name="{{ ep }}" data-url="{{ url }}"></li>
-        {% endfor %}
-      </ul>
-      <p id="config_data_json" data-json='{{ page_config|tojson|safe }}'></p>
+    <div class="row">
+      <button id="new_reference" class="btn btn-primary add-reference" href="">Add an item</button>
     </div>
+  </div>
+  <div id="config" hidden>
+    <p id="csrf_token" data-csrf="{{ csrf_token() }}"></p>
+    <ul id="citationtype_fields">
+      {% for ctype in citationtype_fields %}
+        <li class="citationtype-data" data-name="{{ ctype['name'] }}">
+          <ul>
+            {% for field in ctype['values'] %}
+              <li class="citationtype-field-data"
+                data-display="{{ field['display'] }}"
+                data-name="{{ field['name'] }}"></li>
+            {% endfor %}
+          </ul>
+        </li>
+      {% endfor %}
+    </ul>
+    <ul id="data-endpoints">
+      {% for ep, url in page_config['endpoints'].items() %}
+        <li class="endpoint" data-name="{{ ep }}" data-url="{{ url }}"></li>
+      {% endfor %}
+    </ul>
+    <p id="config_data_json" data-json='{{ page_config|tojson|safe }}'></p>
   </div>
 </div>
 {% endblock %}
