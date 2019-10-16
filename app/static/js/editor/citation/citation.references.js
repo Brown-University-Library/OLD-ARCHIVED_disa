@@ -10,7 +10,7 @@ class Reference {
     this._$ref_confirm = $elem.find('.confirm-delete-reference');
     
     this._$ref_id.text(refData.id);
-    this._$ref_link.attr('href', this._url_base + refData.id)
+    this._$ref_link.attr('href', refData.link)
       .text(refData.reference_type);
     this._$ref_edited.text(refData.last_edit);
     this._$root.attr('data-reference-id', refData.id);

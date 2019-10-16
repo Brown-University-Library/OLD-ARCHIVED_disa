@@ -302,6 +302,8 @@ def delete_citation_reference(citeId, refId=None):
     cite = models.Citation.query.get(citeId)
     references = [
         { 'id': ref.id,
+        'link': url_for('editor.edit_reference',
+            citeId=citeId, refId=ref.id),
         'reference_type': ref.reference_type.name,
         'last_edit': ref.last_edit().timestamp.strftime("%Y-%m-%d")
         } for ref in cite.references ]

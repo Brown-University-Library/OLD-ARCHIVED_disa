@@ -170,7 +170,7 @@ th.ref-date-col {
         </div>
       </div>
       <div class='col-md-1'>
-        <button id="edit_citation" class="btn btn-primary edit-citation">Edit</button>
+        <button id="edit_citation" class="btn btn-primary citation-app-event edit-citation">Edit</button>
       </div>
     </div>
     <div class="row">
@@ -212,7 +212,8 @@ th.ref-date-col {
       </div>
     </div>
     <div class="row">
-      <button id="new_reference" class="btn btn-primary add-reference" href="">Add an item</button>
+      <a id="new_reference" class="btn btn-primary citation-app-event add-reference"
+        href="{{page_config['endpoints']['newReference']}}">Add an item</a>
     </div>
   </div>
   <div id="config" hidden>

@@ -101,6 +101,8 @@ def edit_citation(citeId='new'):
             { 'name': f.field.name, 'value': f.field_data }
                 for f in cite.citation_data ]
         config['references'] = [ { 'id': ref.id,
+                'link': url_for('editor.edit_reference',
+                    citeId=citeId, refId=ref.id),
                 'reference_type': ref.reference_type.name,
                 'last_edit':
                     ref.last_edit().timestamp.strftime("%Y-%m-%d")
@@ -109,15 +111,16 @@ def edit_citation(citeId='new'):
     config['endpoints'] = {
         'updateCitation': url_for('dataserv.update_citation', citeId=citeId),
         'createCitation': url_for('dataserv.create_citation'),
+        'newReference': url_for('editor.edit_reference',
+            citeId=citeId, refId='new'),
         'deleteReference': url_for('dataserv.delete_citation_reference',
             citeId=citeId, refId=None)
     }
     return render_template('editor/citation.html', page_config=config)
 
 
-@editor.route('/records')
-@editor.route('/records/<recId>')
-def edit_record(recId=None):
+@editor.route('/citations/<citeId>/references/<refId>')
+def edit_reference(citeId, refId='new'):
     locs = models.ReferenceLocation.query.all()
     rec_types = [ { 'id': rt.id, 'value': rt.name, 'name': rt.name }
         for rt in models.ReferenceType.query.all() ]
@@ -137,6 +140,67 @@ def edit_record(recId=None):
         for loc in uniq_town ]
     addl_loc = [ {'id': loc[1], 'value': loc[0],'label': loc[0] }
         for loc in uniq_addl ]
+
+    data['rec']['id'] = rec.id
+    data['rec']['date'] = None
+    if rec.date:
+        data['rec']['date'] = '{}/{}/{}'.format(rec.date.month,
+            rec.date.day, rec.date.year)
+    data['rec']['locations'] = [ 
+        { 'label':l.location.name, 'value':l.location.name,
+            'id': l.location.id } for l in rec.locations ]
+    data['rec']['transcription'] = rec.transcription
+    data['rec']['national_context'] = rec.national_context_id
+    data['rec']['record_type'] = {'label': rec.reference_type.name,
+        'value': rec.reference_type.name, 'id':rec.reference_type.id }
+    data['entrants'] = [ 
+        {
+            'name_id': ent.primary_name.id,
+            'first': ent.primary_name.first,
+            'last': ent.primary_name.last,
+            'id': ent.id,
+            'person_id': ent.person_id,
+            'roles': [ role.id for role in ent.roles ]
+        }
+            for ent in rec.referents ]
+    data['rec']['header'] = '{}'.format(
+        rec.reference_type.name or '').strip()
+
+
+    if refId == 'new':
+        reference['reference_id'] = refId
+        reference['reference_type'] = default.id
+    else:
+        ref = models.Reference.query.get(refId)
+        reference['reference_id'] = ref.id
+        reference['date'] = None
+        if rec.date:
+            reference['date'] = '{}/{}/{}'.format(ref.date.month,
+                ref.date.day, ref.date.year)
+        reference['locations'] = [ 
+            { 'label':l.location.name, 'value':l.location.name,
+                'id': l.location.id } for l in ref.locations ]
+        citation['comments'] = cite.comments
+        citation['acknowledgements'] = cite.acknowledgements
+        if cite.citation_type.id not in { c['id'] for c in config['citation_types'] }:
+            citation['citation_type'] = default.id
+        else:
+            citation['citation_type'] = cite.citation_type.id
+        citation['citation_fields'] = [
+            { 'name': f.field.name, 'value': f.field_data }
+                for f in cite.citation_data ]
+        config['references'] = [ { 'id': ref.id,
+                'reference_type': ref.reference_type.name,
+                'last_edit':
+                    ref.last_edit().timestamp.strftime("%Y-%m-%d")
+            } for ref in cite.references ]
+    config['citation'] = citation
+    config['endpoints'] = {
+        'updateCitation': url_for('dataserv.update_citation', citeId=citeId),
+        'createCitation': url_for('dataserv.create_citation'),
+        'deleteReference': url_for('dataserv.delete_citation_reference',
+            citeId=citeId, refId=None)
+    }
     if not recId:
         doc_id = request.args.get('doc')
         doc = models.Citation.query.get(doc_id)
