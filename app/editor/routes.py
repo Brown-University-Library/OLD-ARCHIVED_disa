@@ -5,6 +5,7 @@ from . import editor
 from .. import db, models, forms
 
 import datetime
+import calendar
 import collections
 from operator import itemgetter
 
@@ -121,6 +122,37 @@ def edit_citation(citeId='new'):
 
 @editor.route('/citations/<citeId>/references/<refId>')
 def edit_reference(citeId, refId='new'):
+    locs = models.ReferenceLocation.query.all()
+    rec_types = [ { 'id': rt.id, 'value': rt.name, 'name': rt.name }
+        for rt in models.ReferenceType.query.all() ]
+    roles = [ { 'id': role.id, 'value': role.name, 'name': role.name }
+        for role in models.Role.query.all() ]
+    natl_ctxs = [ { 'id': rt.id, 'value': rt.name, 'name': rt.name }
+        for rt in models.NationalContext.query.all() ]
+    uniq_cols = { (l.location.name, l.location_id)
+        for l in locs if l.location_rank == 0 }
+    uniq_town = { (l.location.name, l.location_id)
+        for l in locs if l.location_rank == 1 }
+    uniq_addl = { (l.location.name, l.location_id)
+        for l in locs if l.location_rank == 2 and l.location_id is not None}
+    col_state = [ {'id': loc[1], 'value': loc[0],'label': loc[0] }
+        for loc in uniq_cols ]
+    towns = [ {'id': loc[1], 'value': loc[0],'label': loc[0] }
+        for loc in uniq_town ]
+    addl_loc = [ {'id': loc[1], 'value': loc[0],'label': loc[0] }
+        for loc in uniq_addl ]
+    start_date = datetime.datetime(year=1492, day=1, month=1)
+    months = [ {'value': m, 'label': calendar.month_name[m] }
+        for m in range(1,13) ]
+    years = [ {'value': y, 'label': y } for y in range(1492,1900) ]
+    days = [ {'value': d, 'label': d } for d in range(1,32) ]
+    config = {
+        'national_contexts': natl_ctxs,
+        'date': { 'years': years, 'months': months, 'days': days }
+    }
+    return render_template('editor/reference.html', config=config)
+
+def foo_reference(citeId, refId='new'):
     locs = models.ReferenceLocation.query.all()
     rec_types = [ { 'id': rt.id, 'value': rt.name, 'name': rt.name }
         for rt in models.ReferenceType.query.all() ]
