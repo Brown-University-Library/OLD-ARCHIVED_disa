@@ -146,6 +146,10 @@ def edit_reference(citeId, refId='new'):
         for m in range(1,13) ]
     years = [ {'value': y, 'label': y } for y in range(1492,1900) ]
     days = [ {'value': d, 'label': d } for d in range(1,32) ]
+    unknown = {'value': 0, 'label': 'Unknown' }
+    months.append(unknown)
+    years.append(unknown)
+    days.append(unknown)
     config = {
         'national_contexts': natl_ctxs,
         'date': { 'years': years, 'months': months, 'days': days }

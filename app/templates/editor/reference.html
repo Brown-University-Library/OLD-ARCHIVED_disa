@@ -20,8 +20,28 @@
     margin-right: 5px;
 }
 
-.text-format-button { 
-    margin: auto 5px 5px;
+.reference-commands {
+  margin-left: auto;
+}
+
+.referents-commands {
+  margin-left: auto;
+}
+
+th.rnt-id-col {
+  width: 10%;
+}
+
+th.rnt-name-first-col {
+  width: 20%;
+}
+
+th.rnt-name-last-col {
+  width: 20%;
+}
+
+th.rnt-desc-col {
+  width: 25%;
 }
 
 </style>
@@ -34,143 +54,167 @@
 <div class="container">
     <div class="row">
         <div class='col-md-11'>
-        <div class="row">
-          <div class="col-md-12">
-            <div id="reference_display" class="hidden">
-              <div class="row">
-                <h1 id="ref_display_citation"></h1>
-                <h2 id="ref_display_reftype"></h2>
-              </div>
-              <div class="row">
-                <dl id="reference_display_data">
-                  <template>
-                    <div id="display_data" class="display-reference-data">
-                      <dt class="display-field-name"></dt>
-                      <dd class="display-field-value"></dd>
-                    </div>
-                  </template>
-                </dl>
+            <div class="row">
+              <div class="col-md-12">
+                <div id="reference_display" class="hidden">
+                  <div class="row">
+                    <h1 id="ref_display_citation"></h1>
+                    <h2 id="ref_display_reftype"></h2>
+                  </div>
+                  <div class="row">
+                    <dl id="reference_display_data">
+                      <template>
+                        <div id="display_data" class="display-reference-data">
+                          <dt class="display-field-name"></dt>
+                          <dd class="display-field-value"></dd>
+                        </div>
+                      </template>
+                    </dl>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+        </div>
+        <div id="referent_form">
+            <form action="" method="">
+                <div class="alert alert-primary">
+                    <strong>Please record information based on what is written in the document, rather than interpreting the text.</strong><br />
+                    For example, if a location is identified as "Charles-Town" in the document, please preserve the spelling rather than modernizing to "Charleston."
+                </div>
+                <div class="form-group row">
+                    <label for="referencetype_autocomplete">Type<br />
+                        <em class="small">Enter the type of item within the document that you’re adding. Use the drop down menu to see a list of options.</em>
+                    </label> 
+                    <input class="form-control" data-reftype-id="" type="text" id="referencetype_autocomplete"/>
+                </div>
+                <div class="form-group row">
+                    <label for="natl_ctx_select">National Context<br />
+                        <em class="small">Can be either a European nation or empire (e.g. Spanish, English, Dutch)</em>
+                    </label>
+                    <select class="form-control" id="natl_ctx_select">
+                        {% for natl in config['national_contexts'] %}
+                            <option val="{{ natl.id }}">{{ natl.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group row">
+                    <label for="col_state_autocomplete">Colony/State<br />
+                        <em class="small">If the item lists a state or colony, write it here. Use the drop down menu to see a list of options.<br/>
+                        Please write out the full name&mdash;e.g. enter "Rhode Island", not "RI".</em>
+                    </label>
+                    <input class="form-control location-input" type="text" id="col_state_autocomplete" data-loc-id=""/>
+                </div>
+                <div class="form-group row">
+                    <label for="town_autocomplete">Town<br />
+                        <em class="small">If there is a town listed in the item, write the name of the town here. </em>
+                    </label>
+                    <input class="form-control location-input" type="text" id="town_autocomplete" data-loc-id=""/>
+                </div>
+                <div class="form-group row">
+                    <label for="addl_loc_autocomplete">Additional location<br />
+                        <em class="small">If there are additional locations listed in the item, enter them here (e.g. “the dock”)</em>
+                    </label>
+                    <input class="form-control location-input" type="text" id="addl_loc_autocomplete" data-loc-id=""/>
+                </div>
+                <div class="row">
+                    <label>Event Date<br />
+                        <em class="small">Enter the date of the events described in the item, <strong>not</strong> the publication date of the containing document</em>
+                    </label>
+                    <div class="col-md-12">
+                        <div class="form-row">
+                            <div class="form-group col-md-2">
+                                <label for="date_month">Month</label>
+                                <select id="date_month" class="form-control">
+                                    {% for m in config['date']['months'] %}
+                                        <option value="{{ m.value }}">{{ m.label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label for="date_day">Day</label>
+                                <select id="date_day" class="form-control">
+                                    {% for d in config['date']['days'] %}
+                                        <option value="{{ d.value }}">{{ d.label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label for="date_year">Year</label>
+                                <select id="date_year" class="form-control">
+                                    {% for y in config['date']['years'] %}
+                                        <option value="{{ y.value }}">{{ y.label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="date_text">Additional Information</label>
+                                <input class="form-control location-input" type="text" id="date_text"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="transcription">Transcription<br />
+                        <em class="small">Write the full text of the item in this field, as close as possible to the original (e.g. using original spelling, etc.)</em>
+                    </label>
+                    <br />
+                    <textarea class="form-control" id="transcription"></textarea>
+                </div>
+                <div class="row">
+                    <div class="reference-commands">
+                        <button type="button" class="btn btn-warning discard-new-ref">Discard</button>
+                        <button type="button" class="btn btn-warning cancel-edit-ref">Cancel</button>
+                        <button type="button" class="btn btn-primary save-ref">Save</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
-    <div id="referent_form">
-        <form action="" method="">
-            <div class="alert alert-primary">
-                <strong>Please record information based on what is written in the document, rather than interpreting the text.</strong><br />
-                For example, if a location is identified as "Charles-Town" in the document, please preserve the spelling rather than modernizing to "Charleston."
+    <div class="row">
+        <div class="col-md-12">
+            <div id="referent_control">
+                <h3>People</h3>
+                <p id="empty_referent_display">None</p>
+                <table class="table">
+                    <thead>
+                        <tr>
+                          <th class="rnt-id-col" scope="col">ID</th>
+                          <th class="rnt-name-first-col" scope="col">First</th>
+                          <th class="rnt-name-last-col" scope="col">Last</th>
+                          <th class="rnt-desc-col" scope="col">Description</th>
+                          <th class="rnt-controls-col" scope="col"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="rnt_list">
+                        <template>
+                            <tr id="rnt_row" class="referent">
+                                <th class="rnt-id" scope="row"></th>
+                                <td class="rnt-first"></td>
+                                <td class="rnt-last"></td>
+                                <td class="rnt-indexes"></td>
+                                <td class="rnt-controls">
+                                    <a class="btn btn-secondary go-rnt-details" href="">Details</a>
+                                    <button class="btn btn-warning merge-rnt hidden">Merge</button>
+                                    <button class="btn btn-primary edit-rnt">Edit</button>
+                                    <button class="btn btn-secondary cancel-delete-rnt">
+                                        <span class="fas fa-undo"></span>
+                                    </button>
+                                    <button class="btn btn-danger delete-rnt">
+                                        <span class="fas fa-times-circle"></span>
+                                    </button>
+                                    <button class="btn btn-danger confirm-delete-rnt">
+                                        <span>Confirm delete</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
             </div>
-            <div class="form-group row">
-                <label for="referencetype_autocomplete">Type<br />
-                    <em class="small">Enter the type of item within the document that you’re adding. Use the drop down menu to see a list of options.</em>
-                </label> 
-                <input class="form-control" data-reftype-id="" type="text" id="referencetype_autocomplete"/>
-            </div>
-            <div class="form-group row">
-                <label for="natl_ctx_select">National Context<br />
-                    <em class="small">Can be either a European nation or empire (e.g. Spanish, English, Dutch)</em>
-                </label>
-                <select class="form-control" id="natl_ctx_select">
-                    {% for natl in config['national_contexts'] %}
-                        <option val="{{ natl.id }}">{{ natl.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="form-group row">
-                <label for="col_state_autocomplete">Colony/State<br />
-                    <em class="small">If the item lists a state or colony, write it here. Use the drop down menu to see a list of options.<br/>
-                    Please write out the full name&mdash;e.g. enter "Rhode Island", not "RI".</em>
-                </label>
-                <input class="form-control location-input" type="text" id="col_state_autocomplete" data-loc-id=""/>
-            </div>
-            <div class="form-group row">
-                <label for="town_autocomplete">Town<br />
-                    <em class="small">If there is a town listed in the item, write the name of the town here. </em>
-                </label>
-                <input class="form-control location-input" type="text" id="town_autocomplete" data-loc-id=""/>
-            </div>
-            <div class="form-group row">
-                <label for="addl_loc_autocomplete">Additional location<br />
-                    <em class="small">If there are additional locations listed in the item, enter them here (e.g. “the dock”)</em>
-                </label>
-                <input class="form-control location-input" type="text" id="addl_loc_autocomplete" data-loc-id=""/>
-            </div>
-            <div class="form-group row">
-                <label for="record_date">Event date<br />
-                    <em class="small">Enter the date of the events described in the item, <strong>not</strong> the publication date of the containing document</em></label>
-
-                <select id="date_month">
-                    {% for m in config['date']['months'] %}
-                        <option value="{{ m.value }}">{{ m.label }}</option>
-                    {% endfor %}
-                </select>
-                <select id="date_day">
-                    {% for d in config['date']['days'] %}
-                        <option value="{{ d.value }}">{{ d.label }}</option>
-                    {% endfor %}
-                </select>
-                <select id="date_year">
-                    {% for y in config['date']['years'] %}
-                        <option value="{{ y.value }}">{{ y.label }}</option>
-                    {% endfor %}
-                </select>
-                <input class="form-control location-input" type="text" id="date_text"/>
-            </div>
-            <div class="form-group row">
-                <label for="transcription">Transcription<br />
-                    <em class="small">Write the full text of the item in this field, as close as possible to the original (e.g. using original spelling, etc.)</em>
-                </label>
-                <br />
-                <textarea class="form-control" id="transcription"></textarea>
-            </div>
-            <div class="row">
-                <div class="reference-commands">
-                    <button type="button" class="btn btn-warning discard-new-ref">Discard</button>
-                    <button type="button" class="btn btn-warning cancel-edit-ref">Cancel</button>
-                    <button type="button" class="btn btn-primary save-ref">Save</button>
-                </div>
-            </div>
-        </form>
+        </div>
     </div>
-    <h2>People</h2>
-    <div id="rnt_mgmt">
-        <table class="table">
-            <thead>
-                <tr>
-                  <th scope="col">ID</th>
-                  <th scope="col" style="width:25%">First</th>
-                  <th scope="col" style="width:25%">Last</th>
-                  <th scope="col" style="width:25%">Description</th>
-                  <th scope="col"></th>
-                </tr>
-            </thead>
-            <tbody id="rnt_list">
-                <template>
-                    <tr id="rnt_row" class="referent">
-                        <th class="rnt-id" scope="row"></th>
-                        <td class="rnt-first"></td>
-                        <td class="rnt-last"></td>
-                        <td class="rnt-indexes"></td>
-                        <td class="rnt-controls">
-                            <a class="btn btn-secondary go-rnt-details" href="">Details</a>
-                            <button class="btn btn-warning merge-rnt hidden">Merge</button>
-                            <button class="btn btn-primary edit-rnt">Edit</button>
-                            <button class="btn btn-secondary cancel-delete-rnt">
-                                <span class="fas fa-undo"></span>
-                            </button>
-                            <button class="btn btn-danger delete-rnt">
-                                <span class="fas fa-times-circle"></span>
-                            </button>
-                            <button class="btn btn-danger confirm-delete-rnt">
-                                <span>Confirm delete</span>
-                            </button>
-                        </td>
-                    </tr>
-                </template>
-            </tbody>
-        </table>
-        <div id="new_person_button" class="d-flex flex-row-reverse">
+    <div class="row">
+        <div id="new_person_button" class="referents-commands">
             <button class="btn btn-primary" id="add-person">Add a person</button>&nbsp;&nbsp;
         </div>
     </div>
