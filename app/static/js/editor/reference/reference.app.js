@@ -1,14 +1,14 @@
 class ReferenceApp {
 
-  constructor($elem, config, refDisplay) {
+  constructor($elem, config, refDisplay, refForm) {
     this._$root = $elem;
     // this._source = source;
-    this._data = config._data.data;
+    this._data = config.get('data');
     // this._$edit_ref = $elem.find('#edit_reference');
     // this._$new_rnt = $elem.find('#new_referent');
     this._ref_id = $elem.attr('data-reference-id');
     this._ref_display = refDisplay;
-    // this._ref_form = refForm;
+    this._ref_form = refForm;
     // this._rnt_ctrl = rntCtrl;
 
     this.setEvents();
@@ -18,7 +18,7 @@ class ReferenceApp {
   load(data) {
     this._data = data || this._data;
     this._ref_display.show(this._data.display);
-    // this._ref_form.load(this._data.reference;
+    this._ref_form.load(this._data.reference);
     // this._rnt_ctrl.load(this._data.referents);
     // if (this._ref_id === 'new') {
     //   this._$edit_ref.addClass('hidden');

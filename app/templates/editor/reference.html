@@ -67,9 +67,11 @@ th.rnt-desc-col {
 
 </style>
 
+<script src="{{ url_for('static', filename='lib/jquery-ui-1.12.1/jquery-ui.min.js') }}"></script>
 <script src="{{ url_for('static', filename='lib/tinymce/tinymce.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/editor/flowcontrol.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/editor/reference/reference.display.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/editor/reference/reference.form.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/editor/reference/reference.app.js') }}"></script>
 
 {% endblock %}
@@ -99,17 +101,17 @@ th.rnt-desc-col {
                   </div>
                 </div>
             </div>
-            <div id="referent_form">
+            <div id="reference_form">
                 <form action="" method="">
                     <div class="alert alert-primary">
                         <strong>Please record information based on what is written in the document, rather than interpreting the text.</strong><br />
                         For example, if a location is identified as "Charles-Town" in the document, please preserve the spelling rather than modernizing to "Charleston."
                     </div>
                     <div class="form-group row">
-                        <label for="referencetype_autocomplete">Type<br />
+                        <label for="reference_type_input">Type<br />
                             <em class="small">Enter the type of item within the document that you’re adding. Use the drop down menu to see a list of options.</em>
                         </label> 
-                        <input class="form-control" data-reftype-id="" type="text" id="referencetype_autocomplete"/>
+                        <input class="form-control" id="reference_type_input"/>
                     </div>
                     <div class="form-group row">
                         <label for="natl_ctx_select">National Context<br />
@@ -122,57 +124,59 @@ th.rnt-desc-col {
                         </select>
                     </div>
                     <div class="form-group row">
-                        <label for="col_state_autocomplete">Colony/State<br />
+                        <label for="location_0_input">Colony/State<br />
                             <em class="small">If the item lists a state or colony, write it here. Use the drop down menu to see a list of options.<br/>
                             Please write out the full name&mdash;e.g. enter "Rhode Island", not "RI".</em>
                         </label>
-                        <input class="form-control location-input" type="text" id="col_state_autocomplete" data-loc-id=""/>
+                        <input class="form-control" type="text" id="location_0_input"/>
                     </div>
                     <div class="form-group row">
-                        <label for="town_autocomplete">Town<br />
+                        <label for="location_1_input">Town<br />
                             <em class="small">If there is a town listed in the item, write the name of the town here. </em>
                         </label>
-                        <input class="form-control location-input" type="text" id="town_autocomplete" data-loc-id=""/>
+                        <input class="form-control" type="text" id="location_1_input"/>
                     </div>
                     <div class="form-group row">
-                        <label for="addl_loc_autocomplete">Additional location<br />
+                        <label for="location_2_input">Additional location<br />
                             <em class="small">If there are additional locations listed in the item, enter them here (e.g. “the dock”)</em>
                         </label>
-                        <input class="form-control location-input" type="text" id="addl_loc_autocomplete" data-loc-id=""/>
+                        <input class="form-control" type="text" id="location_2_input"/>
                     </div>
                     <div class="row">
+                        <div id="date_selector">
                         <label>Event Date<br />
                             <em class="small">Enter the date of the events described in the item, <strong>not</strong> the publication date of the containing document</em>
                         </label>
-                        <div class="col-md-12">
-                            <div class="form-row">
-                                <div class="form-group col-md-2">
-                                    <label for="date_month">Month</label>
-                                    <select id="date_month" class="form-control">
-                                        {% for m in config['date']['months'] %}
-                                            <option value="{{ m.value }}">{{ m.label }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="form-group col-md-2">
-                                    <label for="date_day">Day</label>
-                                    <select id="date_day" class="form-control">
-                                        {% for d in config['date']['days'] %}
-                                            <option value="{{ d.value }}">{{ d.label }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="form-group col-md-2">
-                                    <label for="date_year">Year</label>
-                                    <select id="date_year" class="form-control">
-                                        {% for y in config['date']['years'] %}
-                                            <option value="{{ y.value }}">{{ y.label }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="form-group col-md-6">
-                                    <label for="date_text">Additional Information</label>
-                                    <input class="form-control location-input" type="text" id="date_text"/>
+                            <div class="col-md-12">
+                                <div class="form-row">
+                                    <div class="form-group col-md-2">
+                                        <label for="date_month">Month</label>
+                                        <select id="date_month" class="form-control">
+                                            {% for m in config['date']['months'] %}
+                                                <option value="{{ m.value }}">{{ m.label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-md-2">
+                                        <label for="date_day">Day</label>
+                                        <select id="date_day" class="form-control">
+                                            {% for d in config['date']['days'] %}
+                                                <option value="{{ d.value }}">{{ d.label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-md-2">
+                                        <label for="date_year">Year</label>
+                                        <select id="date_year" class="form-control">
+                                            {% for y in config['date']['years'] %}
+                                                <option value="{{ y.value }}">{{ y.label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="date_text">Additional Information</label>
+                                        <input class="form-control" type="text" id="date_text"/>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -186,9 +190,9 @@ th.rnt-desc-col {
                     </div>
                     <div class="row">
                         <div class="reference-commands">
-                            <button type="button" class="btn btn-warning discard-new-ref">Discard</button>
-                            <button type="button" class="btn btn-warning cancel-edit-ref">Cancel</button>
-                            <button type="button" class="btn btn-primary save-ref">Save</button>
+                            <button type="button" class="btn btn-warning discard-new-reference">Discard</button>
+                            <button type="button" class="btn btn-warning cancel-edit-reference">Cancel</button>
+                            <button type="button" class="btn btn-primary save-reference">Save</button>
                         </div>
                     </div>
                 </form>
@@ -263,11 +267,33 @@ th.rnt-desc-col {
 {% block scripts%}
 {{ super() }}
 <script type="text/javascript">
+    // https://api.jqueryui.com/autocomplete/
+    let jqui_autocomplete_settings = {
+        minLength: 1,
+        delay: 10,
+        autoFocus: true
+    };
+    // https://www.tiny.cloud/docs/
+    let tinymce_settings = {
+        menubar: false,
+        toolbar: false,
+        plugins: ['quickbars'],
+        quickbars_selection_toolbar: 'bold italic underline',
+        contextmenu: 'bold italic underline',
+        width: '100%'
+    }
+
     let config = new Config($('#config'));
     let ref_display = new ReferenceDisplay($('#reference_display'));
+    let ref_form = new ReferenceForm($('#reference_form'));
     let ref_app = new ReferenceApp($('#reference_page'), config,
-        ref_display);
+        ref_display, ref_form);
+
+    ref_form.configure(config,
+        jqui_autocomplete_settings, tinymce_settings);
 
     ref_display.setApp(ref_app);
+    ref_form.setApp(ref_app);
+
 </script>
 {% endblock %}
