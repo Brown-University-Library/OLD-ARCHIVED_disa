@@ -182,11 +182,11 @@ th.rnt-desc-col {
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label for="transcription">Transcription<br />
+                        <label for="transcription_input">Transcription<br />
                             <em class="small">Write the full text of the item in this field, as close as possible to the original (e.g. using original spelling, etc.)</em>
                         </label>
                         <br />
-                        <textarea class="form-control" id="transcription"></textarea>
+                        <textarea class="form-control" id="transcription_input"></textarea>
                     </div>
                     <div class="row">
                         <div class="reference-commands">
@@ -286,11 +286,11 @@ th.rnt-desc-col {
     let config = new Config($('#config'));
     let ref_display = new ReferenceDisplay($('#reference_display'));
     let ref_form = new ReferenceForm($('#reference_form'));
-    let ref_app = new ReferenceApp($('#reference_page'), config,
-        ref_display, ref_form);
-
     ref_form.configure(config,
         jqui_autocomplete_settings, tinymce_settings);
+
+    let ref_app = new ReferenceApp($('#reference_page'), config,
+        ref_display, ref_form);
 
     ref_display.setApp(ref_app);
     ref_form.setApp(ref_app);

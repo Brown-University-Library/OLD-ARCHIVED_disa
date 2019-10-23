@@ -51,6 +51,45 @@ class AutoCompleteInput {
   }
 }
 
+class RichTextInput {
+
+  constructor($elem) {
+    this._$input = $elem;
+    this._id = $elem.attr('id');
+    this._settings = {};
+  }
+
+  setEditor(settings) {
+    this._settings = settings;
+  }
+
+  load(data) {
+    if (!tinymce.get(this._id)) {
+      let cmpt = this;
+      tinymce.init({
+        selector: `#${cmpt._id}`,
+        menubar: cmpt._settings.menubar,
+        toolbar: cmpt._settings.toolbar,
+        plugins: cmpt._settings.plugins,
+        quickbars_selection_toolbar: cmpt._settings.quickbars_selection_toolbar,
+        contextmenu: cmpt._settings.contextmenu,
+        width: cmpt._settings.width
+      }).then(function(editors) {
+        cmpt._$input.val(data);
+        tinymce.get(cmpt._id).load();
+      });
+    } else {
+      this._$input.val(data);
+      tinymce.get(this._id).load();
+    }
+  }
+
+  read(data) {
+    tinymce.triggerSave();
+    return this._$input.val();
+  }
+}
+
 class DateSelect {
 
   constructor($elem) {
@@ -93,7 +132,7 @@ class ReferenceForm extends Control {
     this._loc_1 = new AutoCompleteInput($elem.find('#location_1_input'));
     this._loc_2 = new AutoCompleteInput($elem.find('#location_2_input'));
     this._date = new DateSelect($elem.find('#date_selector'));
-    // this._trsc = $elem.find('#transcription_input');
+    this._trsc = new RichTextInput($elem.find('#transcription_input'));
 
     // this.setEvents();
   }
@@ -107,7 +146,7 @@ class ReferenceForm extends Control {
       autoCmplSettings);
     this._loc_2.setAutoComplete(config.get('loc_2'),
       autoCmplSettings);
-    // this._trsc.configure(richTextSettings);
+    this._trsc.setEditor(richTextSettings);
   }
 
   load(data) {
@@ -117,7 +156,7 @@ class ReferenceForm extends Control {
     this._loc_1.load(data.locations[1]);
     this._loc_2.load(data.locations[2]);
     this._date.load(data.date);
-    // this._trsc.load(data.transcription);
+    this._trsc.load(data.transcription);
   }
 
   read() {
@@ -127,7 +166,7 @@ class ReferenceForm extends Control {
     this._data.locations.push(this._loc_2.read());
     this._data.ref_type = this._reference_type.read();
     this._data.date = this._date.read();
-    // this._data.transcription = this._trsc.read();
+    this._data.transcription = this._trsc.read();
     return this._data;
   }
 
