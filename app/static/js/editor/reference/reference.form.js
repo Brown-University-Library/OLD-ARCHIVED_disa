@@ -60,21 +60,14 @@ class RichTextInput {
   }
 
   setEditor(settings) {
+    settings.selector = `#${this._id}`;
     this._settings = settings;
   }
 
   load(data) {
     if (!tinymce.get(this._id)) {
       let cmpt = this;
-      tinymce.init({
-        selector: `#${cmpt._id}`,
-        menubar: cmpt._settings.menubar,
-        toolbar: cmpt._settings.toolbar,
-        plugins: cmpt._settings.plugins,
-        quickbars_selection_toolbar: cmpt._settings.quickbars_selection_toolbar,
-        contextmenu: cmpt._settings.contextmenu,
-        width: cmpt._settings.width
-      }).then(function(editors) {
+      tinymce.init(this._settings).then(function(editors) {
         cmpt._$input.val(data);
         tinymce.get(cmpt._id).load();
       });
@@ -134,7 +127,7 @@ class ReferenceForm extends Control {
     this._date = new DateSelect($elem.find('#date_selector'));
     this._trsc = new RichTextInput($elem.find('#transcription_input'));
 
-    // this.setEvents();
+    this.setEvents();
   }
 
   configure(config, autoCmplSettings, richTextSettings) {
@@ -202,7 +195,7 @@ class ReferenceForm extends Control {
           cmp._app.saveCitation();
           break;
         case $btn.hasClass('cancel-edit-reference'):
-          cmp._app.resetCitation();
+          cmp._app.resetReference();
           break;
         default:
           return;

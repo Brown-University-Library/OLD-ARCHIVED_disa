@@ -28,6 +28,10 @@
   margin-left: auto;
 }
 
+.hidden {
+  display: none;
+}
+
 dl {
   width: 100%;
   margin-left: 3%;
@@ -101,7 +105,10 @@ th.rnt-desc-col {
                   </div>
                 </div>
             </div>
-            <div id="reference_form">
+            <div class='col-md-1'>
+                <button id="edit_reference" class="btn btn-primary edit-reference">Edit</button>
+            </div>
+            <div id="reference_form" class="hidden">
                 <form action="" method="">
                     <div class="alert alert-primary">
                         <strong>Please record information based on what is written in the document, rather than interpreting the text.</strong><br />

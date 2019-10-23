@@ -4,7 +4,7 @@ class ReferenceApp {
     this._$root = $elem;
     // this._source = source;
     this._data = config.get('data');
-    // this._$edit_ref = $elem.find('#edit_reference');
+    this._$edit_ref = $elem.find('#edit_reference');
     // this._$new_rnt = $elem.find('#new_referent');
     this._ref_id = $elem.attr('data-reference-id');
     this._ref_display = refDisplay;
@@ -33,13 +33,13 @@ class ReferenceApp {
     // }
   }
 
-  // editReference() {
-  //   this._ref_display.hide();
-  //   this._ref_form.activate();
-  //   this._rnt_ctrl.hide();
-  //   this._$edit_ref.addClass('hidden');
-  //   this._$new_rnt.addClass('hidden');
-  // }
+  editReference() {
+    this._ref_display.hide();
+    this._ref_form.activate();
+    // this._rnt_ctrl.hide();
+    this._$edit_ref.addClass('hidden');
+    // this._$new_rnt.addClass('hidden');
+  }
 
   // saveReference() {
   //   let data; 
@@ -60,14 +60,14 @@ class ReferenceApp {
   //   this.resetReference();
   // }
 
-  // resetReference() {
-  //   this._ref_display.show(this._data.reference);
-  //   this._ref_form.deactivate();
-  //   this._ref_form.load(this._data.citation);
-  //   this._$edit_ref.removeClass('hidden');
-  //   this._$new_rnt.removeClass('hidden');
-  //   this._rnt_ctrl.show();
-  // }
+  resetReference() {
+    this._ref_display.show(this._data.display);
+    this._ref_form.deactivate();
+    this._ref_form.load(this._data.reference);
+    this._$edit_ref.removeClass('hidden');
+    // this._$new_rnt.removeClass('hidden');
+    // this._rnt_ctrl.show();
+  }
 
   // changeReferenceType(cType) {
   //   this._cite_form.changeReferenceType(cType);
@@ -98,13 +98,13 @@ class ReferenceApp {
   setEvents() {
     let app = this;
 
-    this._$root.on('click', '.reference-app-event', function(e){
+    this._$root.on('click', 'button', function(e){
       e.preventDefault();
       let $clicked = $( this );
 
       switch ( true ){
-        case $clicked.hasClass('edit-citation'):
-          app.editCitation();
+        case $clicked.hasClass('edit-reference'):
+          app.editReference();
           break;
         default:
           return;
