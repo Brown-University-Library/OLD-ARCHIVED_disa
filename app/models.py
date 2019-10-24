@@ -5,6 +5,8 @@ from . import db, login_manager
 from werkzeug import security
 from flask_login import UserMixin
 
+NEW_ID = 'new'
+
 has_role = db.Table('6_has_role',
     db.Column('id', db.Integer, primary_key=True),
     db.Column('referent', db.Integer, db.ForeignKey('5_referents.id')),
@@ -73,8 +75,30 @@ class Citation(db.Model):
     acknowledgements = db.Column(db.String(255))
     references = db.relationship('Reference', backref='citation', lazy=True)
 
+    def to_dict(self=None):
+        data = {
+            'citation_id': NEW_ID,
+            'display': '',
+            'acknowledgements': '',
+            'comments': '',
+            'citation_type': '',
+            'citation_fields': []
+        }
+        if self:
+            data['citation_id'] = self.id
+            data['display'] = self.display
+            data['comments'] = self.comments
+            data['acknowledgements'] = self.acknowledgements
+            data['citation_type'] = {'id': self.citation_type_id,
+                'name': self.citation_type.name }
+            data['citation_fields'] = [
+                { 'name': f.field.name, 'value': f.field_data }
+                    for f in self.citation_data  ]
+        return data
+
     def __repr__(self):
-        return '<Citation {0}>'.format(self.id)
+        return '<Citation {0}: {1}>'.format(self.id, self.display)
+
 
 class CitationType(db.Model):
     __tablename__ = '2_citation_types'
@@ -159,8 +183,39 @@ class Reference(db.Model):
         else:
             return ''
 
+    def to_dict(self=None):
+        data = {
+            'reference_id': NEW_ID,
+            'citation_id': '',
+            'reference_type': {'id': '', 'name': '' },
+            'date': { 'day': '0', 'month': '0', 'year': '0', 'text': 'stub' },
+            'national_context': { 'id': '', 'name': '' },
+            'locations': [],
+            'transcription': '',
+            'referents': []
+        }
+        if self:
+            data['reference_id'] = self.id
+            data['citation_id'] = self.citation_id
+            data['reference_type'] = {'id': self.reference_type_id,
+                'name': self.reference_type.name }
+            data['date'] = { 'day': self.date.day if self.date else '0',
+                'month': self.date.month if self.date else '0',
+                'year': self.date.year if self.date else '0',
+                'text': 'stub' }
+            data['national_context'] = { 'id': self.national_context_id,
+                'name': self.national_context.name }
+            data['locations'] = [
+                { 'id': l.location.id, 'name': l.location.name,
+                    'type': l.location_type_id, 'rank': l.location_rank }
+                        for l in self.locations ]
+            data['transcription'] = self.transcription
+            data['referents'] = [ r.id for r in self.referents ]
+        return data
+
     def __repr__(self):
-        return '<Reference {0}>'.format(self.id)
+        return '<Reference {0}: {1} in Citation {2}>'.format(
+            self.id, self.reference_type.name, self.citation_id)
 
 class ReferenceType(db.Model):
     __tablename__ = '1_reference_types'
