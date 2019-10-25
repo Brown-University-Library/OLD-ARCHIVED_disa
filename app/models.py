@@ -6,36 +6,37 @@ from werkzeug import security
 from flask_login import UserMixin
 
 NEW_ID = 'new'
-DEFAULT_ID = 'default'
 
 class SemiControlledMixin(object):
 
     @classmethod
-    def get_or_create(cls, identifier, data={}, default=True):
-        if identifier == NEW_ID:
-            if not data:
-                raise KeyError(
-                    'Missing required data for new instance of {}'.format(
-                        cls.__name__))
-            _new = cls(**data)
-            db.session.add(_new)
-            db.session.commit()
-            return _new
-        elif default and (identifier == DEFAULT_ID or not identifier):
-                try:
-                    _default = cls.query.filter_by(cls._default).first()
-                except:
-                    raise ReferenceError(
-                        'Default instance of {} not found'.format(
+    def get_default(cls):
+        if not cls._default:
+            raise ReferenceError(
+                        'No default instance set for {}'.format(
                             cls.__name__))
-                return _default
+        try:
+            default = cls.query.filter_by(cls._default).first()
+        except:
+            raise ReferenceError(
+                'Default instance of {} not found'.format(
+                    cls.__name__))
+        return default
+
+    @classmethod
+    def get_or_create(cls, data):
+        if not data:
+            raise KeyError(
+                'Missing required data for get or create {}'.format(
+                    cls.__name__))
+        existing = cls.query.filter_by(**data).first()
+        if existing:
+            return existing
         else:
-            try:
-                _existing = cls.query.get(identifier)
-                return _existing
-            except:
-                raise ReferenceError('No {0} with id {1}'.format(
-                    cls.__name__, identifier))
+            created = cls(**data)
+            db.session.add(created)
+            db.session.commit()
+            return created
 
 
 has_role = db.Table('6_has_role',
@@ -144,6 +145,7 @@ class CitationType(db.Model):
     citations = db.relationship('Citation',
         backref='citation_type', lazy=True)
 
+
 class ZoteroType(db.Model):
     __tablename__ = '1_zotero_types'
 
@@ -153,12 +155,14 @@ class ZoteroType(db.Model):
     citation_types = db.relationship('CitationType',
         backref='zotero_type', lazy=True)
 
+
 class ZoteroField(db.Model):
     __tablename__ = '1_zotero_fields'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255)) 
     display_name = db.Column(db.String(255))
+
 
 class ZoteroTypeField(db.Model):
     __tablename__ = '2_zoterotype_fields'
@@ -174,6 +178,7 @@ class ZoteroTypeField(db.Model):
         primaryjoin=(zotero_field_id == ZoteroField.id),
         backref='templates')
 
+
 class CitationField(db.Model):
     __tablename__ = '4_citation_fields'
 
@@ -187,6 +192,7 @@ class CitationField(db.Model):
     field = db.relationship(ZoteroField,
         primaryjoin=(field_id == ZoteroField.id),
         backref='citations')
+
 
 class Reference(db.Model):
     __tablename__ = '4_references'
@@ -213,6 +219,13 @@ class Reference(db.Model):
             return self.date.strftime('%Y %B %d')
         else:
             return ''
+
+    def set_locations(self, locsData):
+        self.locations = []
+        for i, loc in enumerate(locsData):
+            loc['location_rank'] = i
+            ref_loc = ReferenceLocation(**loc)
+            self.locations.append(ref_loc)
 
     def to_dict(self=None):
         data = {
@@ -248,6 +261,7 @@ class Reference(db.Model):
         return '<Reference {0}: {1} in Citation {2}>'.format(
             self.id, self.reference_type.name, self.citation_id)
 
+
 class ReferenceType(db.Model, SemiControlledMixin):
     __tablename__ = '1_reference_types'
     _default = {'name': 'Unspecified'}
@@ -263,6 +277,10 @@ class ReferenceType(db.Model, SemiControlledMixin):
         'CitationType', secondary=citationtype_referencetypes,
         back_populates='reference_types')
 
+    def __repr__(self):
+        return '<ReferenceType {0}: {1}>'.format(self.id, self.name)
+
+
 class Location(db.Model):
     __tablename__ = '1_locations'
 
@@ -273,6 +291,7 @@ class Location(db.Model):
 
     def __repr__(self):
         return '<Location {0}: {1}>'.format(self.id, self.name)
+
 
 class ReferenceLocation(db.Model):
     __tablename__ = '5_has_location'
@@ -289,6 +308,11 @@ class ReferenceLocation(db.Model):
         primaryjoin=(location_id == Location.id),
         backref='references')
 
+    def __repr__(self):
+        return '<Location for Reference {0}: {1} as {2}>'.format(
+            self.reference_id, self.location.name, self.location_type.name)
+
+
 class LocationType(db.Model):
     __tablename__ = '1_location_types'
 
@@ -297,6 +321,10 @@ class LocationType(db.Model):
     locations = db.relationship(
         'ReferenceLocation', backref='location_type', lazy=True)
 
+    def __repr__(self):
+        return '<LocationType {0}: {1}>'.format(self.id, self.name)
+
+
 class NationalContext(db.Model):
     __tablename__ = '1_national_context'
 
@@ -304,11 +332,19 @@ class NationalContext(db.Model):
     name = db.Column(db.String(255))
     references = db.relationship('Reference', backref='national_context', lazy=True)
 
+    def __repr__(self):
+        return '<NationalContext {0}: {1}>'.format(self.id, self.name)
+
+
 class NameType(db.Model):
     __tablename__ = '1_name_types'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
+
+    def __repr__(self):
+        return '<NameType {0}: {1}>'.format(self.id, self.name)
+
 
 class ReferentName(db.Model):
     __tablename__ = '6_referent_names'
@@ -375,6 +411,10 @@ class Title(db.Model, SemiControlledMixin):
     referents = db.relationship('Referent',
         secondary=has_title, back_populates='titles')
 
+    def __repr__(self):
+        return '<Title {0}: {1}>'.format(self.id, self.name)
+
+
 class Tribe(db.Model, SemiControlledMixin):
     __tablename__ = '1_tribes'
 
@@ -382,6 +422,10 @@ class Tribe(db.Model, SemiControlledMixin):
     name = db.Column(db.String(255))
     referents = db.relationship('Referent',
         secondary=has_tribe, back_populates='tribes')
+
+    def __repr__(self):
+        return '<Tribe {0}: {1}>'.format(self.id, self.name)
+
 
 class Race(db.Model):
     __tablename__ = '1_races'
@@ -391,6 +435,10 @@ class Race(db.Model):
     referents = db.relationship('Referent',
         secondary=has_race, back_populates='races')
 
+    def __repr__(self):
+        return '<Race {0}: {1}>'.format(self.id, self.name)
+
+
 class Vocation(db.Model):
     __tablename__ = '1_vocations'
 
@@ -399,6 +447,10 @@ class Vocation(db.Model):
     referents = db.relationship('Referent',
         secondary=has_vocation, back_populates='vocations')
 
+    def __repr__(self):
+        return '<Vocation {0}: {1}>'.format(self.id, self.name)
+
+
 class EnslavementType(db.Model):
     __tablename__ = '1_enslavement_types'
 
@@ -406,6 +458,10 @@ class EnslavementType(db.Model):
     name = db.Column(db.String(255))
     referents = db.relationship('Referent',
         secondary=enslaved_as, back_populates='enslavements')
+
+    def __repr__(self):
+        return '<EnslavementType {0}: {1}>'.format(self.id, self.name)
+
 
 class Role(db.Model):
     __tablename__ = '1_roles'

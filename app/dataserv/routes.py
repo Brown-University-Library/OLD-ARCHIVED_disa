@@ -45,7 +45,7 @@ def read_document_data(docId=None):
     return jsonify(data)
 
 
-@dataserv.route('/documents/', methods=['POST'])
+@dataserv.route('/citations/', methods=['POST'])
 def create_citation():
     data = request.get_json()
     unspec = models.CitationType.query.filter_by(name='Document').first()
@@ -77,8 +77,8 @@ def create_citation():
         { 'redirect': url_for('edit_citation', citeId=cite.id) })
 
 
-@dataserv.route('/documents/', methods=['PUT'])
-@dataserv.route('/documents/<citeId>', methods=['PUT'])
+@dataserv.route('/citations/', methods=['PUT'])
+@dataserv.route('/citations/<citeId>', methods=['PUT'])
 def update_citation(citeId):
     data = request.get_json()
     if citeId is None:
@@ -197,64 +197,43 @@ def read_referent_data(rntId=None):
             'id': e.name } for e in rnt.enslavements ]
     return jsonify(data)
 
-def get_or_create_type(typeData, typeModel):
-    if typeData['id'] == -1:
-        new_type = typeModel(name=typeData['value'])
-        db.session.add(new_type)
-        db.session.commit()
-        return new_type
-    elif typeData == '' or typeData['id'] == 0:
-        unspec = typeModel.query.filter_by(name='Unspecified').first()
-        return unspec
-    else:
-        existing = typeModel.query.get(typeData['id'])
-        return existing
 
-def process_record_locations(locData, recObj):
-    locations = []
-    for loc in locData:
-        if loc['id'] == -1:
-            location = models.Location(name=loc['value'])
-            db.session.add(location)
-            db.session.commit()
-        elif loc['id'] == 0:
-            continue
-        else:
-            location = models.Location.query.get(loc['id'])
-        locations.append(location)
-    clny_state = models.LocationType.query.filter_by(name='Colony/State').first()
-    city = models.LocationType.query.filter_by(name='City').first()
-    locale = models.LocationType.query.filter_by(name='Locale').first()
-    loc_types = [ clny_state, city, locale ]
-    for loc in locations:
-        rec_loc = models.ReferenceLocation()
-        rec_loc.reference = recObj
-        rec_loc.location = loc
-        idx = locations.index(loc)
-        rec_loc.location_rank = idx
-        if idx < len(loc_types):
-            rec_loc.location_type = loc_types[idx]
-        db.session.add(rec_loc)
+@dataserv.route('/references/', methods=['POST'])
+def create_reference():
+    data = request.get_json()
+    ref = models.Reference()
+    ref.citation_id = data['citation_id']
+    ref.set_locations([
+        {   'location_id': models.Location.get_or_create( name=loc['name'] ).id,
+            'location_type_id': models.LocationType.get_or_create(
+                name=loc['location_type'] ).id,
+            'location_rank': idx }
+        for idx, loc in enumerate(data['locations']) ])
+    try:
+        ref.date = datetime.datetime.strptime(data['date'], '%m/%d/%Y')
+    except:
+        ref.date = None
+    ref.reference_type_id = models.ReferenceType.get_or_create(
+        name=data['reference_type'] ).id
+    ref.reference_type_id = reference_type.id
+    ref.national_context_id = data['national_context_id']
+    ref.transcription = data['transcription']
+    db.session.add(ref)
     db.session.commit()
-    return recObj
 
-@dataserv.route('/records/', methods=['POST'])
-@dataserv.route('/records/<refId>', methods=['PUT'])
-def update_reference_data(refId=None):
+    stamp_edit(current_user, ref)
+    data = ref.to_dict()
+    return jsonify(data)
+
+@dataserv.route('/references/<refId>', methods=['PUT'])
+def update_reference(refId):
     data = request.get_json()
     reference_type = get_or_create_type(
-        data['record_type'], models.ReferenceType)
-    if request.method == 'POST':
-        ref = models.Reference()
-        ref.citation_id = data['citation_id']
-        ref.national_context_id = data['national_context']
-        ref.reference_type_id = reference_type.id
-        db.session.add(ref)
-        db.session.commit()
-    else:
-        ref = models.Reference.query.get(refId)
+        data['reference_type'], models.ReferenceType)
+
+    ref = models.Reference.query.get(refId)
     ref.locations = []
-    ref = process_record_locations(data['locations'], ref)
+    ref = process_reference_locations(data['locations'], ref)
     try:
         ref.date = datetime.datetime.strptime(data['date'], '%m/%d/%Y')
     except:

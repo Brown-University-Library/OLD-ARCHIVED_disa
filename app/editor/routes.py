@@ -150,51 +150,42 @@ def edit_reference(citeId, refId='new'):
         'data': {},
         'national_contexts': natl_ctxs,
         'date': { 'years': years, 'months': months, 'days': days },
-        'index_terms': roles,
+        'tags': roles,
         'reference_types': ref_types,
         'loc_0': [ {'id': loc[1], 'name': loc[0] } for loc in uniq_loc_0 ],
         'loc_1': [ {'id': loc[1], 'name': loc[0] } for loc in uniq_loc_1 ],
         'loc_2': [ {'id': loc[1], 'name': loc[0] } for loc in uniq_loc_2 ]
     }
 
-    ref = models.Reference.query.get(refId)
-    reference = {
-        'reference_id': ref.id,
-        'reference_type': {'id': ref.reference_type_id,
-            'name': ref.reference_type.name },
-        'date': {
-            'day': ref.date.day if ref.date else '0',
-            'month': ref.date.month if ref.date else '0',
-            'year': ref.date.year if ref.date else '0',
-            'text': 'stub',
-        },
-        'national_context': { 'id': ref.national_context_id,
-            'name': ref.national_context.name },
-        'locations': [
-            { 'id': l.location.id, 'name': l.location.name }
-                for l in ref.locations ],
-        'transcription': ref.transcription
-    }
-    config['data']['reference'] = reference
+    if refId == 'new':
+        config['data']['reference'] = models.Reference.to_dict()
+    else:
+        ref = models.Reference.query.get(refId)
+        config['data']['reference'] = ref.to_dict()
 
-    loc_display = [ 'None', 'None', 'None' ]
-    for loc in ref.locations:
-        loc_display[loc.location_rank] = loc.location.name
-    date_display = ref.date.strftime("%B %d, %Y") if ref.date else 'None'
-    display = {
-        'header': ref.reference_type.name,
-        'fields': [
-            {'field': 'CITATION', 'data': ref.citation.display },
-            {'field': 'CONTEXT', 'data': ref.reference_type.name },
-            {'field': 'NATIONAL CONTEXT', 'data': ref.national_context.name },
-            {'field': 'COLONY/STATE', 'data': loc_display[0] },
-            {'field': 'TOWN', 'data': loc_display[1] },
-            {'field': 'ADDITIONAL LOCATION', 'data': loc_display[2] },
-            {'field': 'DATE', 'data': date_display },
-            {'field': 'TRANSCRIPTION', 'data': ref.transcription[:200] },        
-        ]
+        loc_display = [ 'None', 'None', 'None' ]
+        for loc in ref.locations:
+            loc_display[loc.location_rank] = loc.location.name
+        date_display = ref.date.strftime("%B %d, %Y") if ref.date else 'None'
+        display = {
+            'header': ref.reference_type.name,
+            'fields': [
+                {'field': 'SOURCE', 'data': ref.citation.display },
+                {'field': 'DESCRIPTION', 'data': ref.reference_type.name },
+                {'field': 'NATIONAL CONTEXT', 'data': ref.national_context.name },
+                {'field': 'COLONY/STATE', 'data': loc_display[0] },
+                {'field': 'CITY', 'data': loc_display[1] },
+                {'field': 'LOCALE', 'data': loc_display[2] },
+                {'field': 'DATE', 'data': date_display },
+                {'field': 'TRANSCRIPTION', 'data': ref.transcription[:200] },
+            ]
+        }
+        config['data']['display'] = display
+
+    config['endpoints'] = {
+        'updateReference': url_for('dataserv.update_reference', refId=refId),
+        'createReference': url_for('dataserv.create_reference'),
     }
-    config['data']['display'] = display
     return render_template('editor/reference.html', config=config)
 
 def foo_reference(citeId, refId='new'):
