@@ -6,6 +6,37 @@ from werkzeug import security
 from flask_login import UserMixin
 
 NEW_ID = 'new'
+DEFAULT_ID = 'default'
+
+class SemiControlledMixin(object):
+
+    @classmethod
+    def get_or_create(cls, identifier, data={}, default=True):
+        if identifier == NEW_ID:
+            if not data:
+                raise KeyError(
+                    'Missing required data for new instance of {}'.format(
+                        cls.__name__))
+            _new = cls(**data)
+            db.session.add(_new)
+            db.session.commit()
+            return _new
+        elif default and (identifier == DEFAULT_ID or not identifier):
+                try:
+                    _default = cls.query.filter_by(cls._default).first()
+                except:
+                    raise ReferenceError(
+                        'Default instance of {} not found'.format(
+                            cls.__name__))
+                return _default
+        else:
+            try:
+                _existing = cls.query.get(identifier)
+                return _existing
+            except:
+                raise ReferenceError('No {0} with id {1}'.format(
+                    cls.__name__, identifier))
+
 
 has_role = db.Table('6_has_role',
     db.Column('id', db.Integer, primary_key=True),
@@ -217,8 +248,9 @@ class Reference(db.Model):
         return '<Reference {0}: {1} in Citation {2}>'.format(
             self.id, self.reference_type.name, self.citation_id)
 
-class ReferenceType(db.Model):
+class ReferenceType(db.Model, SemiControlledMixin):
     __tablename__ = '1_reference_types'
+    _default = {'name': 'Unspecified'}
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
@@ -335,7 +367,7 @@ class Referent(db.Model):
         else:
             return display
 
-class Title(db.Model):
+class Title(db.Model, SemiControlledMixin):
     __tablename__ = '1_titles'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -343,7 +375,7 @@ class Title(db.Model):
     referents = db.relationship('Referent',
         secondary=has_title, back_populates='titles')
 
-class Tribe(db.Model):
+class Tribe(db.Model, SemiControlledMixin):
     __tablename__ = '1_tribes'
 
     id = db.Column(db.Integer, primary_key=True)
