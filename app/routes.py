@@ -6,10 +6,10 @@ from app import app, db, models, forms
 
 import datetime
 import collections
+import logging, pprint
 
 
 ## setup logging
-import logging
 logging.basicConfig(
     # filename=settings_app.INDEXER_LOG_PATH,
     level=logging.DEBUG,
@@ -716,3 +716,37 @@ def delete_relationship(relId):
     return redirect(
         url_for('relationships_by_reference', refId = ref.id),
         code=303 )
+
+
+# ===========================
+# for development convenience
+# ===========================
+
+
+# @app.route( '/version' )
+# def version():
+#     """ Returns basic data including branch & commit. """
+#     # log.debug( 'request.__dict__, ```%s```' % pprint.pformat(request.__dict__) )
+#     rq_now = datetime.datetime.now()
+#     commit = view_version_helper.get_commit()
+#     branch = view_version_helper.get_branch()
+#     info_txt = commit.replace( 'commit', branch )
+#     resp_now = datetime.datetime.now()
+#     taken = resp_now - rq_now
+#     context_dct = view_version_helper.make_context( request, rq_now, info_txt, taken )
+#     output = json.dumps( context_dct, sort_keys=True, indent=2 )
+#     return HttpResponse( output, content_type='application/json; charset=utf-8' )
+
+
+@app.route( '/error_check' )
+def error_check():
+    """ For an easy way to check that admins receive error-emails (in development).
+        To view error-emails in runserver-development:
+        - run, in another terminal window: `python -m smtpd -n -c DebuggingServer localhost:1026`,
+        - (or substitue your own settings for localhost:1026)
+    """
+    log.debug( f'flask.request, ```{pprint.pformat(request.host)}```' )
+    if request.host[0:9] == '127.0.0.1':
+        1/0
+    else:
+        return HttpResponseNotFound( '<div>404 / Not Found</div>' )
