@@ -4,12 +4,55 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
 
-import os
-import json
+import json, logging, os, pprint
+from logging.handlers import SMTPHandler
+
+
+## setup logging
+logging.basicConfig(
+    # filename=settings_app.INDEXER_LOG_PATH,
+    level=logging.DEBUG,
+    format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
+    datefmt='%d/%b/%Y %H:%M:%S'
+    )
+# logging.getLogger("oauth2client").setLevel(logging.WARNING)
+# log = logging.getLogger( 'book_locator_indexer' )
+log = logging.getLogger( __name__ )
+log.info( '__init__.py logging working' )
+
 
 app = Flask(__name__)
+
+## config
 app.config.from_object(os.environ['APP_SETTINGS'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+app.config['MAIL_SERVER'] = os.environ['DISA__MAIL_SERVER']
+app.config['MAIL_PORT'] = int( os.environ['DISA__MAIL_PORT'] )
+app.config['MAIL_USE_TLS'] = 1
+app.config['MAIL_USERNAME'] = None
+app.config['MAIL_PASSWORD'] = None
+app.config['ADMINS'] = json.loads( os.environ.get('DISA__MAIL_ADMINS_JSON') )
+log.debug( f'app.config, ```{pprint.pformat(app.config)}```' )
+
+## enable email-on-error (credit: <https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-vii-error-handling>)
+if app.config['MAIL_SERVER']:
+    log.debug( 'hereA' )
+    auth = None
+    if app.config['MAIL_USERNAME'] or app.config['MAIL_PASSWORD']:
+        auth = (app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+    secure = None
+    if app.config['MAIL_USE_TLS']:
+        secure = ()
+    mail_handler = SMTPHandler(
+        mailhost=(app.config['MAIL_SERVER'], app.config['MAIL_PORT']),
+        fromaddr='no-reply@' + app.config['MAIL_SERVER'],
+        toaddrs=app.config['ADMINS'], subject='DISA web-app error',
+        credentials=auth, secure=secure)
+    mail_handler.setLevel(logging.DEBUG)
+    app.logger.addHandler(mail_handler)
+
+
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 csrf = CSRFProtect(app)

@@ -9,17 +9,18 @@ import collections
 import logging, pprint
 
 
+## email-on-error setup
+
+
 ## setup logging
-logging.basicConfig(
-    # filename=settings_app.INDEXER_LOG_PATH,
-    level=logging.DEBUG,
-    format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
-    datefmt='%d/%b/%Y %H:%M:%S'
-    )
-# logging.getLogger("oauth2client").setLevel(logging.WARNING)
-# log = logging.getLogger( 'book_locator_indexer' )
+# logging.basicConfig(
+#     # filename=settings_app.INDEXER_LOG_PATH,
+#     level=logging.DEBUG,
+#     format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
+#     datefmt='%d/%b/%Y %H:%M:%S'
+#     )
 log = logging.getLogger( __name__ )
-log.info( 'HELLOOOOOOO' )
+log.info( 'routes.py logging working' )
 
 
 def stamp_edit(user, ref):

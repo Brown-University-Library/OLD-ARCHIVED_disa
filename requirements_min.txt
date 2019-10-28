@@ -1,0 +1,2 @@
+## will buid this out to see the minimum packages required (some installs will install their own dependencies)
+
