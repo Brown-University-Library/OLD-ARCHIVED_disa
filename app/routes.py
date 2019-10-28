@@ -7,6 +7,21 @@ from app import app, db, models, forms
 import datetime
 import collections
 
+
+## setup logging
+import logging
+logging.basicConfig(
+    # filename=settings_app.INDEXER_LOG_PATH,
+    level=logging.DEBUG,
+    format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
+    datefmt='%d/%b/%Y %H:%M:%S'
+    )
+# logging.getLogger("oauth2client").setLevel(logging.WARNING)
+# log = logging.getLogger( 'book_locator_indexer' )
+log = logging.getLogger( __name__ )
+log.info( 'HELLOOOOOOO' )
+
+
 def stamp_edit(user, ref):
     edit = models.ReferenceEdit(reference_id=ref.id,
         user_id=user.id, timestamp=datetime.datetime.utcnow())
@@ -19,10 +34,14 @@ def browse():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    log.debug( 'starting login()' )
+    log.debug( f'current_user, ```{current_user.__dict__}```' )
     if current_user.is_authenticated:
+        log.debug( 'user is authenticated' )
         return redirect(url_for('index_documents'))
     form = forms.LoginForm()
     if form.validate_on_submit():
+        log.debug( 'form `form.validate_on_submit()` was True' )
         user = models.User.query.filter_by(email=form.email.data).first()
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
@@ -35,6 +54,7 @@ def login():
         db.session.add(user)
         db.session.commit()
         return redirect(next_page)
+    log.debug( 'i guess form `form.validate_on_submit()` was False' )
     return render_template('login.html', title='Sign In', form=form)
 
 @app.route('/logout')
@@ -50,7 +70,7 @@ def sort_documents(wrappedDocs):
         else:
             continue
     return sorted([ merge[w] for w in merge], reverse=True)
-     
+
 @app.route('/editor', methods=['GET'])
 @login_required
 def editor_index():
@@ -78,7 +98,7 @@ def edit_citation(citeId=None):
         'Newspaper Article', 'Thesis', 'Webpage' ]
     ct = models.CitationType.query.filter(
         models.CitationType.name.in_(included)).all()
-    ct_fields = { 
+    ct_fields = {
         c.id: [ {   'name': f.zotero_field.name,
                     'rank': f.rank,
                     'display': f.zotero_field.display_name }
@@ -199,7 +219,7 @@ def read_document_data(docId=None):
         doc = models.Citation.query.get(docId)
         data['doc']['id'] = doc.id
     data['doc']['citation'] = doc.display
-    # data['doc']['zotero_id'] = doc.zotero_id   
+    # data['doc']['zotero_id'] = doc.zotero_id
     data['doc']['comments'] = doc.comments
     data['doc']['acknowledgements'] = doc.acknowledgements
     if doc.citation_type_id not in [ c.id for c in ct ]:
@@ -309,14 +329,14 @@ def read_record_data(recId=None):
     if rec.date:
         data['rec']['date'] = '{}/{}/{}'.format(rec.date.month,
             rec.date.day, rec.date.year)
-    data['rec']['locations'] = [ 
+    data['rec']['locations'] = [
         { 'label':l.location.name, 'value':l.location.name,
             'id': l.location.id } for l in rec.locations ]
     data['rec']['transcription'] = rec.transcription
     data['rec']['national_context'] = rec.national_context_id
     data['rec']['record_type'] = {'label': rec.reference_type.name,
         'value': rec.reference_type.name, 'id':rec.reference_type.id }
-    data['entrants'] = [ 
+    data['entrants'] = [
         {
             'name_id': ent.primary_name.id,
             'first': ent.primary_name.first,
@@ -345,22 +365,22 @@ def read_referent_data(rntId=None):
             'id': n.id } for n in rnt.names ]
     data['ent']['age'] = rnt.age
     data['ent']['sex'] = rnt.sex
-    data['ent']['races'] = [ 
+    data['ent']['races'] = [
         { 'label': r.name, 'value': r.name,
             'id': r.name } for r in rnt.races ]
-    data['ent']['tribes'] = [ 
+    data['ent']['tribes'] = [
         { 'label': t.name, 'value': t.name,
             'id': t.name } for t in rnt.tribes ]
-    data['ent']['origins'] = [ 
+    data['ent']['origins'] = [
         { 'label': o.name, 'value': o.name,
             'id': o.name } for o in rnt.origins ]
-    data['ent']['titles'] = [ 
+    data['ent']['titles'] = [
         { 'label': t.name, 'value': t.name,
             'id': t.name } for t in rnt.titles ]
-    data['ent']['vocations'] = [ 
+    data['ent']['vocations'] = [
         { 'label': v.name, 'value': v.name,
             'id': v.name } for v in rnt.vocations ]
-    data['ent']['enslavements'] = [ 
+    data['ent']['enslavements'] = [
         { 'label': e.name, 'value': e.name,
             'id': e.name } for e in rnt.enslavements ]
     return jsonify(data)
@@ -452,7 +472,7 @@ def update_reference_data(refId=None):
     data['rec']['citation'] = ref.citation.id
     data['rec']['transcription'] = ref.transcription
     data['rec']['national_context'] = ref.national_context_id
-    data['rec']['locations'] = [ 
+    data['rec']['locations'] = [
         { 'label':l.location.name, 'value':l.location.name,
             'id': l.location.id } for l in ref.locations ]
     data['rec']['record_type'] = {'label': ref.reference_type.name,
@@ -478,7 +498,7 @@ def update_referent_name(data):
     name.last = data['last']
     given = models.NameType.query.filter_by(name='Given').first()
     name.name_type_id = data.get('name_type', given.id)
-    return name   
+    return name
 
 def get_or_create_referent_attribute(data, attrModel):
     existing = attrModel.query.filter_by(name=data['name']).first()
@@ -488,7 +508,7 @@ def get_or_create_referent_attribute(data, attrModel):
         db.session.commit()
         return new_attr
     else:
-        return existing 
+        return existing
 
 @app.route('/data/entrants/', methods=['POST'])
 @app.route('/data/entrants/<rntId>', methods=['PUT', 'DELETE'])
@@ -550,7 +570,7 @@ def update_referent_details(rntId):
     data = request.get_json()
     rnt.names = [ update_referent_name(n) for n in data['names'] ]
     rnt.age = data['age']
-    rnt.sex = data['sex'] 
+    rnt.sex = data['sex']
     rnt.primary_name = rnt.names[0]
     rnt.races = [ get_or_create_referent_attribute(a, models.Race)
         for a in data['races'] ]
@@ -644,7 +664,7 @@ def relationships_by_reference(refId):
         {
         'id': r.id,
         'data':
-            { 
+            {
             'sbj': { 'name': rnt_map[r.subject_id], 'id': r.subject_id },
             'rel': { 'name': rel_map[r.role_id], 'id': r.role_id },
             'obj': { 'name': rnt_map[r.object_id], 'id': r.object_id }
@@ -695,4 +715,4 @@ def delete_relationship(relId):
         stamp_edit(current_user, ref)
     return redirect(
         url_for('relationships_by_reference', refId = ref.id),
-        code=303 )    
+        code=303 )
