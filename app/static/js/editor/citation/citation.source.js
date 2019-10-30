@@ -5,7 +5,6 @@ class CitationSource extends Source {
     this.request(endpoint, 'DELETE', 'referenceDeleted');
   }
 
-
   createCitation(data) {
     var endpoint = this.endpoints.createCitation;
     this.request(endpoint, 'POST', 'citationSaved', data);

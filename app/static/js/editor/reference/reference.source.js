@@ -1,18 +1,27 @@
-class CitationSource extends Source {
+class ReferenceSource extends Source {
 
-  deleteReference(refId) {
-    var endpoint = this.endpoints.deleteReference + refId;
-    this.request(endpoint, 'DELETE', 'referenceDeleted');
+  // createReferent(data) {
+  //   var endpoint = this.endpoints.createReferent;
+  //   this.request(endpoint, 'POST', 'referentSaved', data);
+  // }
+
+  // updateReferent(rntId, data) {
+  //   var endpoint = this.endpoints.updateReferent + rntId;
+  //   this.request(endpoint, 'PUT', 'referentSaved', data);
+  // }
+
+  // deleteReferent(rntId) {
+  //   var endpoint = this.endpoints.deleteReferent + rntId;
+  //   this.request(endpoint, 'DELETE', 'referentDeleted');
+  // }
+
+  createReference(data) {
+    var endpoint = this.endpoints.createReference;
+    this.request(endpoint, 'POST', 'referenceSaved', data);
   }
 
-
-  createCitation(data) {
-    var endpoint = this.endpoints.createCitation;
-    this.request(endpoint, 'POST', 'citationSaved', data);
-  }
-
-  updateCitation(data) {
-    var endpoint = this.endpoints.updateCitation;
-    this.request(endpoint, 'PUT', 'citationSaved', data);
+  updateReference(data) {
+    var endpoint = this.endpoints.updateReference;
+    this.request(endpoint, 'PUT', 'referenceSaved', data);
   }
 }

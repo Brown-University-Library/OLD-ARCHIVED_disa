@@ -7,7 +7,8 @@ from flask_login import UserMixin
 
 NEW_ID = 'new'
 
-class SemiControlledMixin(object):
+
+class TagMixin(object):
 
     @classmethod
     def get_default(cls):
@@ -37,6 +38,13 @@ class SemiControlledMixin(object):
             db.session.add(created)
             db.session.commit()
             return created
+
+    def to_dict(self):
+        return { 'id': self.id, 'name': self.name }
+
+    def __repr__(self):
+        return '<{0} {1}: {2}>'.format(self.__class__.__name__,
+            self.id, self.name)
 
 
 has_role = db.Table('6_has_role',
@@ -220,13 +228,6 @@ class Reference(db.Model):
         else:
             return ''
 
-    def set_locations(self, locsData):
-        self.locations = []
-        for i, loc in enumerate(locsData):
-            loc['location_rank'] = i
-            ref_loc = ReferenceLocation(**loc)
-            self.locations.append(ref_loc)
-
     def to_dict(self=None):
         data = {
             'reference_id': NEW_ID,
@@ -262,7 +263,7 @@ class Reference(db.Model):
             self.id, self.reference_type.name, self.citation_id)
 
 
-class ReferenceType(db.Model, SemiControlledMixin):
+class ReferenceType(db.Model, TagMixin):
     __tablename__ = '1_reference_types'
     _default = {'name': 'Unspecified'}
 
@@ -277,20 +278,14 @@ class ReferenceType(db.Model, SemiControlledMixin):
         'CitationType', secondary=citationtype_referencetypes,
         back_populates='reference_types')
 
-    def __repr__(self):
-        return '<ReferenceType {0}: {1}>'.format(self.id, self.name)
 
-
-class Location(db.Model):
+class Location(db.Model, TagMixin):
     __tablename__ = '1_locations'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
     origin_for = db.relationship('Referent',
         secondary=has_origin, back_populates='origins')
-
-    def __repr__(self):
-        return '<Location {0}: {1}>'.format(self.id, self.name)
 
 
 class ReferenceLocation(db.Model):
@@ -313,16 +308,13 @@ class ReferenceLocation(db.Model):
             self.reference_id, self.location.name, self.location_type.name)
 
 
-class LocationType(db.Model):
+class LocationType(db.Model, TagMixin):
     __tablename__ = '1_location_types'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
     locations = db.relationship(
         'ReferenceLocation', backref='location_type', lazy=True)
-
-    def __repr__(self):
-        return '<LocationType {0}: {1}>'.format(self.id, self.name)
 
 
 class NationalContext(db.Model):
@@ -331,6 +323,9 @@ class NationalContext(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
     references = db.relationship('Reference', backref='national_context', lazy=True)
+
+    def to_dict(self):
+        return { 'id': self.id, 'name': self.name }
 
     def __repr__(self):
         return '<NationalContext {0}: {1}>'.format(self.id, self.name)
@@ -403,7 +398,8 @@ class Referent(db.Model):
         else:
             return display
 
-class Title(db.Model, SemiControlledMixin):
+
+class Title(db.Model, TagMixin):
     __tablename__ = '1_titles'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -411,11 +407,8 @@ class Title(db.Model, SemiControlledMixin):
     referents = db.relationship('Referent',
         secondary=has_title, back_populates='titles')
 
-    def __repr__(self):
-        return '<Title {0}: {1}>'.format(self.id, self.name)
 
-
-class Tribe(db.Model, SemiControlledMixin):
+class Tribe(db.Model, TagMixin):
     __tablename__ = '1_tribes'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -423,11 +416,8 @@ class Tribe(db.Model, SemiControlledMixin):
     referents = db.relationship('Referent',
         secondary=has_tribe, back_populates='tribes')
 
-    def __repr__(self):
-        return '<Tribe {0}: {1}>'.format(self.id, self.name)
 
-
-class Race(db.Model):
+class Race(db.Model, TagMixin):
     __tablename__ = '1_races'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -435,11 +425,8 @@ class Race(db.Model):
     referents = db.relationship('Referent',
         secondary=has_race, back_populates='races')
 
-    def __repr__(self):
-        return '<Race {0}: {1}>'.format(self.id, self.name)
 
-
-class Vocation(db.Model):
+class Vocation(db.Model, TagMixin):
     __tablename__ = '1_vocations'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -447,23 +434,17 @@ class Vocation(db.Model):
     referents = db.relationship('Referent',
         secondary=has_vocation, back_populates='vocations')
 
-    def __repr__(self):
-        return '<Vocation {0}: {1}>'.format(self.id, self.name)
 
-
-class EnslavementType(db.Model):
+class EnslavementType(db.Model, TagMixin):
     __tablename__ = '1_enslavement_types'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
     referents = db.relationship('Referent',
         secondary=enslaved_as, back_populates='enslavements')
+    
 
-    def __repr__(self):
-        return '<EnslavementType {0}: {1}>'.format(self.id, self.name)
-
-
-class Role(db.Model):
+class Role(db.Model, TagMixin):
     __tablename__ = '1_roles'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -474,6 +455,7 @@ class Role(db.Model):
     reference_types = db.relationship(
         'ReferenceType', secondary=referencetype_roles,
         back_populates='roles')
+
 
 class ReferentRelationship(db.Model):
     __tablename__ = '6_referent_relationships'
@@ -500,6 +482,7 @@ class ReferentRelationship(db.Model):
                 self.subject_id, self.object_id))
         return implied
 
+
 class RoleRelationship(db.Model):
     __tablename__ = '2_role_relationships'
 
@@ -523,7 +506,8 @@ class RoleRelationship(db.Model):
         else:
             return
 
-class RoleRelationshipType(db.Model):
+
+class RoleRelationshipType(db.Model, TagMixin):
     __tablename__ = '1_role_relationship_types'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -558,6 +542,7 @@ class Person(db.Model):
         vals = { desc.name for ref in self.references
             for desc in getattr(ref, attr) }
         return ', '.join(list(vals))
+
 
 class User(UserMixin, db.Model):
     __tablename__ = '1_users'

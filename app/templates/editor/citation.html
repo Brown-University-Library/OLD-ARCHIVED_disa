@@ -231,7 +231,7 @@ th.ref-date-col {
         </li>
       {% endfor %}
     </ul>
-    <ul id="data-endpoints">
+    <ul id="data_endpoints">
       {% for ep, url in page_config['endpoints'].items() %}
         <li class="endpoint" data-name="{{ ep }}" data-url="{{ url }}"></li>
       {% endfor %}
@@ -246,7 +246,7 @@ th.ref-date-col {
 
 <script type="text/javascript">
   let config = new Config($('#config'));
-  let source = new CitationSource($('#data-endpoints'), $('#csrf_token'));
+  let source = new CitationSource($('#data_endpoints'), $('#csrf_token'));
   let cdisplay = new CitationDisplay($('#citation_display'));
   let cform = new CitationForm($('#citation_form'));
   let refctrl = new ReferenceControl($('#reference_control'));

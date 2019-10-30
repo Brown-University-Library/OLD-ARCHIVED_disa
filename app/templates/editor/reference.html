@@ -74,6 +74,7 @@ th.rnt-desc-col {
 <script src="{{ url_for('static', filename='lib/jquery-ui-1.12.1/jquery-ui.min.js') }}"></script>
 <script src="{{ url_for('static', filename='lib/tinymce/tinymce.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/editor/flowcontrol.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/editor/reference/reference.source.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/editor/reference/reference.display.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/editor/reference/reference.form.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/editor/reference/reference.app.js') }}"></script>
@@ -82,7 +83,7 @@ th.rnt-desc-col {
 
 {% block content %}
 <div class="container">
-    <div id="reference_page" data-reference-id="foo">
+    <div id="reference_page" data-reference-id="{{ config.data.reference.reference_id }}">
         <div class="row">
             <div class='col-md-11'>
                 <div class="row">
@@ -131,23 +132,26 @@ th.rnt-desc-col {
                         </select>
                     </div>
                     <div class="form-group row">
-                        <label for="location_0_input">Colony/State<br />
+                        <label for="colony_state_input">Colony/State<br />
                             <em class="small">If the item lists a state or colony, write it here. Use the drop down menu to see a list of options.<br/>
                             Please write out the full name&mdash;e.g. enter "Rhode Island", not "RI".</em>
                         </label>
-                        <input class="form-control" type="text" id="location_0_input"/>
+                        <input class="form-control" type="text" id="colony_state_input"
+                            data-location-type-id="{{ config.location_types['Colony/State'] }}"/>
                     </div>
                     <div class="form-group row">
-                        <label for="location_1_input">Town<br />
+                        <label for="city_input">Town<br />
                             <em class="small">If there is a town listed in the item, write the name of the town here. </em>
                         </label>
-                        <input class="form-control" type="text" id="location_1_input"/>
+                        <input class="form-control" type="text" id="city_input"
+                            data-location-type-id="{{ config.location_types['City'] }}"/>
                     </div>
                     <div class="form-group row">
-                        <label for="location_2_input">Additional location<br />
+                        <label for="locale_input">Locale<br />
                             <em class="small">If there are additional locations listed in the item, enter them here (e.g. “the dock”)</em>
                         </label>
-                        <input class="form-control" type="text" id="location_2_input"/>
+                        <input class="form-control" type="text" id="locale_input"
+                            data-location-type-id="{{ config.location_types['Locale'] }}"/>
                     </div>
                     <div class="row">
                         <div id="date_selector">
@@ -265,6 +269,11 @@ th.rnt-desc-col {
         </div>
         <div id="config" hidden>
             <p id="csrf_token" data-csrf="{{ csrf_token() }}"></p>
+            <ul id="data_endpoints">
+            {% for ep, url in config['endpoints'].items() %}
+                <li class="endpoint" data-name="{{ ep }}" data-url="{{ url }}"></li>
+            {% endfor %}
+            </ul>
             <p id="config_data_json" data-json='{{ config|tojson|safe }}'></p>
         </div>
     </div>
@@ -291,12 +300,13 @@ th.rnt-desc-col {
     }
 
     let config = new Config($('#config'));
+    let source = new ReferenceSource($('#data_endpoints'), $('#csrf_token'));
     let ref_display = new ReferenceDisplay($('#reference_display'));
     let ref_form = new ReferenceForm($('#reference_form'));
     ref_form.configure(config,
         jqui_autocomplete_settings, tinymce_settings);
 
-    let ref_app = new ReferenceApp($('#reference_page'), config,
+    let ref_app = new ReferenceApp($('#reference_page'), config, source,
         ref_display, ref_form);
 
     ref_display.setApp(ref_app);

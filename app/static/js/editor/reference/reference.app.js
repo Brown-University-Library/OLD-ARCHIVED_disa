@@ -1,8 +1,8 @@
 class ReferenceApp {
 
-  constructor($elem, config, refDisplay, refForm) {
+  constructor($elem, config, source, refDisplay, refForm) {
     this._$root = $elem;
-    // this._source = source;
+    this._source = source;
     this._data = config.get('data');
     this._$edit_ref = $elem.find('#edit_reference');
     // this._$new_rnt = $elem.find('#new_referent');
@@ -41,24 +41,24 @@ class ReferenceApp {
     // this._$new_rnt.addClass('hidden');
   }
 
-  // saveReference() {
-  //   let data; 
+  saveReference() {
+    let data; 
 
-  //   data = this._ref_form.read();
-  //   if (this._ref_id === 'new') {
-  //     this._source.createNewReference(data);
-  //   } else {
-  //     this._source.updateReference(data);
-  //   }
-  // }
+    data = this._ref_form.read();
+    if (this._ref_id === 'new') {
+      this._source.createReference(data);
+    } else {
+      this._source.updateReference(data);
+    }
+  }
 
-  // referenceSaved(data) {
-  //   this._data.reference = data.reference; 
-  //   if (this._ref_id === 'new') {
-  //     this._ref_id = data.reference_id;
-  //   }
-  //   this.resetReference();
-  // }
+  referenceSaved(data) {
+    this._data.reference = data.reference; 
+    if (this._ref_id === 'new') {
+      this._ref_id = data.reference.reference_id;
+    }
+    this.resetReference();
+  }
 
   resetReference() {
     this._ref_display.show(this._data.display);

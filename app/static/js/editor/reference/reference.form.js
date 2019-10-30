@@ -33,9 +33,12 @@ class AutoCompleteInput {
           }
         },
         change: function (event, ui) {
-          cmpt._$input.val(ui.item.value);
-          cmpt._value = ui.item.value;
-          cmpt._value_id = ui.item.id;
+          let data = { 'id': '', 'name': ''};
+          if (ui.item) {
+            data.id = ui.item.id;
+            data.name = ui.item.value;
+          }
+          cmpt.load(data);
         }
     });
   }
@@ -44,6 +47,10 @@ class AutoCompleteInput {
     this._value = data.name;
     this._value_id = data.id;
     this._$input.val(data.name);
+  }
+
+  isEmpty() {
+    return this._value === '';
   }
 
   read() {
@@ -67,10 +74,11 @@ class RichTextInput {
   load(data) {
     if (!tinymce.get(this._id)) {
       let cmpt = this;
-      tinymce.init(this._settings).then(function(editors) {
-        cmpt._$input.val(data);
-        tinymce.get(cmpt._id).load();
-      });
+      tinymce.init(this._settings)
+        .then(function(editors) {
+          cmpt._$input.val(data);
+          tinymce.get(cmpt._id).load();
+        });
     } else {
       this._$input.val(data);
       tinymce.get(this._id).load();
@@ -80,6 +88,29 @@ class RichTextInput {
   read(data) {
     tinymce.triggerSave();
     return this._$input.val();
+  }
+}
+
+class LocationField extends AutoCompleteInput {
+
+  constructor($elem) {
+    super($elem);
+    this._$root = $elem;
+    this._location_type_id = '';
+  }
+
+  getType() {
+    return this._location_type_id;
+  }
+
+  setType(val) {
+    this._location_type_id = val;
+  }
+
+  read() {
+    let data = super.read();
+    data.location_type_id = this._location_type_id;
+    return data;
   }
 }
 
@@ -119,11 +150,12 @@ class ReferenceForm extends Control {
     this._$cancel_btn = $elem.find('.cancel-edit-reference');
 
     this._data = {};
+    this._locations_by_type = {};
 
     this._ref_type = new AutoCompleteInput($elem.find('#reference_type_input'));
-    this._loc_0 = new AutoCompleteInput($elem.find('#location_0_input'));
-    this._loc_1 = new AutoCompleteInput($elem.find('#location_1_input'));
-    this._loc_2 = new AutoCompleteInput($elem.find('#location_2_input'));
+    this._col_state = new LocationField($elem.find('#colony_state_input'));
+    this._city = new LocationField($elem.find('#city_input'));
+    this._locale = new LocationField($elem.find('#locale_input'));
     this._date = new DateSelect($elem.find('#date_selector'));
     this._trsc = new RichTextInput($elem.find('#transcription_input'));
 
@@ -131,33 +163,49 @@ class ReferenceForm extends Control {
   }
 
   configure(config, autoCmplSettings, richTextSettings) {
+    this._trsc.setEditor(richTextSettings);
+
     this._ref_type.setAutoComplete(config.get('reference_types'),
       autoCmplSettings);
-    this._loc_0.setAutoComplete(config.get('loc_0'),
+
+    let loc_type_map = config.get('location_types');
+    this._col_state.setAutoComplete(config.get('colony_states'),
       autoCmplSettings);
-    this._loc_1.setAutoComplete(config.get('loc_1'),
+    this._col_state.setType(loc_type_map['Colony/State']);    
+    this._city.setAutoComplete(config.get('cities'),
       autoCmplSettings);
-    this._loc_2.setAutoComplete(config.get('loc_2'),
+    this._city.setType(loc_type_map['City']);
+    this._locale.setAutoComplete(config.get('locales'),
       autoCmplSettings);
-    this._trsc.setEditor(richTextSettings);
+    this._locale.setType(loc_type_map['Locale']);
+
+    this._locations = [ this._col_state, this._city, this._locale ];
+    for (var i=0; i < this._locations.length; i++) {
+      let loc_field = this._locations[i];
+      this._locations_by_type[ loc_field.getType() ] = loc_field;
+    }
   }
 
   load(data) {
     this._data = data;
     this._ref_type.load(data.reference_type);
-    this._loc_0.load(data.locations[0]);
-    this._loc_1.load(data.locations[1]);
-    this._loc_2.load(data.locations[2]);
+    for (var i=0; i < data.locations.length; i++) {
+      let loc = data.locations[i];
+      this._locations_by_type[ loc.type ].load(loc);
+    }
     this._date.load(data.date);
     this._trsc.load(data.transcription);
   }
 
   read() {
     this._data.locations = []
-    this._data.locations.push(this._loc_0.read());
-    this._data.locations.push(this._loc_1.read());
-    this._data.locations.push(this._loc_2.read());
-    this._data.ref_type = this._reference_type.read();
+    for (var i=0; i < this._locations.length; i++) {
+      let loc = this._locations[i];
+      if (!loc.isEmpty()) {
+        this._data.locations.push(loc.read());
+      }
+    }
+    this._data.reference_type = this._ref_type.read();
     this._data.date = this._date.read();
     this._data.transcription = this._trsc.read();
     return this._data;
@@ -192,7 +240,7 @@ class ReferenceForm extends Control {
 
       switch ( true ){
         case $btn.hasClass('save-reference'):
-          cmp._app.saveCitation();
+          cmp._app.saveReference();
           break;
         case $btn.hasClass('cancel-edit-reference'):
           cmp._app.resetReference();
