@@ -10,13 +10,11 @@ from logging.handlers import SMTPHandler
 
 ## setup logging
 logging.basicConfig(
-    # filename=settings_app.INDEXER_LOG_PATH,
+    filename=os.environ['DISA_LOGFILE_PATH'],
     level=logging.DEBUG,
     format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
     datefmt='%d/%b/%Y %H:%M:%S'
     )
-# logging.getLogger("oauth2client").setLevel(logging.WARNING)
-# log = logging.getLogger( 'book_locator_indexer' )
 log = logging.getLogger( __name__ )
 log.info( '__init__.py logging working' )
 
@@ -37,7 +35,7 @@ log.debug( f'app.config, ```{pprint.pformat(app.config)}```' )
 
 ## enable email-on-error (credit: <https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-vii-error-handling>)
 if app.config['MAIL_SERVER']:
-    log.debug( 'hereA' )
+    # log.debug( 'hereA' )
     auth = None
     if app.config['MAIL_USERNAME'] or app.config['MAIL_PASSWORD']:
         auth = (app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
@@ -49,9 +47,8 @@ if app.config['MAIL_SERVER']:
         fromaddr='no-reply@' + app.config['MAIL_SERVER'],
         toaddrs=app.config['ADMINS'], subject='DISA web-app error',
         credentials=auth, secure=secure)
-    mail_handler.setLevel(logging.DEBUG)
+    mail_handler.setLevel( logging.ERROR )
     app.logger.addHandler(mail_handler)
-
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
