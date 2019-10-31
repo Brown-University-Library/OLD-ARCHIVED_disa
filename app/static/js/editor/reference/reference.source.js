@@ -16,12 +16,12 @@ class ReferenceSource extends Source {
   // }
 
   createReference(data) {
-    var endpoint = this.endpoints.createReference;
+    var endpoint = this.endpoints.updateReference;
     this.request(endpoint, 'POST', 'referenceSaved', data);
   }
 
-  updateReference(data) {
-    var endpoint = this.endpoints.updateReference;
+  updateReference(data, refId) {
+    var endpoint = this.endpoints.updateReference + refId;
     this.request(endpoint, 'PUT', 'referenceSaved', data);
   }
 }

@@ -228,6 +228,11 @@ class Reference(db.Model):
         else:
             return ''
 
+    def display(self):
+        return {
+
+        }
+
     def to_dict(self=None):
         data = {
             'reference_id': NEW_ID,
@@ -240,8 +245,8 @@ class Reference(db.Model):
             'referents': []
         }
         if self:
+            data['display_citation'] = self.citation.display
             data['reference_id'] = self.id
-            data['citation_id'] = self.citation_id
             data['reference_type'] = {'id': self.reference_type_id,
                 'name': self.reference_type.name }
             data['date'] = { 'day': self.date.day if self.date else '0',

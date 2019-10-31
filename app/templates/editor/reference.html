@@ -300,7 +300,7 @@ th.rnt-desc-col {
     }
 
     let config = new Config($('#config'));
-    let source = new ReferenceSource($('#data_endpoints'), $('#csrf_token'));
+    let source = new ReferenceSource($('#data_endpoints'), $('#csrf_token'));    
     let ref_display = new ReferenceDisplay($('#reference_display'));
     let ref_form = new ReferenceForm($('#reference_form'));
     ref_form.configure(config,
@@ -309,6 +309,7 @@ th.rnt-desc-col {
     let ref_app = new ReferenceApp($('#reference_page'), config, source,
         ref_display, ref_form);
 
+    source.setApp(ref_app);
     ref_display.setApp(ref_app);
     ref_form.setApp(ref_app);
 

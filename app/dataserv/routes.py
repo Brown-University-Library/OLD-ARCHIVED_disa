@@ -4,7 +4,7 @@ from flask_login import current_user, login_required
 from . import dataserv
 from .. import db, models, forms
 
-import datetime
+import datetime as dt
 import collections
 from operator import itemgetter
 
@@ -17,7 +17,7 @@ def before_request():
 
 def stamp_edit(user, ref):
     edit = models.ReferenceEdit(reference_id=ref.id,
-        user_id=user.id, timestamp=datetime.datetime.utcnow())
+        user_id=user.id, timestamp=dt.datetime.utcnow())
     db.session.add(edit)
     db.session.commit()
 
@@ -66,7 +66,7 @@ def create_citation():
         citation_display.append( (field_order_map[zfield.name], val) )
         db.session.add(cfield)
     if len(citation_display) == 0:
-        now = datetime.datetime.utcnow()
+        now = dt.datetime.utcnow()
         cite.display = 'Document :: {}'.format(now.strftime('%Y %B %d'))
     else:
         vals = [ v[1] for v in sorted(citation_display) ]
@@ -109,7 +109,7 @@ def update_citation(citeId):
             addendums.append(val)
         db.session.add(cfield)
     if len(citation_display) == 0:
-        now = datetime.datetime.utcnow()
+        now = dt.datetime.utcnow()
         cite.display = 'Document :: {}'.format(now.strftime('%Y %B %d'))
     else:
         vals = [ v[1] for v in sorted(citation_display) ]
@@ -202,21 +202,19 @@ def read_referent_data(rntId=None):
 def create_reference():
     data = request.get_json()
     ref = models.Reference()
-    ref.citation_id = data['citation_id']
-    ref.set_locations([
+    ref.locations = [
         {   'location_id': models.Location.get_or_create( name=loc['name'] ).id,
             'location_type_id': models.LocationType.get_or_create(
                 name=loc['location_type'] ).id,
             'location_rank': idx }
-        for idx, loc in enumerate(data['locations']) ])
+        for idx, loc in enumerate(data['locations']) ]
     try:
-        ref.date = datetime.datetime.strptime(data['date'], '%m/%d/%Y')
+        ref.date = dt.datetime.strptime(data['date'], '%m/%d/%Y')
     except:
         ref.date = None
     ref.reference_type_id = models.ReferenceType.get_or_create(
-        name=data['reference_type'] ).id
-    ref.reference_type_id = reference_type.id
-    ref.national_context_id = data['national_context_id']
+        name=data['reference_type']['name'] ).id
+    ref.national_context_id = data['national_context_id']['id']
     ref.transcription = data['transcription']
     db.session.add(ref)
     db.session.commit()
@@ -225,48 +223,40 @@ def create_reference():
     data = ref.to_dict()
     return jsonify(data)
 
+@dataserv.route('/references/', methods=['POST'])
 @dataserv.route('/references/<refId>', methods=['PUT'])
-def update_reference(refId):
-    data = request.get_json()
-    reference_type = get_or_create_type(
-        data['reference_type'], models.ReferenceType)
+def create_or_update_reference(refId=None):
+    print(request.method, request.get_json())
+    return jsonify( {'reference': request.get_json() })
+    if request.method == 'POST':
+        ref = models.Reference()
+    else:
+        ref = models.Reference.query.get(refId)
 
-    ref = models.Reference.query.get(refId)
-    ref.locations = []
-    ref = process_reference_locations(data['locations'], ref)
+    data = request.get_json()
+    ref.reference_type = models.ReferenceType.get_or_create(
+        name=data['reference_type']['name'] )
+    ref.national_context_id = data['national_context_id']['id']
+    ref.transcription = data['transcription']
+    ref.locations = [
+        {   'location_id': models.Location.get_or_create( name=loc['name'] ).id,
+            'location_type_id': models.LocationType.get_or_create(
+                name=loc['location_type'] ).id,
+            'location_rank': idx }
+        for idx, loc in enumerate(data['locations']) ]
+    ref.day = data['date']['day']
+    ref.month = data['date']['month']
+    ref.year = data['date']['year']
     try:
-        ref.date = datetime.datetime.strptime(data['date'], '%m/%d/%Y')
+        ref.date = dt.datetime(year=ref.date or 1492, month=ref.month or 1,
+            day= ref.day or 1)
     except:
         ref.date = None
-    ref.reference_type_id = reference_type.id
-    ref.national_context_id = data['national_context']
-    ref.transcription = data['transcription']
     db.session.add(ref)
     db.session.commit()
 
     stamp_edit(current_user, ref)
-    if request.method == 'POST':
-        return jsonify(
-            { 'redirect': url_for('edit_record', recId=ref.id) })
-    data = { 'rec': {} }
-    data['rec']['id'] = ref.id
-    data['rec']['date'] = ''
-    if ref.date:
-        data['rec']['date'] = '{}/{}/{}'.format(ref.date.month,
-            ref.date.day, ref.date.year)
-    if request.method == 'POST':
-        data['entrants'] = []
-        data['rec']['header'] = '{}'.format(
-            ref.reference_type.name or '').strip()
-    data['rec']['citation'] = ref.citation.id
-    data['rec']['transcription'] = ref.transcription
-    data['rec']['national_context'] = ref.national_context_id
-    data['rec']['locations'] = [ 
-        { 'label':l.location.name, 'value':l.location.name,
-            'id': l.location.id } for l in ref.locations ]
-    data['rec']['record_type'] = {'label': ref.reference_type.name,
-        'value': ref.reference_type.name, 'id':ref.reference_type.id }
-    return jsonify(data)
+    return jsonify({ 'reference': ref.to_dict() })
 
 
 @dataserv.route('/citations/<citeId>/references/')

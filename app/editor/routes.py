@@ -122,39 +122,41 @@ def edit_citation(citeId='new'):
 
 @editor.route('/citations/<citeId>/references/<refId>')
 def edit_reference(citeId, refId='new'):
-    ref_types = [ { 'id': rt.id, 'name': rt.name }
-        for rt in models.ReferenceType.query.all() ]
-    roles = [ { 'id': role.id, 'name': role.name }
-        for role in models.Role.query.all() ]
-    natl_ctxs = [ { 'id': rt.id, 'name': rt.name }
-        for rt in models.NationalContext.query.all() ]
+    ref_types = [ rt.to_dict() for rt in models.ReferenceType.query.all() ]
+    roles = [ role.to_dict() for role in models.Role.query.all() ]
+    natl_ctxs = [ nc.to_dict() for nc in models.NationalContext.query.all() ]
+    loc_types = [ lt.to_dict() for lt in models.LocationType.query.all() ]
 
-    locs = models.ReferenceLocation.query.all()
-    uniq_loc_0 = { (l.location.name, l.location_id)
-        for l in locs if l.location_rank == 0 }
-    uniq_loc_1 = { (l.location.name, l.location_id)
-        for l in locs if l.location_rank == 1 }
-    uniq_loc_2 = { (l.location.name, l.location_id)
-        for l in locs if l.location_rank == 2 and l.location_id is not None }
+    type_col_state = models.LocationType.query.filter_by(name="Colony/State").first()
+    type_city = models.LocationType.query.filter_by(name="City").first()
+    type_locale = models.LocationType.query.filter_by(name="Locale").first()
+    # to do: assign all ReferenceLocations a LocationType
+    col_states = models.Location.query.filter(
+        models.Location.references.any(location_type_id=type_col_state.id)).all()
+    cities = models.Location.query.filter(
+        models.Location.references.any(location_type_id=type_city.id)).all()
+    locales = models.Location.query.filter(
+        models.Location.references.any(location_type_id=type_locale.id)).all()
 
-    months = [ {'value': m, 'label': calendar.month_name[m] }
-        for m in range(1,13) ]
-    years = [ {'value': y, 'label': y } for y in range(1492,1900) ]
-    days = [ {'value': d, 'label': d } for d in range(1,32) ]
-    unknown = {'value': 0, 'label': 'Unknown' }
-    months.append(unknown)
-    years.append(unknown)
-    days.append(unknown)
+    unknown_date = {'value': 0, 'label': 'Unknown' }
+    months = [ unknown_date ]
+    months.extend( [ {'value': m, 'label': calendar.month_name[m] }
+        for m in range(1,13) ] )
+    years = [ unknown_date ]
+    years.extend( [ {'value': y, 'label': y } for y in range(1492,1900) ] )
+    days = [ unknown_date ] 
+    days.extend( [ {'value': d, 'label': d } for d in range(1,32) ] )
 
     config = {
         'data': {},
+        'location_types': { lt['name']: lt['id'] for lt in loc_types },
         'national_contexts': natl_ctxs,
         'date': { 'years': years, 'months': months, 'days': days },
         'tags': roles,
         'reference_types': ref_types,
-        'loc_0': [ {'id': loc[1], 'name': loc[0] } for loc in uniq_loc_0 ],
-        'loc_1': [ {'id': loc[1], 'name': loc[0] } for loc in uniq_loc_1 ],
-        'loc_2': [ {'id': loc[1], 'name': loc[0] } for loc in uniq_loc_2 ]
+        'colony_states': [ l.to_dict() for l in col_states ],
+        'cities': [ l.to_dict() for l in cities ],
+        'locales': [ l.to_dict() for l in locales ],
     }
 
     if refId == 'new':
@@ -163,126 +165,32 @@ def edit_reference(citeId, refId='new'):
         ref = models.Reference.query.get(refId)
         config['data']['reference'] = ref.to_dict()
 
-        loc_display = [ 'None', 'None', 'None' ]
-        for loc in ref.locations:
-            loc_display[loc.location_rank] = loc.location.name
-        date_display = ref.date.strftime("%B %d, %Y") if ref.date else 'None'
         display = {
             'header': ref.reference_type.name,
             'fields': [
                 {'field': 'SOURCE', 'data': ref.citation.display },
                 {'field': 'DESCRIPTION', 'data': ref.reference_type.name },
                 {'field': 'NATIONAL CONTEXT', 'data': ref.national_context.name },
-                {'field': 'COLONY/STATE', 'data': loc_display[0] },
-                {'field': 'CITY', 'data': loc_display[1] },
-                {'field': 'LOCALE', 'data': loc_display[2] },
-                {'field': 'DATE', 'data': date_display },
+                {'field': 'COLONY/STATE', 'data':  [ l.location.name
+                    for l in ref.locations
+                        if l.location_type_id == type_col_state.id ][:1] or 'None' },
+                {'field': 'CITY', 'data': [ l.location.name
+                    for l in ref.locations
+                        if l.location_type_id == type_city.id ][:1] or 'None' },
+                {'field': 'LOCALE', 'data': [ l.location.name
+                    for l in ref.locations 
+                        if l.location_type_id == type_locale.id ][:1] or 'None' },
+                {'field': 'DATE', 'data': ref.date.strftime("%B %d, %Y")
+                    if ref.date else 'None' },
                 {'field': 'TRANSCRIPTION', 'data': ref.transcription[:200] },
             ]
         }
         config['data']['display'] = display
 
     config['endpoints'] = {
-        'updateReference': url_for('dataserv.update_reference', refId=refId),
-        'createReference': url_for('dataserv.create_reference'),
+        'updateReference': url_for('dataserv.create_or_update_reference', refId=None),
     }
     return render_template('editor/reference.html', config=config)
-
-def foo_reference(citeId, refId='new'):
-    locs = models.ReferenceLocation.query.all()
-    rec_types = [ { 'id': rt.id, 'value': rt.name, 'name': rt.name }
-        for rt in models.ReferenceType.query.all() ]
-    roles = [ { 'id': role.id, 'value': role.name, 'name': role.name }
-        for role in models.Role.query.all() ]
-    natl_ctxs = [ { 'id': rt.id, 'value': rt.name, 'name': rt.name }
-        for rt in models.NationalContext.query.all() ]
-    uniq_cols = { (l.location.name, l.location_id)
-        for l in locs if l.location_rank == 0 }
-    uniq_town = { (l.location.name, l.location_id)
-        for l in locs if l.location_rank == 1 }
-    uniq_addl = { (l.location.name, l.location_id)
-        for l in locs if l.location_rank == 2 and l.location_id is not None}
-    col_state = [ {'id': loc[1], 'value': loc[0],'label': loc[0] }
-        for loc in uniq_cols ]
-    towns = [ {'id': loc[1], 'value': loc[0],'label': loc[0] }
-        for loc in uniq_town ]
-    addl_loc = [ {'id': loc[1], 'value': loc[0],'label': loc[0] }
-        for loc in uniq_addl ]
-
-    data['rec']['id'] = rec.id
-    data['rec']['date'] = None
-    if rec.date:
-        data['rec']['date'] = '{}/{}/{}'.format(rec.date.month,
-            rec.date.day, rec.date.year)
-    data['rec']['locations'] = [ 
-        { 'label':l.location.name, 'value':l.location.name,
-            'id': l.location.id } for l in rec.locations ]
-    data['rec']['transcription'] = rec.transcription
-    data['rec']['national_context'] = rec.national_context_id
-    data['rec']['record_type'] = {'label': rec.reference_type.name,
-        'value': rec.reference_type.name, 'id':rec.reference_type.id }
-    data['entrants'] = [ 
-        {
-            'name_id': ent.primary_name.id,
-            'first': ent.primary_name.first,
-            'last': ent.primary_name.last,
-            'id': ent.id,
-            'person_id': ent.person_id,
-            'roles': [ role.id for role in ent.roles ]
-        }
-            for ent in rec.referents ]
-    data['rec']['header'] = '{}'.format(
-        rec.reference_type.name or '').strip()
-
-
-    if refId == 'new':
-        reference['reference_id'] = refId
-        reference['reference_type'] = default.id
-    else:
-        ref = models.Reference.query.get(refId)
-        reference['reference_id'] = ref.id
-        reference['date'] = None
-        if rec.date:
-            reference['date'] = '{}/{}/{}'.format(ref.date.month,
-                ref.date.day, ref.date.year)
-        reference['locations'] = [ 
-            { 'label':l.location.name, 'value':l.location.name,
-                'id': l.location.id } for l in ref.locations ]
-        citation['comments'] = cite.comments
-        citation['acknowledgements'] = cite.acknowledgements
-        if cite.citation_type.id not in { c['id'] for c in config['citation_types'] }:
-            citation['citation_type'] = default.id
-        else:
-            citation['citation_type'] = cite.citation_type.id
-        citation['citation_fields'] = [
-            { 'name': f.field.name, 'value': f.field_data }
-                for f in cite.citation_data ]
-        config['references'] = [ { 'id': ref.id,
-                'reference_type': ref.reference_type.name,
-                'last_edit':
-                    ref.last_edit().timestamp.strftime("%Y-%m-%d")
-            } for ref in cite.references ]
-    config['citation'] = citation
-    config['endpoints'] = {
-        'updateCitation': url_for('dataserv.update_citation', citeId=citeId),
-        'createCitation': url_for('dataserv.create_citation'),
-        'deleteReference': url_for('dataserv.delete_citation_reference',
-            citeId=citeId, refId=None)
-    }
-    if not recId:
-        doc_id = request.args.get('doc')
-        doc = models.Citation.query.get(doc_id)
-        return render_template(
-            'record_edit.html',  rec=None, doc=doc,
-            rec_types=rec_types, roles=roles,
-            natl_ctxs=natl_ctxs, col_state=col_state,
-            towns=towns, addl_loc=addl_loc)
-    rec = models.Reference.query.get(recId)
-    return render_template(
-        'record_edit.html', rec=rec, doc=rec.citation,
-            rec_types=rec_types, roles=roles,
-            natl_ctxs=natl_ctxs, col_state=col_state,
-            towns=towns, addl_loc=addl_loc)
 
 
 @editor.route('/person')
