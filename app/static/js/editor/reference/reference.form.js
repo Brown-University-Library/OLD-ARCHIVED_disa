@@ -3,8 +3,7 @@ class AutoCompleteInput {
   constructor($input) {
     this._$input = $input;
     this._auto_data = [];
-    this._value = '';
-    this._value_id = '';
+    this._state = { 'id': '', 'name': '' };
   }
 
   setAutoComplete(autoCompleteValues, settings) {
@@ -44,17 +43,16 @@ class AutoCompleteInput {
   }
 
   load(data) {
-    this._value = data.name;
-    this._value_id = data.id;
+    this._state = data;
     this._$input.val(data.name);
   }
 
   isEmpty() {
-    return this._value === '';
+    return this._state.name === '';
   }
 
   read() {
-    return { 'id': this._value_id, 'name': this._value } ;
+    return this._state ;
   }
 }
 
@@ -96,21 +94,24 @@ class LocationField extends AutoCompleteInput {
   constructor($elem) {
     super($elem);
     this._$root = $elem;
-    this._location_type_id = '';
+    this._location_type = {};
   }
 
   getType() {
-    return this._location_type_id;
+    return this._location_type.id;
   }
 
-  setType(val) {
-    this._location_type_id = val;
+  setType(data) {
+    this._location_type = data;
   }
 
   read() {
-    let data = super.read();
-    data.location_type_id = this._location_type_id;
-    return data;
+    let ac_data = super.read();
+    return {
+      'id': ac_data.id,
+      'name': ac_data.name,
+      'location_type': this._location_type
+    };
   }
 }
 
@@ -150,7 +151,7 @@ class ReferenceForm extends Control {
     this._$cancel_btn = $elem.find('.cancel-edit-reference');
 
     this._data = {};
-    this._locations_by_type = {};
+    this._loc_fields_by_type = {};
 
     this._ref_type = new AutoCompleteInput($elem.find('#reference_type_input'));
     this._col_state = new LocationField($elem.find('#colony_state_input'));
@@ -168,21 +169,25 @@ class ReferenceForm extends Control {
     this._ref_type.setAutoComplete(config.get('reference_types'),
       autoCmplSettings);
 
-    let loc_type_map = config.get('location_types');
-    this._col_state.setAutoComplete(config.get('colony_states'),
-      autoCmplSettings);
-    this._col_state.setType(loc_type_map['Colony/State']);    
-    this._city.setAutoComplete(config.get('cities'),
-      autoCmplSettings);
-    this._city.setType(loc_type_map['City']);
-    this._locale.setAutoComplete(config.get('locales'),
-      autoCmplSettings);
-    this._locale.setType(loc_type_map['Locale']);
-
+    let loc_types = config.get('location_types');
+    this._col_state.setAutoComplete(
+      config.get('colony_states'), autoCmplSettings);
+    this._col_state.setType(
+      loc_types.filter(ltype => ltype.name ==='Colony/State')[0] );
+    this._city.setAutoComplete(
+      config.get('cities'), autoCmplSettings);
+    this._city.setType(
+      loc_types.filter(ltype => ltype.name ==='City')[0] );
+    this._locale.setAutoComplete(
+      config.get('locales'), autoCmplSettings);
+    this._locale.setType(
+      loc_types.filter(ltype => ltype.name ==='Locale')[0] );
+    // Reference location fields by sequence
     this._locations = [ this._col_state, this._city, this._locale ];
+    // Reference locations fiels by location type
     for (var i=0; i < this._locations.length; i++) {
       let loc_field = this._locations[i];
-      this._locations_by_type[ loc_field.getType() ] = loc_field;
+      this._loc_fields_by_type[ loc_field.getType() ] = loc_field;
     }
   }
 
@@ -191,7 +196,7 @@ class ReferenceForm extends Control {
     this._ref_type.load(data.reference_type);
     for (var i=0; i < data.locations.length; i++) {
       let loc = data.locations[i];
-      this._locations_by_type[ loc.type ].load(loc);
+      this._loc_fields_by_type[ loc.location_type.id ].load(loc);
     }
     this._date.load(data.date);
     this._trsc.load(data.transcription);
@@ -212,7 +217,7 @@ class ReferenceForm extends Control {
   }
 
   activate() {
-    if (this._data.reference_id === 'new') {
+    if (this._data.id === 'new') {
       this._$discard_btn.removeClass('hidden');
       this._$cancel_btn.addClass('hidden');
     } else {

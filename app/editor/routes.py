@@ -149,7 +149,7 @@ def edit_reference(citeId, refId='new'):
 
     config = {
         'data': {},
-        'location_types': { lt['name']: lt['id'] for lt in loc_types },
+        'location_types': loc_types,
         'national_contexts': natl_ctxs,
         'date': { 'years': years, 'months': months, 'days': days },
         'tags': roles,
@@ -164,28 +164,6 @@ def edit_reference(citeId, refId='new'):
     else:
         ref = models.Reference.query.get(refId)
         config['data']['reference'] = ref.to_dict()
-
-        display = {
-            'header': ref.reference_type.name,
-            'fields': [
-                {'field': 'SOURCE', 'data': ref.citation.display },
-                {'field': 'DESCRIPTION', 'data': ref.reference_type.name },
-                {'field': 'NATIONAL CONTEXT', 'data': ref.national_context.name },
-                {'field': 'COLONY/STATE', 'data':  [ l.location.name
-                    for l in ref.locations
-                        if l.location_type_id == type_col_state.id ][:1] or 'None' },
-                {'field': 'CITY', 'data': [ l.location.name
-                    for l in ref.locations
-                        if l.location_type_id == type_city.id ][:1] or 'None' },
-                {'field': 'LOCALE', 'data': [ l.location.name
-                    for l in ref.locations 
-                        if l.location_type_id == type_locale.id ][:1] or 'None' },
-                {'field': 'DATE', 'data': ref.date.strftime("%B %d, %Y")
-                    if ref.date else 'None' },
-                {'field': 'TRANSCRIPTION', 'data': ref.transcription[:200] },
-            ]
-        }
-        config['data']['display'] = display
 
     config['endpoints'] = {
         'updateReference': url_for('dataserv.create_or_update_reference', refId=None),

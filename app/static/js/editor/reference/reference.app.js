@@ -13,11 +13,12 @@ class ReferenceApp {
 
     this.setEvents();
     this.load();
+    this._ref_display.show();
   }
 
   load(data) {
     this._data = data || this._data;
-    this._ref_display.show(this._data.display);
+    this._ref_display.load(this._data.reference);
     this._ref_form.load(this._data.reference);
     // this._rnt_ctrl.load(this._data.referents);
     // if (this._ref_id === 'new') {
@@ -48,14 +49,14 @@ class ReferenceApp {
     if (this._ref_id === 'new') {
       this._source.createReference(data);
     } else {
-      this._source.updateReference(data);
+      this._source.updateReference(data, data.id);
     }
   }
 
   referenceSaved(data) {
     this._data.reference = data.reference; 
     if (this._ref_id === 'new') {
-      this._ref_id = data.reference.reference_id;
+      this._ref_id = data.reference.id;
     }
     this.resetReference();
   }

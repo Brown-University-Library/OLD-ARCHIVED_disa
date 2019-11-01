@@ -226,8 +226,6 @@ def create_reference():
 @dataserv.route('/references/', methods=['POST'])
 @dataserv.route('/references/<refId>', methods=['PUT'])
 def create_or_update_reference(refId=None):
-    print(request.method, request.get_json())
-    return jsonify( {'reference': request.get_json() })
     if request.method == 'POST':
         ref = models.Reference()
     else:
@@ -239,7 +237,8 @@ def create_or_update_reference(refId=None):
     ref.national_context_id = data['national_context_id']['id']
     ref.transcription = data['transcription']
     ref.locations = [
-        {   'location_id': models.Location.get_or_create( name=loc['name'] ).id,
+        {   'location_id': models.Location.get_or_create(
+                name=loc['name'] ).id,
             'location_type_id': models.LocationType.get_or_create(
                 name=loc['location_type'] ).id,
             'location_rank': idx }

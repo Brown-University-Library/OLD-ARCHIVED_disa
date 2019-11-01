@@ -83,7 +83,7 @@ th.rnt-desc-col {
 
 {% block content %}
 <div class="container">
-    <div id="reference_page" data-reference-id="{{ config.data.reference.reference_id }}">
+    <div id="reference_page" data-reference-id="{{ config.data.reference.id }}">
         <div class="row">
             <div class='col-md-11'>
                 <div class="row">
@@ -136,22 +136,19 @@ th.rnt-desc-col {
                             <em class="small">If the item lists a state or colony, write it here. Use the drop down menu to see a list of options.<br/>
                             Please write out the full name&mdash;e.g. enter "Rhode Island", not "RI".</em>
                         </label>
-                        <input class="form-control" type="text" id="colony_state_input"
-                            data-location-type-id="{{ config.location_types['Colony/State'] }}"/>
+                        <input class="form-control" type="text" id="colony_state_input" />
                     </div>
                     <div class="form-group row">
                         <label for="city_input">Town<br />
                             <em class="small">If there is a town listed in the item, write the name of the town here. </em>
                         </label>
-                        <input class="form-control" type="text" id="city_input"
-                            data-location-type-id="{{ config.location_types['City'] }}"/>
+                        <input class="form-control" type="text" id="city_input" />
                     </div>
                     <div class="form-group row">
                         <label for="locale_input">Locale<br />
                             <em class="small">If there are additional locations listed in the item, enter them here (e.g. “the dock”)</em>
                         </label>
-                        <input class="form-control" type="text" id="locale_input"
-                            data-location-type-id="{{ config.location_types['Locale'] }}"/>
+                        <input class="form-control" type="text" id="locale_input" />
                     </div>
                     <div class="row">
                         <div id="date_selector">
@@ -302,6 +299,7 @@ th.rnt-desc-col {
     let config = new Config($('#config'));
     let source = new ReferenceSource($('#data_endpoints'), $('#csrf_token'));    
     let ref_display = new ReferenceDisplay($('#reference_display'));
+    ref_display.configure(config);
     let ref_form = new ReferenceForm($('#reference_form'));
     ref_form.configure(config,
         jqui_autocomplete_settings, tinymce_settings);

@@ -235,18 +235,17 @@ class Reference(db.Model):
 
     def to_dict(self=None):
         data = {
-            'reference_id': NEW_ID,
-            'citation_id': '',
+            'id': NEW_ID,
+            'citation_display': '',
             'reference_type': {'id': '', 'name': '' },
             'date': { 'day': '0', 'month': '0', 'year': '0', 'text': 'stub' },
             'national_context': { 'id': '', 'name': '' },
             'locations': [],
             'transcription': '',
-            'referents': []
         }
         if self:
-            data['display_citation'] = self.citation.display
-            data['reference_id'] = self.id
+            data['citation_display'] = self.citation.display
+            data['id'] = self.id
             data['reference_type'] = {'id': self.reference_type_id,
                 'name': self.reference_type.name }
             data['date'] = { 'day': self.date.day if self.date else '0',
@@ -255,12 +254,8 @@ class Reference(db.Model):
                 'text': 'stub' }
             data['national_context'] = { 'id': self.national_context_id,
                 'name': self.national_context.name }
-            data['locations'] = [
-                { 'id': l.location.id, 'name': l.location.name,
-                    'type': l.location_type_id, 'rank': l.location_rank }
-                        for l in self.locations ]
+            data['locations'] = [ loc.to_dict() for loc in self.locations ]
             data['transcription'] = self.transcription
-            data['referents'] = [ r.id for r in self.referents ]
         return data
 
     def __repr__(self):
@@ -307,6 +302,14 @@ class ReferenceLocation(db.Model):
     location = db.relationship(Location,
         primaryjoin=(location_id == Location.id),
         backref='references')
+
+    def to_dict(self):
+        return {
+            'id': self.location.id,
+            'name': self.location.name,
+            'location_type': self.location_type.to_dict(),
+            'location_rank': self.location_rank
+        }
 
     def __repr__(self):
         return '<Location for Reference {0}: {1} as {2}>'.format(
