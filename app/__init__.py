@@ -9,6 +9,7 @@ from logging.handlers import SMTPHandler
 
 
 app = Flask(__name__)
+print( '__init__.py loaded' )
 
 ## config
 app.config.from_object(os.environ['APP_SETTINGS'])  # loads env from `dotenv` module

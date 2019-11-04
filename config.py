@@ -2,6 +2,8 @@ import os
 from dotenv import load_dotenv
 
 basedir = os.path.abspath(os.path.dirname(__file__))
+print( f'ABC123 -- in config.py, basedir, ```{basedir}```' )
+
 load_dotenv(os.path.join(basedir, '.envrc'))
 
 class Config(object):
