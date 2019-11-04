@@ -1,9 +1,64 @@
+class ReferenceState extends State {
+
+  constructor() {
+    super();
+    this._slots = ['id', 'reference_type',
+      'citation_display', 'locations', 'date',
+      'national_context', 'transcription'];
+  }
+
+  getId() {
+    return this.get('id');
+  }
+
+  getRefType() {
+    return this.get('reference_type');
+  }
+
+  getNatlContext() {
+    return this.get('national_context');
+  }
+
+  getDate() {
+    return this.get('date');
+  }
+
+  getTranscription() {
+    return this.get('transcription');
+  }
+
+  getLocations() {
+    return this.get('locations');
+  }
+
+  getLocationsByTypeName(name) {
+    return this.get('locations').filter(
+      loc => loc.location_type.name == name);
+  }
+
+  isNew() {
+    return (this.get('id') === 'new');
+  }
+
+  displayCitation() {
+    return this.get('citation_display');
+  }
+
+  displayRefType() {
+    return this.get('reference_type').name;
+  }
+
+  displayNatlContext() {
+    return this.get('national_context').name;
+  }
+}
+
 class ReferenceApp {
 
   constructor($elem, config, source, refDisplay, refForm) {
     this._$root = $elem;
     this._source = source;
-    this._data = config.get('data');
+    this._reference_state = new ReferenceState();
     this._$edit_ref = $elem.find('#edit_reference');
     // this._$new_rnt = $elem.find('#new_referent');
     this._ref_id = $elem.attr('data-reference-id');
@@ -12,14 +67,22 @@ class ReferenceApp {
     // this._rnt_ctrl = rntCtrl;
 
     this.setEvents();
-    this.load();
+    this.load(config.get('data'));
     this._ref_display.show();
   }
 
+  getReference() {
+    return this._reference_state;
+  }
+
+  setReference(data) {
+    this._reference_state.update(data);
+    this._ref_display.load( this.getReference() );
+    this._ref_form.load( this.getReference() );
+  }
+
   load(data) {
-    this._data = data || this._data;
-    this._ref_display.load(this._data.reference);
-    this._ref_form.load(this._data.reference);
+    this.setReference(data.reference);
     // this._rnt_ctrl.load(this._data.referents);
     // if (this._ref_id === 'new') {
     //   this._$edit_ref.addClass('hidden');
@@ -36,7 +99,7 @@ class ReferenceApp {
 
   editReference() {
     this._ref_display.hide();
-    this._ref_form.activate();
+    this._ref_form.activate( this.getReference() );
     // this._rnt_ctrl.hide();
     this._$edit_ref.addClass('hidden');
     // this._$new_rnt.addClass('hidden');
@@ -46,25 +109,21 @@ class ReferenceApp {
     let data; 
 
     data = this._ref_form.read();
-    if (this._ref_id === 'new') {
+    if ( this.getReference().isNew() ) {
       this._source.createReference(data);
     } else {
-      this._source.updateReference(data, data.id);
+      this._source.updateReference( data, this.getReference().getId() );
     }
   }
 
   referenceSaved(data) {
-    this._data.reference = data.reference; 
-    if (this._ref_id === 'new') {
-      this._ref_id = data.reference.id;
-    }
-    this.resetReference();
+    this.setReference(data.reference);
+    this.resetReferenceDisplay();
   }
 
-  resetReference() {
-    this._ref_display.show(this._data.display);
+  resetReferenceDisplay() {
+    this._ref_display.show();
     this._ref_form.deactivate();
-    this._ref_form.load(this._data.reference);
     this._$edit_ref.removeClass('hidden');
     // this._$new_rnt.removeClass('hidden');
     // this._rnt_ctrl.show();

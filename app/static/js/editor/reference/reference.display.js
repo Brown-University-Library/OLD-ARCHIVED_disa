@@ -3,7 +3,8 @@ class ReferenceDisplay extends Control {
   constructor($elem) {
     super()
     this._$root = $elem;
-    this._state = {};
+    this._header_text = '';
+    this._field_data = {};
     this._month_name_map = {};
     this._loc_type_map = {};
     this._$templates = this.getTemplates(this._$root);
@@ -40,23 +41,20 @@ class ReferenceDisplay extends Control {
     return date_text;
   }
 
-  load(data) {
-    this._state.header = data.reference_type.name;
-    this._state.fields = {
-      'source': data.citation_display,
-      'description': data.reference_type.name,
-      'national context': data.national_context.name,
-      'colony/state' : data.locations.filter(
-        loc => loc.location_type.name == 'Colony/State').map(
-          loc => loc.name)[0] || 'None',
-      'city' : data.locations.filter(
-        loc => loc.location_type.name == 'City').map(
-          loc => loc.name)[0] || 'None',
-      'locale' : data.locations.filter(
-        loc => loc.location_type.name == 'Locale').map(
-          loc => loc.name)[0] || 'None',
-      'date': this.formatDate(data.date),
-      'transcription': data.transcription.slice(200)
+  load(refState) {
+    this._header_text = refState.displayRefType();
+    this._field_data = {
+      'source': refState.displayCitation(),
+      'description': refState.displayRefType(),
+      'national context': refState.displayNatlContext(),
+      'colony/state' : refState.getLocationsByTypeName('Colony/State')
+        .map( loc => loc.name )[0] || 'None',
+      'city' : refState.getLocationsByTypeName('City')
+        .map( loc => loc.name )[0] || 'None',
+      'locale' : refState.getLocationsByTypeName('Locale')
+        .map( loc => loc.name )[0] || 'None',
+      'date': this.formatDate(refState.getDate()),
+      'transcription': refState.getTranscription().slice(200)
     };
   }
 
@@ -71,8 +69,8 @@ class ReferenceDisplay extends Control {
   }
 
   show() {
-    this.loadReferenceData(this._state.fields);
-    this._$existing_header.text(this._state.header);
+    this.loadReferenceData(this._field_data);
+    this._$existing_header.text(this._header_text);
     this._$existing_header.removeClass('hidden');
     this._$data_display.removeClass('hidden');
     this._$root.removeClass('hidden');

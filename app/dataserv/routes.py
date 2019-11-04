@@ -234,21 +234,20 @@ def create_or_update_reference(refId=None):
     data = request.get_json()
     ref.reference_type = models.ReferenceType.get_or_create(
         name=data['reference_type']['name'] )
-    ref.national_context_id = data['national_context_id']['id']
+    ref.national_context_id = data['national_context']['id']
     ref.transcription = data['transcription']
-    ref.locations = [
-        {   'location_id': models.Location.get_or_create(
-                name=loc['name'] ).id,
-            'location_type_id': models.LocationType.get_or_create(
-                name=loc['location_type'] ).id,
-            'location_rank': idx }
-        for idx, loc in enumerate(data['locations']) ]
+    ref.locations = [ models.ReferenceLocation(
+        location=models.Location.get_or_create( name=loc['name'] ),
+        location_type=models.LocationType.get_or_create(
+                name=loc['location_type']['name']),
+        location_rank=idx)
+            for idx, loc in enumerate(data['locations']) ]
     ref.day = data['date']['day']
     ref.month = data['date']['month']
     ref.year = data['date']['year']
     try:
         ref.date = dt.datetime(year=ref.date or 1492, month=ref.month or 1,
-            day= ref.day or 1)
+            day=ref.day or 1)
     except:
         ref.date = None
     db.session.add(ref)

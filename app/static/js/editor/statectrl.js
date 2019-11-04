@@ -1,6 +1,22 @@
 class State {
-  constructor(data) {
-    this._data = data
+  constructor() {
+    this._data = {}
+    this._slots = [];
+  }
+
+  update(data) {
+    try {
+      for (const slot of this._slots) {
+        var test = slot in data;
+        if (!test) {
+          throw (`Missing ${slot} in data`);
+        }
+      }
+    }
+    catch(e) {
+      console.log(e);
+    }
+    this._data = data;
   }
 
   get(attr) {
@@ -34,9 +50,10 @@ class Control {
 class Config extends State {
 
   constructor($elem) {
-    let data = JSON.parse($elem.find('#config_data_json').attr('data-json'));
-    super(data);
+    super();
     this._$root = $elem;
+    this.update(
+      JSON.parse($elem.find('#config_data_json').attr('data-json')) );
   }
 }
 

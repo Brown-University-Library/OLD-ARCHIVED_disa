@@ -149,6 +149,7 @@ class ReferenceForm extends Control {
     this._$root = $elem;
     this._$discard_btn = $elem.find('.discard-new-reference');
     this._$cancel_btn = $elem.find('.cancel-edit-reference');
+    this._$natl_context = $elem.find('#natl_ctx_select');
 
     this._data = {};
     this._loc_fields_by_type = {};
@@ -184,40 +185,44 @@ class ReferenceForm extends Control {
       loc_types.filter(ltype => ltype.name ==='Locale')[0] );
     // Reference location fields by sequence
     this._locations = [ this._col_state, this._city, this._locale ];
-    // Reference locations fiels by location type
+    // Reference locations fields by location type
     for (var i=0; i < this._locations.length; i++) {
       let loc_field = this._locations[i];
       this._loc_fields_by_type[ loc_field.getType() ] = loc_field;
     }
   }
 
-  load(data) {
-    this._data = data;
-    this._ref_type.load(data.reference_type);
-    for (var i=0; i < data.locations.length; i++) {
-      let loc = data.locations[i];
+  load(refState) {
+    this._$natl_context.val(refState.getNatlContext().id);
+    this._ref_type.load(refState.getRefType());
+    for (const loc of refState.getLocations()) {
       this._loc_fields_by_type[ loc.location_type.id ].load(loc);
     }
-    this._date.load(data.date);
-    this._trsc.load(data.transcription);
+    this._date.load(refState.getDate());
+    this._trsc.load(refState.getTranscription());
   }
 
   read() {
-    this._data.locations = []
+    let data = {};
+    data.locations = [];
     for (var i=0; i < this._locations.length; i++) {
       let loc = this._locations[i];
       if (!loc.isEmpty()) {
-        this._data.locations.push(loc.read());
+        data.locations.push(loc.read());
       }
     }
-    this._data.reference_type = this._ref_type.read();
-    this._data.date = this._date.read();
-    this._data.transcription = this._trsc.read();
-    return this._data;
+    data.reference_type = this._ref_type.read();
+    data.national_context = {
+      'id': this._$natl_context.val(),
+      'name': this._$natl_context.find(":selected").text()
+    };
+    data.date = this._date.read();
+    data.transcription = this._trsc.read();
+    return data;
   }
 
-  activate() {
-    if (this._data.id === 'new') {
+  activate(refState) {
+    if ( refState.isNew() ) {
       this._$discard_btn.removeClass('hidden');
       this._$cancel_btn.addClass('hidden');
     } else {
@@ -232,7 +237,7 @@ class ReferenceForm extends Control {
   }
 
   reset() {
-    this.load(this._data);
+    this.load(this._app.getReference());
     this.deactivate();
   }
 

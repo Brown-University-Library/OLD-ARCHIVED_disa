@@ -25,18 +25,19 @@ class TagMixin(object):
         return default
 
     @classmethod
-    def get_or_create(cls, data):
-        if not data:
+    def get_or_create(cls, commit=False, **kwargs):
+        if not kwargs:
             raise KeyError(
                 'Missing required data for get or create {}'.format(
                     cls.__name__))
-        existing = cls.query.filter_by(**data).first()
+        existing = cls.query.filter_by(**kwargs).first()
         if existing:
             return existing
         else:
-            created = cls(**data)
+            created = cls(**kwargs)
             db.session.add(created)
-            db.session.commit()
+            if commit:
+                db.session.commit()
             return created
 
     def to_dict(self):

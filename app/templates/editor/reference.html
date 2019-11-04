@@ -127,7 +127,7 @@ th.rnt-desc-col {
                         </label>
                         <select class="form-control" id="natl_ctx_select">
                             {% for natl in config['national_contexts'] %}
-                                <option val="{{ natl.id }}">{{ natl.name }}</option>
+                                <option value="{{ natl.id }}">{{ natl.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
