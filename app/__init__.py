@@ -10,7 +10,7 @@ from logging.handlers import SMTPHandler
 
 ## setup logging
 logging.basicConfig(
-    filename=os.environ['DISA_LOGFILE_PATH'],
+    filename=os.environ['DISA_FL__LOGFILE_PATH'],
     level=logging.DEBUG,
     format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
     datefmt='%d/%b/%Y %H:%M:%S'
@@ -25,12 +25,12 @@ app = Flask(__name__)
 app.config.from_object(os.environ['APP_SETTINGS'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-app.config['MAIL_SERVER'] = os.environ['DISA__MAIL_SERVER']
-app.config['MAIL_PORT'] = int( os.environ['DISA__MAIL_PORT'] )
+app.config['MAIL_SERVER'] = os.environ['DISA_FL__MAIL_SERVER']
+app.config['MAIL_PORT'] = int( os.environ['DISA_FL__MAIL_PORT'] )
 app.config['MAIL_USE_TLS'] = 1
 app.config['MAIL_USERNAME'] = None
 app.config['MAIL_PASSWORD'] = None
-app.config['ADMINS'] = json.loads( os.environ.get('DISA__MAIL_ADMINS_JSON') )
+app.config['ADMINS'] = json.loads( os.environ.get('DISA_FL__MAIL_ADMINS_JSON') )
 log.debug( f'app.config, ```{pprint.pformat(app.config)}```' )
 
 ## enable email-on-error (credit: <https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-vii-error-handling>)
