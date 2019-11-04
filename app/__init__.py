@@ -8,6 +8,11 @@ import json, logging, os, pprint
 from logging.handlers import SMTPHandler
 
 
+app = Flask(__name__)
+
+## config
+app.config.from_object(os.environ['APP_SETTINGS'])  # loads env from `dotenv` module
+
 ## setup logging
 logging.basicConfig(
     filename=os.environ['DISA_FL__LOGFILE_PATH'],
@@ -18,11 +23,8 @@ logging.basicConfig(
 log = logging.getLogger( __name__ )
 log.info( '__init__.py logging working' )
 
+## other config...
 
-app = Flask(__name__)
-
-## config
-app.config.from_object(os.environ['APP_SETTINGS'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.config['MAIL_SERVER'] = os.environ['DISA_FL__MAIL_SERVER']
