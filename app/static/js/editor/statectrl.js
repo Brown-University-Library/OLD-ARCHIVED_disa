@@ -1,3 +1,14 @@
+class State {
+  constructor(data) {
+    this._data = data
+  }
+
+  get(attr) {
+    return this._data[attr];
+  }
+}
+
+
 class Control {
 
   constructor(){}
@@ -20,16 +31,12 @@ class Control {
   }
 }
 
-class Config {
+class Config extends State {
 
   constructor($elem) {
+    let data = JSON.parse($elem.find('#config_data_json').attr('data-json'));
+    super(data);
     this._$root = $elem;
-    this._data = JSON.parse(
-      this._$root.find('#config_data_json').attr('data-json'));
-  }
-
-  get(attr) {
-    return this._data[attr];
   }
 }
 
