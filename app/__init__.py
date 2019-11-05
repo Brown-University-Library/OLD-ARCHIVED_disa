@@ -16,7 +16,7 @@ for ( key, val ) in envar_dct.items():
     os.environ[key.decode('utf-8')] = val.decode('utf-8')
 
 
-# from logging.config import dictConfig
+from logging.config import dictConfig
 
 # dictConfig({
 #     'version': 1,
@@ -29,19 +29,49 @@ for ( key, val ) in envar_dct.items():
 #         'formatter': 'default'
 #     }},
 #     'root': {
-#         'level': 'INFO',
+#         'level': 'DEBUG',
 #         'handlers': ['wsgi']
 #     }
 # })
 
+dictConfig({
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'default': {
+            'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+            }
+        },
+    'handlers': {
+        'wsgi': {
+            'class': 'logging.StreamHandler',
+            'stream': 'ext://flask.logging.wsgi_errors_stream',
+            'formatter': 'default'
+        },
+        'logfile': {
+            'level':'DEBUG',
+            'class':'logging.FileHandler',  # note: configure server to use system's log-rotate to avoid permissions issues
+            'filename': os.environ['DISA_FL__LOGFILE_PATH'],
+            'formatter': 'default',
+        },
+    },
+    'root': {
+        'level': 'DEBUG',
+        # 'handlers': ['wsgi']
+        'handlers': ['logfile']
+    }
+})
 
 
-logging.basicConfig(
-    filename=os.environ['DISA_FL__LOGFILE_PATH'],
-    level=logging.DEBUG,
-    format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
-    datefmt='%d/%b/%Y %H:%M:%S',
-    )
+
+
+
+# logging.basicConfig(
+#     filename=os.environ['DISA_FL__LOGFILE_PATH'],
+#     level=logging.DEBUG,
+#     format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
+#     datefmt='%d/%b/%Y %H:%M:%S',
+#     )
 
 log = logging.getLogger( __name__ )
 
