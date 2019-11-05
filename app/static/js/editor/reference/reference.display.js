@@ -19,26 +19,22 @@ class ReferenceDisplay extends Control {
     }
   }
 
-  formatDate(data) {
-    var date_text;
-    if (data.month && data.day && data.year) {
-      date_text = `${ this._month_name_map[data.month] } ${data.day}, ${data.year}`;
-    } else if (data.month && data.day && !data.year) {
-      date_text = `${ this._month_name_map[data.month] } ${data.day}`;
-    } else if (data.month && !data.day && data.year) {
-      date_text = `${ this._month_name_map[data.month] } ${data.year}`;
-    } else if (data.month && !data.day && !data.year ) {
-      date_text = `${ this._month_name_map[data.month] }`;
-    } else if (!data.month && data.day && !data.year ) {
-      date_text = `${data.day}`;
-    } else if (!data.month && data.day && data.year ) {
-      date_text = `${data.day} ${data.year}`;
-    } else if (!data.month && !data.day && data.year ) {
-      date_text = `${data.year}`;
-    } else {
-      date_text = 'Unknown';
+  trimHtmlString(htmlStr) {
+    if (htmlStr.length > 500) {
+      var trimmed, p_open, p_close;
+
+      trimmed = htmlStr.slice(0,500).trim();
+      p_open = trimmed.lastIndexOf('<p>');
+      p_close = trimmed.lastIndexOf('</p>');
+
+      if (p_open > p_close) {
+        trimmed += "...</p>";
+      } else {
+        trimmed += "<p>...</p>";
+      }
+      return trimmed;
     }
-    return date_text;
+    return htmlStr.trim();
   }
 
   load(refState) {
@@ -53,8 +49,8 @@ class ReferenceDisplay extends Control {
         .map( loc => loc.name )[0] || 'None',
       'locale' : refState.getLocationsByTypeName('Locale')
         .map( loc => loc.name )[0] || 'None',
-      'date': this.formatDate(refState.getDate()),
-      'transcription': refState.getTranscription().slice(200)
+      'date': refState.getDate().formatted,
+      'transcription': this.trimHtmlString( refState.getTranscription() )
     };
   }
 
@@ -63,7 +59,11 @@ class ReferenceDisplay extends Control {
     for (const field in fieldData) {
       let $data_elem = this._$templates.display_data.clone();
       $data_elem.find('.display-field-name').text(field.toUpperCase());
-      $data_elem.find('.display-field-value').text(fieldData[field]);
+      if (field === 'transcription') {
+        $data_elem.find('.display-field-value').html(fieldData[field]);
+      } else {
+        $data_elem.find('.display-field-value').text(fieldData[field]);
+      }
       this._$data_display.append($data_elem);
     }
   }

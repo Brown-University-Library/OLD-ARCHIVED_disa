@@ -245,6 +245,7 @@ def create_or_update_reference(refId=None):
     ref.day = data['date']['day']
     ref.month = data['date']['month']
     ref.year = data['date']['year']
+    ref.date_text = data['date']['date_text']
     try:
         ref.date = dt.datetime(year=ref.date or 1492, month=ref.month or 1,
             day=ref.day or 1)

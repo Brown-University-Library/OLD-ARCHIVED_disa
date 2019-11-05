@@ -130,7 +130,7 @@ class DateSelect {
       'day': this._$day.val(),
       'month': this._$month.val(),
       'year': this._$year.val(),
-      'text': this._$text.val()
+      'date_text': this._$text.val()
     }
   }
 
@@ -138,7 +138,7 @@ class DateSelect {
     this._$day.val(data.day);
     this._$month.val(data.month);
     this._$year.val(data.year);
-    this._$text.val(data.text);
+    this._$text.val(data.date_text);
   }
 }
 

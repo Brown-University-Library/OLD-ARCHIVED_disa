@@ -138,7 +138,7 @@ def edit_reference(citeId, refId='new'):
     locales = models.Location.query.filter(
         models.Location.references.any(location_type_id=type_locale.id)).all()
 
-    unknown_date = {'value': 0, 'label': 'Unknown' }
+    unknown_date = {'value': 0, 'label': '(Unknown)' }
     months = [ unknown_date ]
     months.extend( [ {'value': m, 'label': calendar.month_name[m] }
         for m in range(1,13) ] )

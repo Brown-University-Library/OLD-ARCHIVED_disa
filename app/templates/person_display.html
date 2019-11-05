@@ -73,7 +73,7 @@
         <tbody id="refs">
           {% for ref in refs %}
           <tr>
-            <td>{{ ref.reference.display_date() }}</td>
+            <td>{{ ref.reference.formatted_date() }}</td>
             <td>
             {% for role in ref.roles %}
               <span>{{ role.name }}</span>

@@ -1,4 +1,5 @@
 import operator
+import datetime as dt
 
 from . import db, login_manager
 
@@ -214,6 +215,10 @@ class Reference(db.Model):
     national_context_id = db.Column(db.Integer, db.ForeignKey('1_national_context.id'),
         nullable=False)
     date = db.Column(db.DateTime())
+    month = db.Column(db.Integer())
+    day = db.Column(db.Integer())
+    year = db.Column(db.Integer())
+    date_text = db.Column(db.String(255))
     transcription = db.Column(db.UnicodeText())
     referents = db.relationship(
         'Referent', backref='reference', lazy=True, cascade="delete")
@@ -223,23 +228,36 @@ class Reference(db.Model):
              key=operator.itemgetter(0), reverse=True)
         return edits[0][1]
 
-    def display_date(self):
-        if self.date:
-            return self.date.strftime('%Y %B %d')
-        else:
-            return ''
-
-    def display(self):
-        return {
-
-        }
+    def formatted_date(self):
+        dt_str = '{} '.format(self.date_text) if self.date_text else ''
+        day = self.day
+        month = self.month
+        year = self.year
+        dt_data = dt.datetime(year=year or 1492, month=month or 1, day=day or 1)
+        if month and day and year:
+            dt_str += dt_data.strftime('%B %d %Y')
+        elif month and day and not year:
+            dt_str += dt_data.strftime('%B %d')
+        elif month and not day and year:
+            dt_str += dt_data.strftime('%B %Y')
+        elif month and not day and not year:
+            dt_str += dt_data.strftime('%B')
+        elif not month and day and year:
+            dt_str += dt_data.strftime('%d %Y')
+        elif not month and day and not year:
+            dt_str += dt_data.strftime('%d')
+        elif not month and not day and year:
+            dt_str += dt_data.strftime('%Y')
+        elif not (month or day or year or dt_str) :
+            dt_str = 'Unrecorded'
+        return dt_str
 
     def to_dict(self=None):
         data = {
             'id': NEW_ID,
             'citation_display': '',
             'reference_type': {'id': '', 'name': '' },
-            'date': { 'day': '0', 'month': '0', 'year': '0', 'text': 'stub' },
+            'date': { 'day': 0, 'month': 0, 'year': 0, 'text': '' },
             'national_context': { 'id': '', 'name': '' },
             'locations': [],
             'transcription': '',
@@ -249,10 +267,9 @@ class Reference(db.Model):
             data['id'] = self.id
             data['reference_type'] = {'id': self.reference_type_id,
                 'name': self.reference_type.name }
-            data['date'] = { 'day': self.date.day if self.date else '0',
-                'month': self.date.month if self.date else '0',
-                'year': self.date.year if self.date else '0',
-                'text': 'stub' }
+            data['date'] = { 'day': self.day, 'month': self.month,
+                'year': self.year, 'date_text': self.date_text,
+                'formatted': self.formatted_date() }
             data['national_context'] = { 'id': self.national_context_id,
                 'name': self.national_context.name }
             data['locations'] = [ loc.to_dict() for loc in self.locations ]
