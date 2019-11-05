@@ -31,6 +31,7 @@ def stamp_edit(user, ref):
 
 @app.route('/')
 def browse():
+    log.debug( 'starting route `/`' )
     return render_template('browse.html')
 
 @app.route('/login', methods=['GET', 'POST'])
