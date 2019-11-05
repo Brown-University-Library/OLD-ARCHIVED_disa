@@ -7,12 +7,22 @@ from flask_wtf.csrf import CSRFProtect
 import json, logging, os, pprint
 from logging.handlers import SMTPHandler
 
+import shellvars
+
 
 app = Flask(__name__)
 print( '__init__.py loaded' )
 
 ## config
-print( f'environ, ```{pprint.pformat(os.environ.__dict__)}```' )
+print( f'initial environ, ```{pprint.pformat(os.environ.__dict__)}```' )
+
+
+## load up env vars
+envar_dct = shellvars.get_vars( os.environ['DISA_FL__SETTINGS_PATH'] )
+for ( key, val ) in envar_dct.items():
+    os.environ[key.decode('utf-8')] = val.decode('utf-8')
+
+
 try:
     app.config.from_object(os.environ['APP_SETTINGS'])  # loads env from `dotenv` module
 except:
