@@ -12,7 +12,11 @@ app = Flask(__name__)
 print( '__init__.py loaded' )
 
 ## config
-app.config.from_object(os.environ['APP_SETTINGS'])  # loads env from `dotenv` module
+print( f'environ, ```{pprint.pformat(os.environ.__dict__)}```' )
+try:
+    app.config.from_object(os.environ['APP_SETTINGS'])  # loads env from `dotenv` module
+except:
+    raise Exception( f'envars, ```{pprint.pformat(os.environ.__dict__)}```' )
 
 ## setup logging
 logging.basicConfig(
