@@ -10,29 +10,67 @@ from logging.handlers import SMTPHandler
 import shellvars
 
 
-app = Flask(__name__)
-# print( '__init__.py loaded' )
-
-
 ## load up env vars
 envar_dct = shellvars.get_vars( os.environ['DISA_FL__SETTINGS_PATH'] )
 for ( key, val ) in envar_dct.items():
     os.environ[key.decode('utf-8')] = val.decode('utf-8')
+
+
+# from logging.config import dictConfig
+
+# dictConfig({
+#     'version': 1,
+#     'formatters': {'default': {
+#         'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+#     }},
+#     'handlers': {'wsgi': {
+#         'class': 'logging.StreamHandler',
+#         'stream': 'ext://flask.logging.wsgi_errors_stream',
+#         'formatter': 'default'
+#     }},
+#     'root': {
+#         'level': 'INFO',
+#         'handlers': ['wsgi']
+#     }
+# })
+
+
+
+logging.basicConfig(
+    filename=os.environ['DISA_FL__LOGFILE_PATH'],
+    level=logging.DEBUG,
+    format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
+    datefmt='%d/%b/%Y %H:%M:%S',
+    )
+
+log = logging.getLogger( __name__ )
+
+
+app = Flask(__name__)
+# print( '__init__.py loaded' )
+
+
 
 try:
     app.config.from_object(os.environ['APP_SETTINGS'])  # loads env from `dotenv` module
 except:
     raise Exception( f'envars, ```{pprint.pformat(os.environ.__dict__)}```' )
 
+
 ## setup logging
-logging.basicConfig(
-    filename=os.environ['DISA_FL__LOGFILE_PATH'],
-    level=logging.DEBUG,
-    format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
-    datefmt='%d/%b/%Y %H:%M:%S'
-    )
-log = logging.getLogger( __name__ )
+
+# from flask.logging import default_handler
+# app.logger.removeHandler(default_handler)
+
+# for _ in logging.root.manager.loggerDict:
+#     logging.getLogger(_).setLevel(logging.CRITICAL)
+
+# print( f'log, `{log}`' )
+# print( f'log.__dict__, `{log.__dict__}`' )
+# print( f'log.manager.__dict__, `{pprint.pformat(log.manager.__dict__)}`' )
+
 log.info( '__init__.py logging working' )
+
 
 ## other config...
 
