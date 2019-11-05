@@ -122,6 +122,8 @@ class ReferenceApp {
   }
 
   resetReferenceDisplay() {
+    this._ref_display.load( this.getReference() );
+    this._ref_form.load( this.getReference() );
     this._ref_display.show();
     this._ref_form.deactivate();
     this._$edit_ref.removeClass('hidden');

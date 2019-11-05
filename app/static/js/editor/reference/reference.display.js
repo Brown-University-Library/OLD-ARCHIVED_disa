@@ -19,22 +19,27 @@ class ReferenceDisplay extends Control {
     }
   }
 
-  trimHtmlString(htmlStr) {
-    if (htmlStr.length > 500) {
+  trimTranscription(trns) {
+    // Special handling for rich text produced by TinyMCE
+    if (trns.length > 550) {
       var trimmed, p_open, p_close;
 
-      trimmed = htmlStr.slice(0,500).trim();
+      trimmed = trns.slice(0,550).trim();
       p_open = trimmed.lastIndexOf('<p>');
       p_close = trimmed.lastIndexOf('</p>');
 
-      if (p_open > p_close) {
+      if (p_open === -1) {
+        // no <p> found; not HTML
+        trimmed += "...";
+      }
+      else if (p_open > p_close) {
         trimmed += "...</p>";
       } else {
         trimmed += "<p>...</p>";
       }
       return trimmed;
     }
-    return htmlStr.trim();
+    return trns.trim();
   }
 
   load(refState) {
@@ -50,7 +55,7 @@ class ReferenceDisplay extends Control {
       'locale' : refState.getLocationsByTypeName('Locale')
         .map( loc => loc.name )[0] || 'None',
       'date': refState.getDate().formatted,
-      'transcription': this.trimHtmlString( refState.getTranscription() )
+      'transcription': this.trimTranscription( refState.getTranscription() )
     };
   }
 

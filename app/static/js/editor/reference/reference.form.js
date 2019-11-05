@@ -253,7 +253,7 @@ class ReferenceForm extends Control {
           cmp._app.saveReference();
           break;
         case $btn.hasClass('cancel-edit-reference'):
-          cmp._app.resetReference();
+          cmp._app.resetReferenceDisplay();
           break;
         default:
           return;

@@ -151,40 +151,38 @@ th.rnt-desc-col {
                         <input class="form-control" type="text" id="locale_input" />
                     </div>
                     <div class="row">
-                        <div id="date_selector">
-                        <label>Event Date<br />
-                            <em class="small">Enter the date of the events described in the item, <strong>not</strong> the publication date of the containing document</em>
-                        </label>
-                            <div class="col-md-12">
-                                <div class="form-row">
-                                    <div class="form-group col-md-2">
-                                        <label for="date_month">Month</label>
-                                        <select id="date_month" class="form-control">
-                                            {% for m in config['date']['months'] %}
-                                                <option value="{{ m.value }}">{{ m.label }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    <div class="form-group col-md-2">
-                                        <label for="date_day">Day</label>
-                                        <select id="date_day" class="form-control">
-                                            {% for d in config['date']['days'] %}
-                                                <option value="{{ d.value }}">{{ d.label }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    <div class="form-group col-md-2">
-                                        <label for="date_year">Year</label>
-                                        <select id="date_year" class="form-control">
-                                            {% for y in config['date']['years'] %}
-                                                <option value="{{ y.value }}">{{ y.label }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    <div class="form-group col-md-6">
-                                        <label for="date_text">Additional Information</label>
-                                        <input class="form-control" type="text" id="date_text"/>
-                                    </div>
+                        <div id="date_selector" class="col-md-12">
+                            <label>Event Date<br />
+                                <em class="small">Enter the date of the events described in the item, <strong>not</strong> the publication date of the containing document</em>
+                            </label>
+                            <div class="form-row">
+                                <div class="form-group col-md-2">
+                                    <label for="date_month">Month</label>
+                                    <select id="date_month" class="form-control">
+                                        {% for m in config['date']['months'] %}
+                                            <option value="{{ m.value }}">{{ m.label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label for="date_day">Day</label>
+                                    <select id="date_day" class="form-control">
+                                        {% for d in config['date']['days'] %}
+                                            <option value="{{ d.value }}">{{ d.label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label for="date_year">Year</label>
+                                    <select id="date_year" class="form-control">
+                                        {% for y in config['date']['years'] %}
+                                            <option value="{{ y.value }}">{{ y.label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="date_text">Additional Information</label>
+                                    <input class="form-control" type="text" id="date_text"/>
                                 </div>
                             </div>
                         </div>
