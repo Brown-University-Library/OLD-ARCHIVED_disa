@@ -1,13 +1,13 @@
 import os
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
-basedir = os.path.abspath(os.path.dirname(__file__))
-print( f'ABC123 -- in config.py, basedir, ```{basedir}```' )
+# basedir = os.path.abspath(os.path.dirname(__file__))
+# print( f'ABC123 -- in config.py, basedir, ```{basedir}```' )
 
-load_dotenv(os.path.join(basedir, '.envrc'))
+# load_dotenv(os.path.join(basedir, '.envrc'))
 
 class Config(object):
-    APP_DIR = basedir
+    # APP_DIR = basedir
     DEBUG = False
     TESTING = False
     CSRF_ENABLED = True
