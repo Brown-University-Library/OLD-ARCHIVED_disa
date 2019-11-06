@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block header %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='lib/bootstrap-4.1.2-dist/css/bootstrap.min.css') }}">
+<style>
+
+.hidden {
+  display: none;
+}
+
+dl {
+  width: 100%;
+  margin-left: 3%;
+  overflow: hidden;
+  font-size: 90%;
+}
+
+dt {
+  float:left;
+  width: 30%;
+}
+
+dt::after {
+  content: ": ";
+}
+
+dd {
+  float: left;
+  width: 70%;
+}
+
+#citation_display_header {
+  font-size: 200%
+}
+
+#citation_field_list {
+    display: flex;
+    flex-flow: row wrap;
+    list-style: none;
+    padding-right: 20px;
+}
+
+#new_reference {
+  margin-left: auto;
+}
+
+.citation-commands {
+  margin-left: auto;
+}
+
+.citation-field {
+    flex: 0 1 30%;
+    margin: 2px 0 0 5px;
+}
+
+th.ref-id-col {
+  width: 20%;
+}
+
+th.ref-label-col {
+  width: 25%;
+}
+
+th.ref-date-col {
+  width: 25%;
+}
+
+.deactivate-delete {
+  margin-right: 10%;
+}
+
+.disa-app {
+  display: block;
+}
+
+.control-hide {
+  display: none;
+}
+
+</style>
+<script type="text/javascript" src="{{ url_for('static', filename='js/editor/statectrl.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/editor/citation/citation.source.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/editor/citation/citation.display.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/editor/citation/citation.references.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/editor/citation/citation.form.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/editor/citation/citation.app.js') }}"></script>
+{% endblock %}
+
+
+{% block content %}
+<div class="container">
+  <div id="citation_page" class="disa-app"
+      data-citation-id="{{ page_config['citation']['citation_id'] }}">
+    <div class="row">
+      <div class="col-md-11">
+        <div class="row">
+          <div class="col-md-12">
+            <div id="citation_display" class="hidden">
+              <div class="row">
+                <h1 id="citation_display_header">
+                  <span id="display_header_new" style="font-size: 50%">
+                    <em>Fill out this form only when entering a document for the first time. If your document has been already entered, find your document in the <a href="/editor">recent document list</a> and add an item.</em>
+                  </span>
+                  <span id="display_header_existing"></span>
+                </h1>
+              </div>
+              <div class="row">
+                <dl id="citation_display_data">
+                  <template>
+                    <div id="display_data" class="display-citation-data">
+                      <dt class="display-field-name"></dt>
+                      <dd class="display-field-value"></dd>
+                    </div>
+                  </template>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <form id="citation_form" action="" method="" class="hidden">
+            <div class='col-md-12'>
+              <div id="citation_field_mgmt">
+                <div class="form-group row">
+                  <label>Document type<br />
+                    <em class="small text-muted">Select the document type that most clearly describes the document you're adding</em>
+                  </label>
+                  <select id="citation_type_selector" class="form-control">
+                    {% for ctype in page_config.citation_types %}
+                    <option value="{{ ctype.id }}">{{ ctype.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="form-group row">
+                  <label for="citation_field_list">Citation information<br />
+                    <em class="small text-muted">Information related to the publication of the document (e.g. the date of publication of the newspaper, not a date listed within an article)</em>
+                  </label>
+                  <ul id="citation_field_list">
+                    <template>
+                      <li id="citation_field" class="citation-field" data-citation-field="">
+                        <input class="citation-field-input" type="text"/>
+                      </li>
+                    </template>
+                  </ul>
+                </div>
+              </div>
+              <div class="form-group row" hidden>
+                  <label for="zotero">Zotero ID</label>
+                  <input type="text" class="form-control" id="zotero" />
+              </div>
+              <div class="form-group row" id="comments">
+                <label for="comments_input">Comments</label>
+                <textarea class="form-control" id="comments_input"></textarea>
+              </div>
+              <div class="form-group row" id="acknowledgements">
+                <label for="acknowledgements_input">Acknowledgements<br />
+                <em class="small text-muted">If you've received the document from an individual or organization for the purposes of this project, please acknowledge their contribution (e.g. "Thank you to the Jennifer Shaw family")</em></label>
+                <textarea class="form-control" id="acknowledgements_input"></textarea>
+              </div>
+              <div class="row">
+                <div class="citation-commands">
+                  <button type="button" class="btn btn-warning discard-new-citation">Discard</button>
+                  <button type="button" class="btn btn-warning cancel-edit-citation">Cancel</button>
+                  <button type="button" class="btn btn-primary save-citation">Save</button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class='col-md-1'>
+        <button id="edit_citation" class="btn btn-primary citation-app-event edit-citation">Edit</button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div id="reference_control">
+          <h3>Items</h3>
+          <p id="empty_reference_display">None</p>
+          <table class="table">
+            <thead id="reference_list_header">
+              <tr>
+                <th class="ref-id-col" scope="col">ID</th>
+                <th class="ref-label-col" scope="col">Item type</th>
+                <th class="ref-date-col" scope="col">Edited</th>
+                <th class="ref-ctrl-col" ></th>
+              </tr>
+            </thead>
+            <tbody id="reference_list">
+              <template>
+                <tr id="reference_row" class="reference">
+                  <th class="reference-id" scope="row"></th>
+                  <td><a class="reference-link" href=""></a></td>
+                  <td class="reference-edited"></td>
+                  <td class="reference-controls">
+                    <button class="btn btn-secondary cancel-delete-reference">
+                      <span class="fas fa-undo"></span>
+                    </button>
+                    <button class="btn btn-danger delete-reference">
+                      <span class="fas fa-times-circle"></span>
+                    </button>
+                    <button class="btn btn-danger confirm-delete-reference">
+                      <span>Confirm delete</span>
+                    </button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <a id="new_reference" class="btn btn-primary citation-app-event add-reference"
+        href="{{page_config['endpoints']['newReference']}}">Add an item</a>
+    </div>
+  </div>
+  <div id="config" hidden>
+    <p id="csrf_token" data-csrf="{{ csrf_token() }}"></p>
+    <ul id="citationtype_fields">
+      {% for ctype in citationtype_fields %}
+        <li class="citationtype-data" data-name="{{ ctype['name'] }}">
+          <ul>
+            {% for field in ctype['values'] %}
+              <li class="citationtype-field-data"
+                data-display="{{ field['display'] }}"
+                data-name="{{ field['name'] }}"></li>
+            {% endfor %}
+          </ul>
+        </li>
+      {% endfor %}
+    </ul>
+    <ul id="data_endpoints">
+      {% for ep, url in page_config['endpoints'].items() %}
+        <li class="endpoint" data-name="{{ ep }}" data-url="{{ url }}"></li>
+      {% endfor %}
+    </ul>
+    <p id="config_data_json" data-json='{{ page_config|tojson|safe }}'></p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts%}
+{{ super() }}
+
+<script type="text/javascript">
+  let config = new Config($('#config'));
+  let source = new CitationSource($('#data_endpoints'), $('#csrf_token'));
+  let cdisplay = new CitationDisplay($('#citation_display'));
+  let cform = new CitationForm($('#citation_form'));
+  let refctrl = new ReferenceControl($('#reference_control'));
+
+  cform.configure(config);
+
+  let capp = new CitationApp($('#citation_page'), config, source,
+                                  cdisplay, cform, refctrl);
+  source.setApp(capp);
+  cdisplay.setApp(capp);
+  cform.setApp(capp);
+  refctrl.setApp(capp);
+</script>
+{% endblock %}

@@ -17,7 +17,7 @@
 {% block content %}
 	<div class="container">
         <div id="new_document_button" class="d-flex flex-row-reverse">
-            <a class="btn btn-primary" href="{{ url_for('edit_citation') }}">New document</a>
+            <a class="btn btn-primary" href="{{ url_for('editor.edit_citation', citeId='new') }}">New document</a>
         </div>
 		<h2>Your recent documents</h2>
         {% if user_documents %}
@@ -36,7 +36,7 @@
                 <tr>
                     <th scope="row">{{ doc.id }}</th>
                     <td>
-                        <a href="{{ url_for('edit_citation', citeId=doc.id) }}">{{ doc.display }}</a>
+                        <a href="{{ url_for('editor.edit_citation', citeId=doc.id) }}">{{ doc.display }}</a>
                     </td>
                     <td>{{ doc.references|length }}</td>
                     <td>{{ email }}</td>
@@ -64,7 +64,7 @@
                 <tr>
                     <th scope="row">{{ doc.id }}</th>
                     <td>
-                        <a href="{{ url_for('edit_citation', citeId=doc.id) }}">{{ doc.display }}</a>
+                        <a href="{{ url_for('editor.edit_citation', citeId=doc.id) }}">{{ doc.display }}</a>
                     </td>
                     <td>{{ doc.references|length }}</td>
                     <td>{{ email }}</td>

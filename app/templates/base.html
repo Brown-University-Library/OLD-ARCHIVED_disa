@@ -29,24 +29,24 @@
     </head>
     <body>
         <nav class="navbar navbar-expand-lg navbar-light bg-secondary">
-            <a class="navbar-brand text-white" href="{{ url_for('browse') }}">Database of Indigenous Slavery in the Americas</a>
+            <a class="navbar-brand text-white" href="{{ url_for('main.browse') }}">Database of Indigenous Slavery in the Americas</a>
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="{{ url_for('person_index') }}">index</a>
+                    <a class="nav-link text-white" href="{{ url_for('main.person_index') }}">index</a>
                 </li>
                 {% if current_user.is_anonymous %}
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="{{ url_for('login') }}">login</a>
+                    <a class="nav-link text-white" href="{{ url_for('auth.login') }}">login</a>
                 </li>
                 {% else %}
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="{{ url_for('editor_index') }}">editor</a>
+                    <a class="nav-link text-white" href="{{ url_for('editor.editor_index') }}">editor</a>
                 </li>
                 <li class="nav-item">
                     <span class="navbar-text text-white">{{ current_user.email }}</span>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="{{ url_for('logout') }}">logout</a>
+                    <a class="nav-link text-white" href="{{ url_for('auth.logout') }}">logout</a>
                 </li>
                 {% endif %}
             </ul>

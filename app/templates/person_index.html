@@ -22,7 +22,7 @@
             <td>{{ pers.id }}</td>
             <td>{{ pers.display_name() }}</td>
             <td>{{ pers.display_attr('enslavements') }}</td>
-            <td><a href="{{ url_for('get_person', persId=pers.id)}}">View</a></td>
+            <td><a href="{{ url_for('main.get_person', persId=pers.id)}}">View</a></td>
           </tr>
           {% endfor %}
         </tbody>
