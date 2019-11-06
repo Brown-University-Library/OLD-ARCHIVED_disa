@@ -9,16 +9,6 @@ import collections
 import logging, pprint
 
 
-## email-on-error setup
-
-
-## setup logging
-# logging.basicConfig(
-#     # filename=settings_app.INDEXER_LOG_PATH,
-#     level=logging.DEBUG,
-#     format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
-#     datefmt='%d/%b/%Y %H:%M:%S'
-#     )
 log = logging.getLogger( __name__ )
 log.info( 'routes.py logging working' )
 
@@ -76,6 +66,7 @@ def sort_documents(wrappedDocs):
 @app.route('/editor', methods=['GET'])
 @login_required
 def editor_index():
+    log.debug( 'starting editor_index' )
     all_cites = models.Citation.query.all()
     no_refs = [ (cite, current_user.id, datetime.datetime.now(), '')
         for cite in all_cites if len(cite.references) == 0 ]
@@ -95,6 +86,7 @@ def editor_index():
 @app.route('/editor/documents/<citeId>')
 @login_required
 def edit_citation(citeId=None):
+    log.debug( 'starting edit_citation' )
     included = [ 'Book', 'Book Section', 'Document', 'Interview',
         'Journal Article', 'Magazine Article', 'Manuscript',
         'Newspaper Article', 'Thesis', 'Webpage' ]
@@ -129,6 +121,7 @@ def edit_citation(citeId=None):
 @app.route('/editor/records/<recId>')
 @login_required
 def edit_record(recId=None):
+    log.debug( 'starting edit_record' )
     locs = models.ReferenceLocation.query.all()
     rec_types = [ { 'id': rt.id, 'value': rt.name, 'name': rt.name }
         for rt in models.ReferenceType.query.all() ]
@@ -167,6 +160,7 @@ def edit_record(recId=None):
 @app.route('/editor/person/<entId>')
 @login_required
 def edit_entrant(entId=None):
+    log.debug( 'starting edit_entrant' )
     nametypes = [ { 'id': role.id, 'value': role.name, 'label': role.name }
         for role in models.NameType.query.all()]
     roles = [ { 'id': role.id, 'value': role.name, 'label': role.name }
@@ -201,20 +195,25 @@ def edit_entrant(entId=None):
 @app.route('/data/documents/<docId>', methods=['GET'])
 @login_required
 def read_document_data(docId=None):
+    log.debug( f'starting "data/documents/" GET processing; docId, `{docId}`' )
     data = { 'doc': {} }
     included = [ 'Book', 'Book Section', 'Document', 'Interview',
         'Journal Article', 'Magazine Article', 'Manuscript',
         'Newspaper Article', 'Thesis', 'Webpage' ]
     ct = models.CitationType.query.filter(
         models.CitationType.name.in_(included)).all()
+    log.debug( f'ct, ```{ct}```' )
     data['doc_types'] = [ { 'id': c.id, 'name': c.name } for c in ct ]
     if docId == None:
+        log.debug( f'returning data for docID equals None, ```{pprint.pformat(data)}```' )
         return jsonify(data)
     if docId == 'copy':
         last_edit = edit = models.ReferenceEdit.query.filter_by(
             user_id=current_user.id).order_by(
             models.ReferenceEdit.timestamp.desc()).first()
+        log.debug( f'last_edit, ```{last_edit}```' )
         if not last_edit or not last_edit.edited:
+            log.debug( f'returning data for docID equals copy with no last_edit, ```{pprint.pformat(data)}```' )
             return jsonify(data)
         doc = models.Citation.query.get(last_edit.edited.citation_id)
     else:
@@ -230,6 +229,7 @@ def read_document_data(docId=None):
     else:
         data['doc']['citation_type_id'] = doc.citation_type_id
     data['doc']['fields'] = { f.field.name: f.field_data for f in doc.citation_data }
+    log.debug( f'returning data for given docID, ```{pprint.pformat(data)}```' )
     return jsonify(data)
 
 @app.route('/data/documents/', methods=['POST'])
@@ -621,11 +621,13 @@ def parse_person_descriptors(personObj, descField):
 
 @app.route('/people/')
 def person_index():
+    log.debug( 'starting people' )
     people = [ p for p in models.Person.query.all() if p.references != [] ]
     return render_template('person_index.html', people=people)
 
 @app.route('/people/<persId>')
 def get_person(persId):
+    log.debug( 'starting get_person' )
     person = models.Person.query.get(persId)
     name = parse_person_name(person)
     tribes = parse_person_descriptors(person, 'tribes')
@@ -648,6 +650,7 @@ def get_source(srcId):
 @app.route('/record/relationships/<recId>')
 @login_required
 def edit_relationships(recId):
+    log.debug( 'starting edit_relationships' )
     rec = models.Reference.query.get(recId)
     return render_template('record_relationships.html', sec=rec)
 
