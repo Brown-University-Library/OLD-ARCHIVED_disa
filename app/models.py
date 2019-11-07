@@ -255,7 +255,7 @@ class Reference(db.Model):
     def to_dict(self=None):
         data = {
             'id': NEW_ID,
-            'citation_display': '',
+            'citation': {'id': '', 'name': '' },
             'reference_type': {'id': '', 'name': '' },
             'date': { 'day': 0, 'month': 0, 'year': 0, 'text': '' },
             'national_context': { 'id': '', 'name': '' },
@@ -263,7 +263,8 @@ class Reference(db.Model):
             'transcription': '',
         }
         if self:
-            data['citation_display'] = self.citation.display
+            data['citation'] = { 'id': self.citation_id,
+                'name': self.citation.display }
             data['id'] = self.id
             data['reference_type'] = {'id': self.reference_type_id,
                 'name': self.reference_type.name }
@@ -281,7 +282,7 @@ class Reference(db.Model):
             self.id, self.reference_type.name, self.citation_id)
 
 
-class ReferenceType(db.Model, TagMixin):
+class ReferenceType(TagMixin, db.Model):
     __tablename__ = '1_reference_types'
     _default = {'name': 'Unspecified'}
 
@@ -297,7 +298,7 @@ class ReferenceType(db.Model, TagMixin):
         back_populates='reference_types')
 
 
-class Location(db.Model, TagMixin):
+class Location(TagMixin, db.Model):
     __tablename__ = '1_locations'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -334,7 +335,7 @@ class ReferenceLocation(db.Model):
             self.reference_id, self.location.name, self.location_type.name)
 
 
-class LocationType(db.Model, TagMixin):
+class LocationType(TagMixin, db.Model):
     __tablename__ = '1_location_types'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -425,7 +426,7 @@ class Referent(db.Model):
             return display
 
 
-class Title(db.Model, TagMixin):
+class Title(TagMixin, db.Model):
     __tablename__ = '1_titles'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -434,7 +435,7 @@ class Title(db.Model, TagMixin):
         secondary=has_title, back_populates='titles')
 
 
-class Tribe(db.Model, TagMixin):
+class Tribe(TagMixin, db.Model):
     __tablename__ = '1_tribes'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -443,7 +444,7 @@ class Tribe(db.Model, TagMixin):
         secondary=has_tribe, back_populates='tribes')
 
 
-class Race(db.Model, TagMixin):
+class Race(TagMixin, db.Model):
     __tablename__ = '1_races'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -452,7 +453,7 @@ class Race(db.Model, TagMixin):
         secondary=has_race, back_populates='races')
 
 
-class Vocation(db.Model, TagMixin):
+class Vocation(TagMixin, db.Model):
     __tablename__ = '1_vocations'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -461,7 +462,7 @@ class Vocation(db.Model, TagMixin):
         secondary=has_vocation, back_populates='vocations')
 
 
-class EnslavementType(db.Model, TagMixin):
+class EnslavementType(TagMixin, db.Model):
     __tablename__ = '1_enslavement_types'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -470,7 +471,7 @@ class EnslavementType(db.Model, TagMixin):
         secondary=enslaved_as, back_populates='enslavements')
     
 
-class Role(db.Model, TagMixin):
+class Role(TagMixin, db.Model):
     __tablename__ = '1_roles'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -533,7 +534,7 @@ class RoleRelationship(db.Model):
             return
 
 
-class RoleRelationshipType(db.Model, TagMixin):
+class RoleRelationshipType(TagMixin, db.Model):
     __tablename__ = '1_role_relationship_types'
 
     id = db.Column(db.Integer, primary_key=True)
