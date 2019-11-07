@@ -79,7 +79,7 @@ class CitationApp {
   editReference(refId) {
     this._ref_ctrl.activateReference(refId);
     this._$edit_cite.prop('disabled', true);
-    this._$new_ref.addClass('hidden');
+    this._$new_ref.addClass('disabled');
   }
 
   deleteReference(refId) {
@@ -89,13 +89,13 @@ class CitationApp {
   referenceDeleted(data) {
     this._ref_ctrl.load(data.references);
     this._$edit_cite.prop('disabled', false);
-    this._$new_ref.removeClass('hidden');
+    this._$new_ref.removeClass('disabled');
   }
 
   resetReferences() {
     this._ref_ctrl.activate();
     this._$edit_cite.prop('disabled', false);
-    this._$new_ref.removeClass('hidden');
+    this._$new_ref.removeClass('disabled');
   }
 
   setEvents() {
