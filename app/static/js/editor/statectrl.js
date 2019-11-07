@@ -22,6 +22,10 @@ class State {
   get(attr) {
     return this._data[attr];
   }
+
+  set(attr, data) {
+    this._data[attr] = data;
+  }
 }
 
 
