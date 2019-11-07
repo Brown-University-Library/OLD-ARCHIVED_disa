@@ -76,12 +76,10 @@ class ReferenceDisplay extends Control {
   show() {
     this.loadReferenceData(this._field_data);
     this._$existing_header.text(this._header_text);
-    this._$existing_header.removeClass('hidden');
-    this._$data_display.removeClass('hidden');
     this._$root.removeClass('hidden');
   }
 
   hide() {
-    this._$data_display.addClass('hidden');
+    this._$root.addClass('hidden');
   }
 }

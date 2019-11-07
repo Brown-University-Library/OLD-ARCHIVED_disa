@@ -199,31 +199,6 @@ def read_referent_data(rntId=None):
 
 
 @dataserv.route('/references/', methods=['POST'])
-def create_reference():
-    data = request.get_json()
-    ref = models.Reference()
-    ref.locations = [
-        {   'location_id': models.Location.get_or_create( name=loc['name'] ).id,
-            'location_type_id': models.LocationType.get_or_create(
-                name=loc['location_type'] ).id,
-            'location_rank': idx }
-        for idx, loc in enumerate(data['locations']) ]
-    try:
-        ref.date = dt.datetime.strptime(data['date'], '%m/%d/%Y')
-    except:
-        ref.date = None
-    ref.reference_type_id = models.ReferenceType.get_or_create(
-        name=data['reference_type']['name'] ).id
-    ref.national_context_id = data['national_context_id']['id']
-    ref.transcription = data['transcription']
-    db.session.add(ref)
-    db.session.commit()
-
-    stamp_edit(current_user, ref)
-    data = ref.to_dict()
-    return jsonify(data)
-
-@dataserv.route('/references/', methods=['POST'])
 @dataserv.route('/references/<refId>', methods=['PUT'])
 def create_or_update_reference(refId=None):
     if request.method == 'POST':
@@ -232,6 +207,7 @@ def create_or_update_reference(refId=None):
         ref = models.Reference.query.get(refId)
 
     data = request.get_json()
+    ref.citation_id = data['citation']['id']
     ref.reference_type = models.ReferenceType.get_or_create(
         name=data['reference_type']['name'] )
     ref.national_context_id = data['national_context']['id']

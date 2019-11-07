@@ -3,12 +3,16 @@ class ReferenceState extends State {
   constructor() {
     super();
     this._slots = ['id', 'reference_type',
-      'citation_display', 'locations', 'date',
+      'citation', 'locations', 'date',
       'national_context', 'transcription'];
   }
 
   getId() {
     return this.get('id');
+  }
+
+  getCitation() {
+    return this.get('citation');
   }
 
   getRefType() {
@@ -41,7 +45,7 @@ class ReferenceState extends State {
   }
 
   displayCitation() {
-    return this.get('citation_display');
+    return this.get('citation').name;
   }
 
   displayRefType() {
@@ -58,17 +62,16 @@ class ReferenceApp {
   constructor($elem, config, source, refDisplay, refForm) {
     this._$root = $elem;
     this._source = source;
+    this._configuration = config;
     this._reference_state = new ReferenceState();
     this._$edit_ref = $elem.find('#edit_reference');
     // this._$new_rnt = $elem.find('#new_referent');
-    this._ref_id = $elem.attr('data-reference-id');
     this._ref_display = refDisplay;
     this._ref_form = refForm;
     // this._rnt_ctrl = rntCtrl;
 
     this.setEvents();
     this.load(config.get('data'));
-    this._ref_display.show();
   }
 
   getReference() {
@@ -84,17 +87,12 @@ class ReferenceApp {
   load(data) {
     this.setReference(data.reference);
     // this._rnt_ctrl.load(this._data.referents);
-    // if (this._ref_id === 'new') {
-    //   this._$edit_ref.addClass('hidden');
-    //   this._$new_rnt.addClass('hidden');
-    //   this._ref_form.activate();
-    //   this._rnt_ctrl.hide();
-    // } else {
-    //   this._$edit_cite.removeClass('hidden');
-    //   this._$new_ref.removeClass('hidden');
-    //   this._cite_form.deactivate();
-    //   this._ref_ctrl.show();
-    // }
+    if (this._reference_state.isNew()) {
+      this.editReference();
+      // this._rnt_ctrl.hide();
+    } else {
+      this.displayReference();
+    }
   }
 
   editReference() {
@@ -109,6 +107,8 @@ class ReferenceApp {
     let data; 
 
     data = this._ref_form.read();
+    data.citation = this.getReference().getCitation();
+
     if ( this.getReference().isNew() ) {
       this._source.createReference(data);
     } else {
@@ -118,10 +118,10 @@ class ReferenceApp {
 
   referenceSaved(data) {
     this.setReference(data.reference);
-    this.resetReferenceDisplay();
+    this.displayReference();
   }
 
-  resetReferenceDisplay() {
+  displayReference() {
     this._ref_display.load( this.getReference() );
     this._ref_form.load( this.getReference() );
     this._ref_display.show();

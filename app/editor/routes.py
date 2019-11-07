@@ -121,7 +121,7 @@ def edit_citation(citeId='new'):
 
 
 @editor.route('/citations/<citeId>/references/<refId>')
-def edit_reference(citeId, refId='new'):
+def edit_reference(citeId, refId):
     ref_types = [ rt.to_dict() for rt in models.ReferenceType.query.all() ]
     roles = [ role.to_dict() for role in models.Role.query.all() ]
     natl_ctxs = [ nc.to_dict() for nc in models.NationalContext.query.all() ]
@@ -160,7 +160,9 @@ def edit_reference(citeId, refId='new'):
     }
 
     if refId == 'new':
-        config['data']['reference'] = models.Reference.to_dict()
+        data = models.Reference.to_dict()
+        data['citation']['id'] = citeId
+        config['data']['reference'] = data
     else:
         ref = models.Reference.query.get(refId)
         config['data']['reference'] = ref.to_dict()
