@@ -9,7 +9,7 @@ from flask_login import UserMixin
 NEW_ID = 'new'
 
 
-class TagMixin(object):
+class TypeMixin(object):
 
     @classmethod
     def get_default(cls):
@@ -18,12 +18,22 @@ class TagMixin(object):
                         'No default instance set for {}'.format(
                             cls.__name__))
         try:
-            default = cls.query.filter_by(cls._default).first()
+            default = cls.query.filter_by(**cls._default).first()
         except:
             raise ReferenceError(
                 'Default instance of {} not found'.format(
                     cls.__name__))
         return default
+
+    def to_dict(self):
+        return { 'id': self.id, 'name': self.name }
+
+    def __repr__(self):
+        return '<{0} {1}: {2}>'.format(self.__class__.__name__,
+            self.id, self.name)
+
+
+class TagMixin(TypeMixin):
 
     @classmethod
     def get_or_create(cls, commit=False, **kwargs):
@@ -40,13 +50,6 @@ class TagMixin(object):
             if commit:
                 db.session.commit()
             return created
-
-    def to_dict(self):
-        return { 'id': self.id, 'name': self.name }
-
-    def __repr__(self):
-        return '<{0} {1}: {2}>'.format(self.__class__.__name__,
-            self.id, self.name)
 
 
 has_role = db.Table('6_has_role',
@@ -123,7 +126,7 @@ class Citation(db.Model):
             'display': '',
             'acknowledgements': '',
             'comments': '',
-            'citation_type': '',
+            'citation_type': CitationType.get_default().to_dict(),
             'citation_fields': []
         }
         if self:
@@ -142,8 +145,9 @@ class Citation(db.Model):
         return '<Citation {0}: {1}>'.format(self.id, self.display)
 
 
-class CitationType(db.Model):
+class CitationType(TypeMixin, db.Model):
     __tablename__ = '2_citation_types'
+    _default = {'name': 'Document'}
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
@@ -256,7 +260,7 @@ class Reference(db.Model):
         data = {
             'id': NEW_ID,
             'citation': {'id': '', 'name': '' },
-            'reference_type': {'id': '', 'name': '' },
+            'reference_type': ReferenceType.get_default().to_dict(),
             'date': { 'day': 0, 'month': 0, 'year': 0, 'text': '' },
             'national_context': { 'id': '', 'name': '' },
             'locations': [],

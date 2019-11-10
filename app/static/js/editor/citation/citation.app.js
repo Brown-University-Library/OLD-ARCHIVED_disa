@@ -15,6 +15,16 @@ class CitationApp {
     this.load();
   }
 
+  getCitation() {
+    return this._citation_state;
+  }
+
+  setCitation(data) {
+    this._citation_state.update(data);
+    this._cite_display.load( this.getCitation() );
+    this._cite_form.load( this.getCitation() );
+  }
+
   load(data) {
     this._data = data || this._data;
     this._cite_display.show(this._data.citation);

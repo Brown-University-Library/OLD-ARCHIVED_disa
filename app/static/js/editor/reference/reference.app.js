@@ -80,8 +80,8 @@ class ReferenceApp {
 
   setReference(data) {
     this._reference_state.update(data);
-    this._ref_display.load( this.getReference() );
-    this._ref_form.load( this.getReference() );
+    // this._ref_display.load( this.getReference() );
+    // this._ref_form.load( this.getReference() );
   }
 
   load(data) {
@@ -122,9 +122,9 @@ class ReferenceApp {
   }
 
   displayReference() {
-    this._ref_display.load( this.getReference() );
-    this._ref_form.load( this.getReference() );
-    this._ref_display.show();
+    // this._ref_display.load( this.getReference() );
+    // this._ref_form.load( this.getReference() );
+    this._ref_display.show( this.getReference() );
     this._ref_form.deactivate();
     this._$edit_ref.removeClass('hidden');
     // this._$new_rnt.removeClass('hidden');

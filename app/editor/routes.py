@@ -45,7 +45,7 @@ def editor_index():
 
 
 @editor.route('/citations/<citeId>')
-def edit_citation(citeId='new'):
+def edit_citation(citeId):
     included = [ 'Book', 'Book Section', 'Document', 'Interview',
         'Journal Article', 'Magazine Article', 'Manuscript',
         'Newspaper Article', 'Thesis', 'Webpage' ]
@@ -69,55 +69,37 @@ def edit_citation(citeId='new'):
                     f['rank'] += 1
             ct_fields[c.id].append(pages)
     config = {
+        'data': {},
         'citationtype_fields': {
             str(cid): sorted(ct_fields[cid], key=itemgetter('rank'))
                 for cid in ct_fields },
         'citation_types': [
             { 'id': c.id, 'name': c.name} for c in ct ],
-        'references': []
     }
-    citation = {
-        'citation_id': '',
-        'display': '',
-        'acknowledgements': '',
-        'comments': '',
-        'citation_type': '',
-        'citation_fields': []
-    }
-    default = [ c for c in ct if c.name == 'Document'][0]
+
     if citeId == 'new':
-        citation['citation_id'] = citeId
-        citation['citation_type'] = default.id
+        config['data']['citation'] = models.Citation.to_dict()
+        config['data']['references'] = []
     else:
         cite = models.Citation.query.get(citeId)
-        citation['citation_id'] = cite.id
-        citation['display'] = cite.display
-        citation['comments'] = cite.comments
-        citation['acknowledgements'] = cite.acknowledgements
-        if cite.citation_type.id not in { c['id'] for c in config['citation_types'] }:
-            citation['citation_type'] = default.id
-        else:
-            citation['citation_type'] = cite.citation_type.id
-        citation['citation_fields'] = [
-            { 'name': f.field.name, 'value': f.field_data }
-                for f in cite.citation_data ]
-        config['references'] = [ { 'id': ref.id,
+        config['data']['citation'] = cite.to_dict()
+        config['data']['references'] = [ { 'id': ref.id,
                 'link': url_for('editor.edit_reference',
                     citeId=citeId, refId=ref.id),
                 'reference_type': ref.reference_type.name,
                 'last_edit':
                     ref.last_edit().timestamp.strftime("%Y-%m-%d")
             } for ref in cite.references ]
-    config['citation'] = citation
+
     config['endpoints'] = {
-        'updateCitation': url_for('dataserv.update_citation', citeId=citeId),
-        'createCitation': url_for('dataserv.create_citation'),
+        'updateCitation': url_for('dataserv.create_or_update_citation', citeId=citeId),
+        'createCitation': url_for('dataserv.create_or_update_citation', citeId=None),
         'newReference': url_for('editor.edit_reference',
             citeId=citeId, refId='new'),
         'deleteReference': url_for('dataserv.delete_citation_reference',
             citeId=citeId, refId=None)
     }
-    return render_template('editor/citation.html', page_config=config)
+    return render_template('editor/citation.html', config=config)
 
 
 @editor.route('/citations/<citeId>/references/<refId>')

@@ -22,72 +22,20 @@ def stamp_edit(user, ref):
     db.session.commit()
 
 
-@dataserv.route('/documents/', methods=['GET'])
-@dataserv.route('/documents/<docId>', methods=['GET'])
-def read_document_data(docId=None):
-    data = { 'doc': {} }
-    included = [ 'Book', 'Book Section', 'Document', 'Interview',
-        'Journal Article', 'Magazine Article', 'Manuscript',
-        'Newspaper Article', 'Thesis', 'Webpage' ]
-    ct = models.CitationType.query.filter(
-        models.CitationType.name.in_(included)).all()
-    data['doc_types'] = [ { 'id': c.id, 'name': c.name } for c in ct ]
-    if docId == None:
-        return jsonify(data)
-    doc = models.Citation.query.get(docId)
-    data['doc']['id'] = doc.id
-    data['doc']['citation'] = doc.display
-    # data['doc']['zotero_id'] = doc.zotero_id   
-    data['doc']['comments'] = doc.comments
-    data['doc']['acknowledgements'] = doc.acknowledgements
-    data['doc']['citation_type_id'] = doc.citation_type_id
-    data['doc']['fields'] = { f.field.name: f.field_data for f in doc.citation_data }
-    return jsonify(data)
-
-
 @dataserv.route('/citations/', methods=['POST'])
-def create_citation():
-    data = request.get_json()
-    unspec = models.CitationType.query.filter_by(name='Document').first()
-    data['citation_type_id'] = data['citation_type_id'] or unspec.id
-    cite = models.Citation(citation_type_id=data['citation_type_id'],
-        comments=data['comments'], acknowledgements=data['acknowledgements'])
-    db.session.add(cite)
-    db.session.commit()
-    field_order_map = { f.zotero_field.name: f.rank
-        for f in cite.citation_type.zotero_type.template_fields }
-    citation_display = []
-    for field, val in data['fields'].items():
-        if val == '':
-            continue
-        zfield = models.ZoteroField.query.filter_by(name=field).first()
-        cfield = models.CitationField(citation_id=cite.id,
-            field_id=zfield.id, field_data=val)
-        citation_display.append( (field_order_map[zfield.name], val) )
-        db.session.add(cfield)
-    if len(citation_display) == 0:
-        now = dt.datetime.utcnow()
-        cite.display = 'Document :: {}'.format(now.strftime('%Y %B %d'))
-    else:
-        vals = [ v[1] for v in sorted(citation_display) ]
-        cite.display = ' '.join(vals)
-    db.session.add(cite)
-    db.session.commit()
-    return jsonify(
-        { 'redirect': url_for('edit_citation', citeId=cite.id) })
-
-
-@dataserv.route('/citations/', methods=['PUT'])
 @dataserv.route('/citations/<citeId>', methods=['PUT'])
-def update_citation(citeId):
+def create_or_update_citation(citeId):
+    if request.method == 'POST':
+        cite = models.Citation()
+    else:
+        cite = models.Citation.query.get(refId)
+
     data = request.get_json()
-    if citeId is None:
-        return jsonify({})
-    unspec = models.CitationType.query.filter_by(name='Document').first()
-    data['citation_type_id'] = int(data['citation_type']) or unspec.id
-    cite = models.Citation.query.get(citeId)
-    cite.citation_type_id = data['citation_type']
-    # doc.zotero_id = data['zotero_id']
+    if not data['citation_type']['name']:
+        cite.citation_type = models.CitationType.get_default()
+    else:
+        cite.citation_type = models.CitationType.query.filter_by(
+            name=data['citation_type']['name'] ).first()
     cite.comments = data['comments']
     cite.acknowledgements = data['acknowledgements']
     field_order_map = { f.zotero_field.name: f.rank
@@ -117,50 +65,7 @@ def update_citation(citeId):
     db.session.add(cite)
     db.session.commit()
 
-    citation = {
-        'citation_id': cite.id,
-        'display': cite.display,
-        'acknowledgements': cite.acknowledgements,
-        'comments': cite.comments,
-        'citation_type': cite.citation_type.id,
-        'citation_fields': [ { 'name': f.field.name, 'value': f.field_data }
-            for f in cite.citation_data ]
-    }
-    return jsonify({ 'citation': citation })
-
-
-@dataserv.route('/records/', methods=['GET'])
-@dataserv.route('/records/<recId>', methods=['GET'])
-def read_record_data(recId=None):
-    data = { 'rec': {}, 'entrants': [] }
-    if recId == None:
-        return jsonify(data)
-    rec = models.Reference.query.get(recId)
-    data['rec']['id'] = rec.id
-    data['rec']['date'] = None
-    if rec.date:
-        data['rec']['date'] = '{}/{}/{}'.format(rec.date.month,
-            rec.date.day, rec.date.year)
-    data['rec']['locations'] = [ 
-        { 'label':l.location.name, 'value':l.location.name,
-            'id': l.location.id } for l in rec.locations ]
-    data['rec']['transcription'] = rec.transcription
-    data['rec']['national_context'] = rec.national_context_id
-    data['rec']['record_type'] = {'label': rec.reference_type.name,
-        'value': rec.reference_type.name, 'id':rec.reference_type.id }
-    data['entrants'] = [ 
-        {
-            'name_id': ent.primary_name.id,
-            'first': ent.primary_name.first,
-            'last': ent.primary_name.last,
-            'id': ent.id,
-            'person_id': ent.person_id,
-            'roles': [ role.id for role in ent.roles ]
-        }
-            for ent in rec.referents ]
-    data['rec']['header'] = '{}'.format(
-        rec.reference_type.name or '').strip()
-    return jsonify(data)
+    return jsonify({ 'citation': citation.to_dict() })
 
 
 @dataserv.route('/entrants/', methods=['GET'])
@@ -208,8 +113,11 @@ def create_or_update_reference(refId=None):
 
     data = request.get_json()
     ref.citation_id = data['citation']['id']
-    ref.reference_type = models.ReferenceType.get_or_create(
-        name=data['reference_type']['name'] )
+    if not data['reference_type']['name']:
+        ref.reference_type = models.ReferenceType.get_default()
+    else:
+        ref.reference_type = models.ReferenceType.get_or_create(
+            name=data['reference_type']['name'] )
     ref.national_context_id = data['national_context']['id']
     ref.transcription = data['transcription']
     ref.locations = [ models.ReferenceLocation(

@@ -91,7 +91,7 @@ th.ref-date-col {
 {% block content %}
 <div class="container">
   <div id="citation_page" class="disa-app"
-      data-citation-id="{{ page_config['citation']['citation_id'] }}">
+      data-citation-id="{{ config['data']['citation']['id'] }}">
     <div class="row">
       <div class="col-md-11">
         <div class="row">
@@ -127,7 +127,7 @@ th.ref-date-col {
                     <em class="small text-muted">Select the document type that most clearly describes the document you're adding</em>
                   </label>
                   <select id="citation_type_selector" class="form-control">
-                    {% for ctype in page_config.citation_types %}
+                    {% for ctype in config.citation_types %}
                     <option value="{{ ctype.id }}">{{ ctype.name }}</option>
                     {% endfor %}
                   </select>
@@ -213,7 +213,7 @@ th.ref-date-col {
     </div>
     <div class="row">
       <a id="new_reference" class="btn btn-primary"
-        href="{{page_config['endpoints']['newReference']}}">Add an item</a>
+        href="{{config['endpoints']['newReference']}}">Add an item</a>
     </div>
   </div>
   <div id="config" hidden>
@@ -232,11 +232,11 @@ th.ref-date-col {
       {% endfor %}
     </ul>
     <ul id="data_endpoints">
-      {% for ep, url in page_config['endpoints'].items() %}
+      {% for ep, url in config['endpoints'].items() %}
         <li class="endpoint" data-name="{{ ep }}" data-url="{{ url }}"></li>
       {% endfor %}
     </ul>
-    <p id="config_data_json" data-json='{{ page_config|tojson|safe }}'></p>
+    <p id="config_data_json" data-json='{{ config|tojson|safe }}'></p>
   </div>
 </div>
 {% endblock %}

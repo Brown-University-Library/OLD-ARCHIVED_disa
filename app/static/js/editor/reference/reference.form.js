@@ -54,6 +54,10 @@ class AutoCompleteInput {
   read() {
     return this._state ;
   }
+
+  clear() {
+    this._state = { 'id': '', 'name': '' };
+  }
 }
 
 class RichTextInput {
@@ -140,6 +144,13 @@ class DateSelect {
     this._$year.val(data.year);
     this._$text.val(data.date_text);
   }
+
+  clear() {
+    this._$day.val(0);
+    this._$month.val(0);
+    this._$year.val(0);
+    this._$text.val('');
+  }
 }
 
 class ReferenceForm extends Control {
@@ -222,6 +233,7 @@ class ReferenceForm extends Control {
   }
 
   activate(refState) {
+    this.load(refState);
     if ( refState.isNew() ) {
       this._$discard_btn.removeClass('hidden');
       this._$cancel_btn.addClass('hidden');
@@ -236,8 +248,9 @@ class ReferenceForm extends Control {
     this._$root.addClass('hidden');
   }
 
-  reset() {
-    this.load(this._app.getReference());
+  clear() {
+
+    this.load(refState);
     this.deactivate();
   }
 

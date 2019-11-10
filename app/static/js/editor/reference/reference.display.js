@@ -59,7 +59,7 @@ class ReferenceDisplay extends Control {
     };
   }
 
-  loadReferenceData(fieldData) {
+  displayFieldData(fieldData) {
     this._$data_display.empty();
     for (const field in fieldData) {
       let $data_elem = this._$templates.display_data.clone();
@@ -73,8 +73,9 @@ class ReferenceDisplay extends Control {
     }
   }
 
-  show() {
-    this.loadReferenceData(this._field_data);
+  show(refState) {
+    this.load(refState);
+    this.displayFieldData(this._field_data);
     this._$existing_header.text(this._header_text);
     this._$root.removeClass('hidden');
   }
