@@ -23,13 +23,11 @@ class AutoCompleteInput {
         delay: settings.delay,
         autoFocus: settings.autoFocus,
         response: function (event, ui) {
-          if (ui.content.length == 0) {
-            ui.content.push({
-              label: cmpt._$input.val(),
-              value: cmpt._$input.val(),
-              id: 'new'
-            });
-          }
+          ui.content.unshift({
+            'label': cmpt._$input.val(),
+            'value': cmpt._$input.val(),
+            'id': 'new'
+          });
         },
         change: function (event, ui) {
           let data = { 'id': '', 'name': ''};
