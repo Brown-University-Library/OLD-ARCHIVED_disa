@@ -659,7 +659,8 @@ def person_index():
     people = []
     for (prsn, rfrnt) in db.session.query(models.Person, models.Referent).filter(models.Person.id==models.Referent.id).all():
         gender = rfrnt.sex
-        temp_str = f'gender, `{gender}`'
+        age = rfrnt.age
+        temp_str = f'age, `{age}`; gender, `{gender}`'
         prsn.last_name = f'{prsn.last_name} ({temp_str})'
         people.append( prsn )
 
