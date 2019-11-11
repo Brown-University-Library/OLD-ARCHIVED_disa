@@ -644,7 +644,7 @@ def person_index():
             break
         person.gender = gender
         temp_str = f'race, `{races}`; gender, `{gender}`'
-        person.last_name = f'{person.last_name} -- {temp_str}'
+        person.last_name = f'{person.last_name} ({temp_str})'
         log.debug( f'person.__dict__ finally, ```{person.__dict__}```' )
         people.append( person )
         # break
