@@ -619,10 +619,35 @@ def parse_person_descriptors(personObj, descField):
     out = ', '.join(list(vals))
     return out if out else 'None'
 
+# @app.route('/people/')
+# def person_index():
+#     log.debug( 'starting people' )
+#     people = [ p for p in models.Person.query.all() if p.references != [] ]
+#     return render_template('person_index.html', people=people)
+
 @app.route('/people/')
 def person_index():
     log.debug( 'starting people' )
-    people = [ p for p in models.Person.query.all() if p.references != [] ]
+    # people = [ p for p in models.Person.query.all() if p.references != [] ]
+    people = []
+    all_people = models.Person.query.all()
+    # people = all_people[1:]
+    for person in all_people:
+        log.debug( f'person.__dict__ initially, ```{person.__dict__}```' )
+        races = parse_person_descriptors(person, 'races')
+        log.debug( f'races, ```{races}```' )
+        person.races = races
+        log.debug( f'person.__dict__ now, ```{person.__dict__}```' )
+        gender = None
+        for ref in person.references:
+            gender = ref.sex
+            break
+        person.gender = gender
+        temp_str = f'race, `{races}`; gender, `{gender}`'
+        person.last_name = f'{person.last_name} -- {temp_str}'
+        log.debug( f'person.__dict__ finally, ```{person.__dict__}```' )
+        people.append( person )
+        # break
     return render_template('person_index.html', people=people)
 
 @app.route('/people/<persId>')
