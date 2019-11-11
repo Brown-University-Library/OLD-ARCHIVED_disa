@@ -650,45 +650,47 @@ def parse_person_descriptors(personObj, descField):
 #         # break
 #     return render_template('person_index.html', people=people)
 
+# @app.route('/people/')
+# def person_index():
+#     log.debug( 'starting people' )
+#     people = []
+#     for (prsn, rfrnt) in db.session.query(models.Person, models.Referent).filter(models.Person.id==models.Referent.id).all():
+#         gender = rfrnt.sex
+#         age = rfrnt.age
+#         temp_str = f'age, `{age}`; gender, `{gender}`'
+#         prsn.last_name = f'{prsn.last_name} ({temp_str})'
+#         people.append( prsn )
+#     ps = people[0:2]
+#     log.debug( f'ps, ```{ps}```' )
+#     p = people[1]
+#     log.debug( f'p.__dict__, ```{p.__dict__}```' )
+#     return render_template('person_index.html', people=people)
+
 @app.route('/people/')
 def person_index():
     log.debug( 'starting people' )
-
-    # people = db.session.query(models.Person).join(models.Referent).filter(models.Referent.id==models.Person.id).all()  # only returns Person
-
     people = []
+    refs = []
     for (prsn, rfrnt) in db.session.query(models.Person, models.Referent).filter(models.Person.id==models.Referent.id).all():
         gender = rfrnt.sex
         age = rfrnt.age
-        temp_str = f'age, `{age}`; gender, `{gender}`'
+        race = None
+        try:
+            race = rfrnt.races[0].name
+        except:
+            log.exception( 'well, that did not work!' )
+        # temp_str = f'age, `{age}`; gender, `{gender}`'
+        temp_str = f'age, `{age}`; gender, `{gender}`; race, `{race}`'
         prsn.last_name = f'{prsn.last_name} ({temp_str})'
         people.append( prsn )
-
-    ps = people[0:2]
-    log.debug( f'ps, ```{ps}```' )
+        refs.append( rfrnt )
     p = people[1]
     log.debug( f'p.__dict__, ```{p.__dict__}```' )
-
-    # people = []
-    # all_people = models.Person.query.all()
-    # # people = all_people[1:]
-    # for person in all_people:
-    #     log.debug( f'person.__dict__ initially, ```{person.__dict__}```' )
-    #     races = parse_person_descriptors(person, 'races')
-    #     log.debug( f'races, ```{races}```' )
-    #     person.races = races
-    #     log.debug( f'person.__dict__ now, ```{person.__dict__}```' )
-    #     gender = None
-    #     for ref in person.references:
-    #         gender = ref.sex
-    #         break
-    #     person.gender = gender
-    #     temp_str = f'race, `{races}`; gender, `{gender}`'
-    #     person.last_name = f'{person.last_name} ({temp_str})'
-    #     log.debug( f'person.__dict__ finally, ```{person.__dict__}```' )
-    #     people.append( person )
-    #     # break
+    r = refs[1]
+    log.debug( f'r.__dict__, ```{r.__dict__}```' )
+    log.debug( f'race, r.races[0].__dict__, ```{r.races[0].__dict__}```' )
     return render_template('person_index.html', people=people)
+
 
 @app.route('/people/<persId>')
 def get_person(persId):
