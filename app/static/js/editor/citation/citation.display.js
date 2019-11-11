@@ -22,20 +22,21 @@ class CitationDisplay extends Control {
     }
   }
 
-  show(citation) {
-    if (citation.citation_id === 'new') {
+  show(citeState) {
+    if ( citeState.isNew() ) {
       this._$new_header.removeClass('hidden');
       this._$existing_header.addClass('hidden');
       this._$data_display.addClass('hidden');
     } else {
-      let citation_data = citation.citation_fields.slice(0);
-      citation_data.push(
-        {'name': 'Comments', 'value': citation.comments });
-      citation_data.push(
-        {'name': 'Acknowledgements', 'value': citation.acknowledgements });
-      this.displayCitationData(citation_data);
+      let field_data = citeState.getCitationFields();
+      field_data.push(
+        {'name': 'Comments', 'value': citeState.getComments() });
+      field_data.push(
+        {'name': 'Acknowledgements', 'value': citeState.getAcknowledgements() });
+      this.displayCitationData(field_data);
+      this._$existing_header.text( citeState.getDisplayText() );
+
       this._$new_header.addClass('hidden');
-      this._$existing_header.text(citation.display);
       this._$existing_header.removeClass('hidden');
       this._$data_display.removeClass('hidden');      
     }

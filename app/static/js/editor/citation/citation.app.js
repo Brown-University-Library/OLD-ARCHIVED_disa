@@ -1,54 +1,168 @@
+class CitationState extends State {
+
+  constructor() {
+    super();
+    this._slots = ['id', 'display', 'acknowledgements',
+      'comments', 'citation_type', 'citation_fields'];
+  }
+
+  update(data) {
+    super.update(data);
+    this._citation_field_name_map = {};
+    for (let field_data of this.get('citation_fields') ) {
+      this._citation_field_name_map[ field_data.name ] = field_data.value;
+    }
+  }
+
+  getId() {
+    return this.get('id');
+  }
+
+  getCitationType() {
+    return this.get('citation_type');
+  }
+
+  getCitationFields() {
+    return this.get('citation_fields').slice(0);
+  }
+
+  getComments() {
+    return this.get('comment');
+  }
+
+  getAcknowledgements() {
+    return this.get('getAcknowledgements');
+  }
+
+  getDisplayText() {
+    return this.get('display');
+  }
+
+  getCitationTypeId() {
+    return this.get('citation_type').id;
+  }
+
+  getCitationFieldNames() {
+    return Object.keys(this._citation_field_name_map);
+  }
+
+  getFieldValueByName( name ) {
+    return this._citation_field_name_map[ name ];
+  }
+
+  isNew() {
+    return (this.get('id') === 'new');
+  }
+
+  copy() {
+    let data = {};
+    let dupe = new CitationState();
+    for (const slot of this._slots) {
+      data[ slot ] = this.get( slot );
+    }
+    dupe.update(data);
+    return dupe;
+  }
+
+  modifyCitationType( cType ) {
+    let state_copy = this.copy();
+    state_copy.set('citation_type', {'id': cType, 'name': ''});
+    return state_copy;
+  }
+}
+
+class ReferenceState extends State {
+
+  constructor() {
+    super();
+    this._slots = ['id', 'reference_type',
+      'link', 'last_edit'];
+  }
+
+  getId() {
+    return this.get('id');
+  }
+
+  getLink() {
+    return this.get('link');
+  }
+
+  getReferenceType() {
+    return this.get('reference_type');
+  }
+
+  getLastEdit() {
+    return this.get('last_edit');
+  }
+}
+
 class CitationApp {
 
   constructor($elem, config, source, cDisplay, cForm, refCtrl) {
     this._$root = $elem;
     this._source = source;
-    this._data = config._data;
+    this._configuration = config;
+    this._citation_state = new CitationState();
+    this._references_state = [];
     this._$edit_cite = $elem.find('#edit_citation');
     this._$new_ref = $elem.find('#new_reference');
-    this.citation_id = $elem.attr('data-citation-id');
     this._cite_display = cDisplay;
     this._cite_form = cForm;
     this._ref_ctrl = refCtrl;
 
     this.setEvents();
-    this.load();
+    this.load(config.get('data'));
   }
 
   getCitation() {
     return this._citation_state;
   }
 
+  getReferences() {
+    return this._references_state;
+  }
+
   setCitation(data) {
     this._citation_state.update(data);
-    this._cite_display.load( this.getCitation() );
-    this._cite_form.load( this.getCitation() );
+    // this._cite_display.load( this.getCitation() );
+    // this._cite_form.load( this.getCitation() );
+  }
+
+  setReferences(data) {
+    this._references_state = [];
+    for (const ref_data of data) {
+      let ref = new ReferenceState();
+      ref.update(ref_data);
+      this._references_state.push(ref);
+    }
+    this._ref_ctrl.load( this.getReferences() );
   }
 
   load(data) {
-    this._data = data || this._data;
-    this._cite_display.show(this._data.citation);
-    this._cite_form.load(this._data.citation);
-    this._ref_ctrl.load(this._data.references);
-    if (this.citation_id === 'new') {
-      this._$edit_cite.addClass('hidden');
-      this._$new_ref.addClass('hidden');
-      this._cite_form.activate();
-      this._ref_ctrl.hide();
+    this.setCitation( data.citation );
+    this.setReferences( data.references );
+
+    if ( this.getCitation().isNew() ) {
+      this.editCitation();
     } else {
-      this._$edit_cite.removeClass('hidden');
-      this._$new_ref.removeClass('hidden');
-      this._cite_form.deactivate();
-      this._ref_ctrl.show();
+      this.displayCitation();
     }
   }
 
   editCitation() {
+    this._cite_form.activate( this.getCitation() );
     this._cite_display.hide();
-    this._cite_form.activate();
     this._ref_ctrl.hide();
     this._$edit_cite.addClass('hidden');
     this._$new_ref.addClass('hidden');
+  }
+
+  displayCitation() {
+    this._cite_display.show( this.getCitation() );
+    this._ref_ctrl.show( this.getReferences().length );
+    this._cite_form.deactivate();
+    this._$edit_cite.removeClass('hidden');
+    this._$new_ref.removeClass('hidden');
   }
 
   saveCitation() {
@@ -58,7 +172,7 @@ class CitationApp {
     //   this.loadCitation(this.data.citation);
     // } 
     data = this._cite_form.read();
-    if (this.citation_id === 'new') {
+    if ( this.getCitation().isNew() ) {
       this._source.createNewCitation(data);
     } else {
       this._source.updateCitation(data);
@@ -66,24 +180,13 @@ class CitationApp {
   }
 
   citationSaved(data) {
-    this._data.citation = data.citation; 
-    if (this.citation_id === 'new') {
-      this.citation_id = data.citation_id;
-    }
-    this.resetCitation();
-  }
-
-  resetCitation() {
-    this._cite_display.show(this._data.citation);
-    this._cite_form.deactivate();
-    this._cite_form.load(this._data.citation);
-    this._$edit_cite.removeClass('hidden');
-    this._$new_ref.removeClass('hidden');
-    this._ref_ctrl.show();
+    this.setCitation(data);
+    this.displayCitation();
   }
 
   changeCitationType(cType) {
-    this._cite_form.changeCitationType(cType);
+    this._cite_form.changeCitationType(
+      this.getCitation().modifyCitationType(cType) );
   }
 
   editReference(refId) {
@@ -97,13 +200,14 @@ class CitationApp {
   }
 
   referenceDeleted(data) {
-    this._ref_ctrl.load(data.references);
+    this.setReferences(data);
+    this._ref_ctrl.show( this.getReferences() );
     this._$edit_cite.prop('disabled', false);
     this._$new_ref.removeClass('disabled');
   }
 
   resetReferences() {
-    this._ref_ctrl.activate();
+    this._ref_ctrl.activateReferences();
     this._$edit_cite.prop('disabled', false);
     this._$new_ref.removeClass('disabled');
   }

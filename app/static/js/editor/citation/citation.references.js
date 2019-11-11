@@ -1,6 +1,6 @@
 class Reference {
 
-  constructor($elem, refData) {
+  constructor($elem, refState) {
     this._$root = $elem;
     this._$ref_id = $elem.find('.reference-id');
     this._$ref_link = $elem.find('.reference-link');
@@ -9,15 +9,16 @@ class Reference {
     this._$ref_cancel = $elem.find('.cancel-delete-reference');
     this._$ref_confirm = $elem.find('.confirm-delete-reference');
     
-    this._$ref_id.text(refData.id);
-    this._$ref_link.attr('href', refData.link)
-      .text(refData.reference_type);
-    this._$ref_edited.text(refData.last_edit);
-    this._$root.attr('data-reference-id', refData.id);
+    this._$ref_id.text( refState.getId() );
+    this._$ref_link.attr( 'href', refState.getLink() )
+      .text( refState.getReferenceType() );
+    this._$ref_edited.text( refState.getLastEdit() );
+    this._$root.attr( 'data-reference-id', refState.getId() );
     this.reset();
   }
 
   enable() {
+    this._$ref_link.addClass('disabled');
     this._$ref_cancel.removeClass('control-hide');
     this._$ref_confirm.removeClass('control-hide');
     this._$ref_delete.prop('disabled', false);
@@ -25,6 +26,7 @@ class Reference {
   }
 
   disable() {
+    this._$ref_link.addClass('disabled');
     this._$ref_cancel.addClass('control-hide');
     this._$ref_confirm.addClass('control-hide');
     this._$ref_delete.prop('disabled', true);
@@ -32,6 +34,7 @@ class Reference {
   }
 
   reset() {
+    this._$ref_link.removeClass('disabled');
     this._$ref_cancel.addClass('control-hide');
     this._$ref_confirm.addClass('control-hide');
     this._$ref_delete.prop('disabled', false);
@@ -59,52 +62,42 @@ class ReferenceControl extends Control {
     this.setEvents();
   }
 
-  load(data) {
-    this._data = data;
-    if (data.length === 0) {
+  load(refStateArray) {
+    // this._$ref_list.empty();
+    this._reference_map = {};
+    for ( const refState of refStateArray ) {
+      let $ref = this._$templates.reference_row.clone();
+      let reference = new Reference($ref, refState);
+      this._reference_map[ refState.getId() ] = reference;
+      this._$ref_list.append($ref);;
+    }
+  }
+
+  removeReference(refId) {
+    this._reference_map[ refId ].delete();
+    delete this._reference_map[ refId ];
+  }
+
+  activateReference(refId) {
+    for (const mapped_id in this._reference_map) {
+      if (mapped_id === refId) {
+        this._reference_map[ mapped_id ].enable();
+      } else {
+        this._reference_map[ mapped_id ].disable();
+      }
+    }
+  }
+
+  show(numRefs) {
+    if ( numRefs < 1 ) {
       this._$empty_display.prop('hidden', false);
       this._$ref_list.prop('hidden', true);
       this._$ref_head.prop('hidden', true);
     } else {
-      this._$ref_list.empty();
       this._$empty_display.prop('hidden', true);
       this._$ref_list.prop('hidden', false);
       this._$ref_head.prop('hidden', false);
-      for (const ref of data) {
-        this.addReference(ref);
-      }
     }
-  }
-
-  addReference(refData) {
-    let $ref = this._$templates.reference_row.clone();
-    let reference = new Reference($ref, refData);
-    this._reference_map[refData.id] = reference;
-    this._$ref_list.append($ref);
-  }
-
-  removeReference(refId) {
-    this._reference_map[refId].delete();
-    delete this._reference_map[refId];
-    for (var i=0; i < this._data.length;i++) {
-      if (this.data[i].id === refId) {
-        this._data.splice(i, 1);
-        break;
-      }
-    }
-  }
-
-  activateReference(refId) {
-    for (const ref in this._reference_map) {
-      if (ref === refId) {
-        this._reference_map[ref].enable();
-      } else {
-        this._reference_map[ref].disable();
-      }
-    }
-  }
-
-  show() {
     this._$root.prop('hidden',false);
   }
 
@@ -112,15 +105,15 @@ class ReferenceControl extends Control {
     this._$root.prop('hidden',true);
   }
 
-  activate() {
-    for (const ref in this._reference_map) {
-      this._reference_map[ref].reset();
+  activateReferences() {
+    for (const mapped_id in this._reference_map) {
+      this._reference_map[ mapped_id ].reset();
     }
   }
 
   deactivate() {
-    for (const ref in this._reference_map) {
-      this._reference_map[ref].disable();
+    for (const mapped_id in this._reference_map) {
+      this._reference_map[ mapped_id ].disable();
     }
   }
 

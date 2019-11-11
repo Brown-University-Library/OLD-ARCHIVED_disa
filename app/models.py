@@ -122,7 +122,7 @@ class Citation(db.Model):
 
     def to_dict(self=None):
         data = {
-            'citation_id': NEW_ID,
+            'id': NEW_ID,
             'display': '',
             'acknowledgements': '',
             'comments': '',
@@ -130,7 +130,7 @@ class Citation(db.Model):
             'citation_fields': []
         }
         if self:
-            data['citation_id'] = self.id
+            data['id'] = self.id
             data['display'] = self.display
             data['comments'] = self.comments
             data['acknowledgements'] = self.acknowledgements

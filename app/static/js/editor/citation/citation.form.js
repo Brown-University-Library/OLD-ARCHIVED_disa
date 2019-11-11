@@ -15,6 +15,10 @@ class CitationField {
     return this._$input.val();
   }
 
+  read() {
+    return {'name': this.getName(), 'value': this.getInput() };
+  }
+
   setInput(data) {
     this._$input.val(data);
   }
@@ -36,50 +40,48 @@ class CitationFieldManager {
     this._field_map = {};
   }
 
-  setFieldTypeMap(data) {
-    this._field_type_map = data;
+  setFieldTypeMap(config) {
+    this._field_type_map = config;
   }
 
-  load(data) {
-    this._data = data;
-    this.loadFields();
-    this.loadFieldData();
+  load(citeState) {
+    this.loadFields( citeState );
+    this.loadFieldData( citeState );
   }
 
-  loadFields(typeFields) {
+  loadFields(citeState) {
     this._field_map = {};
     this._$field_list.empty();
 
-    this._$type_selector.val(this._data.citation_type);
-    for (const field of this._field_type_map[this._data.citation_type] ) {
+    this._$type_selector.val( citeState.getCitationTypeId() );
+    for (const field of this._field_type_map[ citeState.getCitationTypeId() ] ) {
       let $field = this._$field_template.clone();
       let citation_field = new CitationField($field, field);
       this._$field_list.append($field);
-      this._field_map[field.name] = citation_field;
+      this._field_map[ field.name ] = citation_field;
     }
   }
 
-  loadFieldData() {
-    for (const field of this._data.citation_fields) {
-      if (field.name in this._field_map) {
-        this._field_map[field.name].setInput(field.value);
+  loadFieldData(citeState) {
+    for ( const name of citeState.getCitationFieldNames() ) {
+      if ( name in this._field_map ) {
+        this._field_map[ name ].setInput( citeState.getFieldValueByName(name) );
       }
     }
   }
 
   read() {
-    this._data.citation_type = this._$type_selector.val();
-
-    this._data.citation_fields = [];
+    let data = {
+      'citation_type': this._$type_selector.val(),
+      'citation_fields': []
+    };
     for (const field_name in this._field_map) {
       let cfield = this._field_map[field_name];
       if (!cfield.isEmpty()) {
-        this._data.citation_fields.push(
-          {'name': cfield.getName(), 'value': cfield.getInput()});
+        data.citation_fields.push( cfield.read() );
       }
     }
-
-    return this._data;
+    return data;
   }
 }
 
@@ -106,35 +108,27 @@ class CitationForm extends Control {
     this._cmgmt.setFieldTypeMap(config.get('citationtype_fields'));
   }
 
-  load(data) {
-    this._data = data;
-    this._$cmmt.val(data.comments);
-    this._$ackn.val(data.acknowledgements);
-    this._cmgmt.load({
-      'citation_type': data.citation_type,
-      'citation_fields': data.citation_fields
-    });
+  load(citeState) {
+    this._$cmmt.val(citeState.getComments());
+    this._$ackn.val(citeState.getAcknowledgements());
+    this._cmgmt.load( citeState );
   }
 
-  changeCitationType(cType) {
-    this._cmgmt.load({
-      'citation_type': cType,
-      'citation_fields': this._data.citation_fields
-    });
+  changeCitationType( citeState ) {
+    this._cmgmt.load( citeState );
   }
 
   read() {
-    let cdata = this._cmgmt.read();
-    this._data.citation_type = cdata.citation_type;
-    this._data.citation_fields = cdata.citation_fields;
-    this._data.comments = this._$cmmt.val();
-    this._data.acknowledgements = this._$ackn.val();
+    let data = this._cmgmt.read();
+    data.comments = this._$cmmt.val();
+    data.acknowledgements = this._$ackn.val();
 
-    return this._data;
+    return data;
   }
 
-  activate() {
-    if (this._data.citation_id === 'new') {
+  activate( citeState ) {
+    this.load( citeState );
+    if ( citeState.isNew() ) {
       this._$discard_btn.removeClass('hidden');
       this._$cancel_btn.addClass('hidden');
     } else {
@@ -146,11 +140,6 @@ class CitationForm extends Control {
 
   deactivate() {
     this._$root.addClass('hidden');
-  }
-
-  reset() {
-    this.load(this._data);
-    this.deactivate();
   }
 
   setEvents() {
@@ -165,7 +154,7 @@ class CitationForm extends Control {
           cmp._app.saveCitation();
           break;
         case $btn.hasClass('cancel-edit-citation'):
-          cmp._app.resetCitation();
+          cmp._app.displayCitation();
           break;
         default:
           return;

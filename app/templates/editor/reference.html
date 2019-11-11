@@ -295,9 +295,11 @@ th.rnt-desc-col {
     }
 
     let config = new Config($('#config'));
-    let source = new ReferenceSource($('#data_endpoints'), $('#csrf_token'));    
+    let source = new ReferenceSource($('#data_endpoints'), $('#csrf_token'));
+
     let ref_display = new ReferenceDisplay($('#reference_display'));
     ref_display.configure(config);
+
     let ref_form = new ReferenceForm($('#reference_form'));
     ref_form.configure(config,
         jqui_autocomplete_settings, tinymce_settings);
