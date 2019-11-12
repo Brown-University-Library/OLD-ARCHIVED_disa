@@ -98,12 +98,15 @@ th.ref-date-col {
           <div class="col-md-12">
             <div id="citation_display" class="hidden">
               <div class="row">
-                <h1 id="citation_display_header">
-                  <span id="display_header_new" style="font-size: 50%">
-                    <em>Fill out this form only when entering a document for the first time. If your document has been already entered, find your document in the <a href="/editor">recent document list</a> and add an item.</em>
-                  </span>
-                  <span id="display_header_existing"></span>
-                </h1>
+                <div id="citation_display_header">
+                  <div id="display_header_new">
+                    <h2>Add a citation</h2>
+                    <div class="alert alert-primary" style="font-size: 50%">
+                      <em>Fill out this form only when entering a citation for the first time. If your citation has been already entered, find your citation in the <a href="/editor">recent citation list</a> and add an item.</em>
+                    </div>
+                  </div>
+                  <h2 id="display_header_existing"></h2>
+                </div>
               </div>
               <div class="row">
                 <dl id="citation_display_data">
@@ -123,8 +126,8 @@ th.ref-date-col {
             <div class='col-md-12'>
               <div id="citation_field_mgmt">
                 <div class="form-group row">
-                  <label>Document type<br />
-                    <em class="small text-muted">Select the document type that most clearly describes the document you're adding</em>
+                  <label>Citation type<br />
+                    <em class="small text-muted">Select the citation type that most clearly describes the citation you're adding</em>
                   </label>
                   <select id="citation_type_selector" class="form-control">
                     {% for ctype in config.citation_types %}

@@ -24,18 +24,18 @@ def stamp_edit(user, ref):
 
 @dataserv.route('/citations/', methods=['POST'])
 @dataserv.route('/citations/<citeId>', methods=['PUT'])
-def create_or_update_citation(citeId):
+def create_or_update_citation(citeId=None):
     if request.method == 'POST':
         cite = models.Citation()
     else:
-        cite = models.Citation.query.get(refId)
+        cite = models.Citation.query.get(citeId)
 
     data = request.get_json()
-    if not data['citation_type']['name']:
+    if not data['citation_type']['id']:
         cite.citation_type = models.CitationType.get_default()
     else:
-        cite.citation_type = models.CitationType.query.filter_by(
-            name=data['citation_type']['name'] ).first()
+        cite.citation_type = models.CitationType.query.get(
+            data['citation_type']['id'])
     cite.comments = data['comments']
     cite.acknowledgements = data['acknowledgements']
     field_order_map = { f.zotero_field.name: f.rank
@@ -65,7 +65,9 @@ def create_or_update_citation(citeId):
     db.session.add(cite)
     db.session.commit()
 
-    return jsonify({ 'citation': citation.to_dict() })
+    if request.method == 'POST' or citeId is None:
+        return jsonify( { 'url': url_for('editor.edit_citation', citeId=cite.id) } )
+    return jsonify({ 'citation': cite.to_dict() })
 
 
 @dataserv.route('/entrants/', methods=['GET'])
@@ -118,7 +120,11 @@ def create_or_update_reference(refId=None):
     else:
         ref.reference_type = models.ReferenceType.get_or_create(
             name=data['reference_type']['name'] )
-    ref.national_context_id = data['national_context']['id']
+    if not data['national_context']['id']:
+        ref.national_context = models.NationalContext.get_default()
+    else:
+        ref.national_context = models.NationalContext.query.get(
+            data['national_context']['id'] )
     ref.transcription = data['transcription']
     ref.locations = [ models.ReferenceLocation(
         location=models.Location.get_or_create( name=loc['name'] ),
@@ -139,6 +145,9 @@ def create_or_update_reference(refId=None):
     db.session.commit()
 
     stamp_edit(current_user, ref)
+    if request.method == 'POST' or refId is None:
+        return jsonify( { 'url': url_for('editor.edit_reference',
+            citeId=ref.citation_id, refId=ref.id) } )
     return jsonify({ 'reference': ref.to_dict() })
 
 

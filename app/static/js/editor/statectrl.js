@@ -100,7 +100,11 @@ class Source {
       url: endpoint,
       context: this,
       success: function( data ) {
-        this._app[callback]( data );
+        if ( callback === 'redirect' ) {
+          this.redirect( data );
+        } else {
+          this._app[callback]( data );
+        }
       }
     };
 
@@ -109,5 +113,9 @@ class Source {
       settings.data = JSON.stringify(payload);
     }
     $.ajax(settings);
+  }
+
+  redirect( data ) {
+    location.href = data.url;
   }
 }

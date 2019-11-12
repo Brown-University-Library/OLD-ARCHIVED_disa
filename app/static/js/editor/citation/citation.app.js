@@ -27,11 +27,11 @@ class CitationState extends State {
   }
 
   getComments() {
-    return this.get('comment');
+    return this.get('comments');
   }
 
   getAcknowledgements() {
-    return this.get('getAcknowledgements');
+    return this.get('acknowledgements');
   }
 
   getDisplayText() {
@@ -150,6 +150,7 @@ class CitationApp {
   }
 
   editCitation() {
+    this._cite_display.show( this.getCitation() );
     this._cite_form.activate( this.getCitation() );
     this._cite_display.hide();
     this._ref_ctrl.hide();
@@ -172,15 +173,16 @@ class CitationApp {
     //   this.loadCitation(this.data.citation);
     // } 
     data = this._cite_form.read();
+    data.id = this.getCitation().getId();
     if ( this.getCitation().isNew() ) {
-      this._source.createNewCitation(data);
+      this._source.createCitation(data);
     } else {
       this._source.updateCitation(data);
     }
   }
 
   citationSaved(data) {
-    this.setCitation(data);
+    this.setCitation(data.citation);
     this.displayCitation();
   }
 

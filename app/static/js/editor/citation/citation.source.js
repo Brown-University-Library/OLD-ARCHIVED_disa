@@ -7,7 +7,7 @@ class CitationSource extends Source {
 
   createCitation(data) {
     var endpoint = this.endpoints.createCitation;
-    this.request(endpoint, 'POST', 'citationSaved', data);
+    this.request(endpoint, 'POST', 'redirect', data);
   }
 
   updateCitation(data) {

@@ -40,7 +40,7 @@ class CitationDisplay extends Control {
       this._$existing_header.removeClass('hidden');
       this._$data_display.removeClass('hidden');      
     }
-      this._$root.removeClass('hidden');
+    this._$root.removeClass('hidden');
   }
 
   hide() {

@@ -49,16 +49,16 @@ def edit_citation(citeId):
     included = [ 'Book', 'Book Section', 'Document', 'Interview',
         'Journal Article', 'Magazine Article', 'Manuscript',
         'Newspaper Article', 'Thesis', 'Webpage' ]
-    ct = models.CitationType.query.filter(
+    included_ct = models.CitationType.query.filter(
         models.CitationType.name.in_(included)).all()
     ct_fields = { 
         c.id: [ {   'name': f.zotero_field.name,
                     'rank': f.rank,
                     'display': f.zotero_field.display_name }
             for f in c.zotero_type.template_fields ]
-                for c in ct }
+                for c in included_ct }
     add_pages_field = ['Document', 'Book', 'Thesis', 'Manuscript']
-    for c in ct:
+    for c in included_ct:
         if c.name in add_pages_field:
             pages = { 'name': 'pages', 'display':'Pages' }
             fields = ct_fields[c.id]
@@ -74,7 +74,7 @@ def edit_citation(citeId):
             str(cid): sorted(ct_fields[cid], key=itemgetter('rank'))
                 for cid in ct_fields },
         'citation_types': [
-            { 'id': c.id, 'name': c.name} for c in ct ],
+            { 'id': c.id, 'name': c.name} for c in included_ct ],
     }
 
     if citeId == 'new':
@@ -83,6 +83,9 @@ def edit_citation(citeId):
     else:
         cite = models.Citation.query.get(citeId)
         config['data']['citation'] = cite.to_dict()
+        if cite.citation_type not in included_ct:
+            default_type = models.CitationType.get_default().to_dict()
+            config['data']['citation']['citation_type'] = default_type
         config['data']['references'] = [ { 'id': ref.id,
                 'link': url_for('editor.edit_reference',
                     citeId=citeId, refId=ref.id),
@@ -150,7 +153,8 @@ def edit_reference(citeId, refId):
         config['data']['reference'] = ref.to_dict()
 
     config['endpoints'] = {
-        'updateReference': url_for('dataserv.create_or_update_reference', refId=None),
+        'createReference': url_for('dataserv.create_or_update_reference', refId=None),
+        'updateReference': url_for('dataserv.create_or_update_reference', refId=refId)
     }
     return render_template('editor/reference.html', config=config)
 

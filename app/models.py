@@ -13,17 +13,18 @@ class TypeMixin(object):
 
     @classmethod
     def get_default(cls):
-        if not cls._default:
-            raise ReferenceError(
-                        'No default instance set for {}'.format(
-                            cls.__name__))
-        try:
-            default = cls.query.filter_by(**cls._default).first()
-        except:
-            raise ReferenceError(
-                'Default instance of {} not found'.format(
-                    cls.__name__))
-        return default
+        with db.session.no_autoflush:
+            if not cls._default:
+                raise ReferenceError(
+                            'No default instance set for {}'.format(
+                                cls.__name__))
+            try:
+                default = cls.query.filter_by(**cls._default).first()
+            except:
+                raise ReferenceError(
+                    'Default instance of {} not found'.format(
+                        cls.__name__))
+            return default
 
     def to_dict(self):
         return { 'id': self.id, 'name': self.name }
@@ -37,19 +38,20 @@ class TagMixin(TypeMixin):
 
     @classmethod
     def get_or_create(cls, commit=False, **kwargs):
-        if not kwargs:
-            raise KeyError(
-                'Missing required data for get or create {}'.format(
-                    cls.__name__))
-        existing = cls.query.filter_by(**kwargs).first()
-        if existing:
-            return existing
-        else:
-            created = cls(**kwargs)
-            db.session.add(created)
-            if commit:
-                db.session.commit()
-            return created
+        with db.session.no_autoflush:
+            if not kwargs:
+                raise KeyError(
+                    'Missing required data for get or create {}'.format(
+                        cls.__name__))
+            existing = cls.query.filter_by(**kwargs).first()
+            if existing:
+                return existing
+            else:
+                created = cls(**kwargs)
+                db.session.add(created)
+                if commit:
+                    db.session.commit()
+                return created
 
 
 has_role = db.Table('6_has_role',
@@ -348,18 +350,13 @@ class LocationType(TagMixin, db.Model):
         'ReferenceLocation', backref='location_type', lazy=True)
 
 
-class NationalContext(db.Model):
+class NationalContext(TypeMixin, db.Model):
     __tablename__ = '1_national_context'
+    _default = {'name': 'Other'}
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
     references = db.relationship('Reference', backref='national_context', lazy=True)
-
-    def to_dict(self):
-        return { 'id': self.id, 'name': self.name }
-
-    def __repr__(self):
-        return '<NationalContext {0}: {1}>'.format(self.id, self.name)
 
 
 class NameType(db.Model):

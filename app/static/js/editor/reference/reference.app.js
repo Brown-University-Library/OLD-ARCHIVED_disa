@@ -108,11 +108,10 @@ class ReferenceApp {
 
     data = this._ref_form.read();
     data.citation = this.getReference().getCitation();
-
     if ( this.getReference().isNew() ) {
       this._source.createReference(data);
     } else {
-      this._source.updateReference( data, this.getReference().getId() );
+      this._source.updateReference(data);
     }
   }
 

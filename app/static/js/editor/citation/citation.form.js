@@ -72,7 +72,7 @@ class CitationFieldManager {
 
   read() {
     let data = {
-      'citation_type': this._$type_selector.val(),
+      'citation_type': { 'id': this._$type_selector.val() },
       'citation_fields': []
     };
     for (const field_name in this._field_map) {
