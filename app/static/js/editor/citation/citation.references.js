@@ -63,7 +63,7 @@ class ReferenceControl extends Control {
   }
 
   load(refStateArray) {
-    // this._$ref_list.empty();
+    this._$ref_list.empty();
     this._reference_map = {};
     for ( const refState of refStateArray ) {
       let $ref = this._$templates.reference_row.clone();
@@ -105,7 +105,7 @@ class ReferenceControl extends Control {
     this._$root.prop('hidden',true);
   }
 
-  activateReferences() {
+  resetReferences() {
     for (const mapped_id in this._reference_map) {
       this._reference_map[ mapped_id ].reset();
     }

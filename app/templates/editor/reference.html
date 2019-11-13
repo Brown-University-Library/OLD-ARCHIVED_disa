@@ -1,4 +1,4 @@
-{% extends "editor.html" %}
+{% extends "base.html" %}
 <!-- https://stackoverflow.com/questions/14942379/jquery-ui-autocomplete-how-to-allow-free-text-->
 {% block header %}
 {{ super() }}
@@ -71,8 +71,11 @@ th.rnt-desc-col {
 
 </style>
 
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='lib/jquery-ui-themes-1.12.1/themes/base/jquery-ui.min.css') }}">
+
 <script src="{{ url_for('static', filename='lib/jquery-ui-1.12.1/jquery-ui.min.js') }}"></script>
 <script src="{{ url_for('static', filename='lib/tinymce/tinymce.js') }}"></script>
+
 <script type="text/javascript" src="{{ url_for('static', filename='js/editor/statectrl.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/editor/reference/reference.source.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/editor/reference/reference.display.js') }}"></script>
@@ -287,12 +290,10 @@ th.rnt-desc-col {
     // https://www.tiny.cloud/docs/
     let tinymce_settings = {
         menubar: false,
-        toolbar: false,
-        plugins: ['quickbars'],
-        quickbars_selection_toolbar: 'bold italic underline',
+        toolbar: 'bold italic underline',
         contextmenu: 'bold italic underline',
         width: '100%'
-    }
+    };
 
     let config = new Config($('#config'));
     let source = new ReferenceSource($('#data_endpoints'), $('#csrf_token'));

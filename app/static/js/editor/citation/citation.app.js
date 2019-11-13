@@ -202,14 +202,13 @@ class CitationApp {
   }
 
   referenceDeleted(data) {
-    this.setReferences(data);
+    this.setReferences(data.references);
+    this.resetReferences();
     this._ref_ctrl.show( this.getReferences() );
-    this._$edit_cite.prop('disabled', false);
-    this._$new_ref.removeClass('disabled');
   }
 
   resetReferences() {
-    this._ref_ctrl.activateReferences();
+    this._ref_ctrl.resetReferences();
     this._$edit_cite.prop('disabled', false);
     this._$new_ref.removeClass('disabled');
   }
