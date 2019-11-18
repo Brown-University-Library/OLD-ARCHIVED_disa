@@ -672,16 +672,18 @@ def person_index():
     people = []
     refs = []
     for (prsn, rfrnt) in db.session.query(models.Person, models.Referent).filter(models.Person.id==models.Referent.id).all():
-        gender = rfrnt.sex
-        age = rfrnt.age
+        sex = rfrnt.sex if rfrnt.sex else "None"
+        age = rfrnt.age if rfrnt.age else "None"
         race = None
         try:
             race = rfrnt.races[0].name
         except:
             log.exception( 'well, that did not work!' )
+        race = race if race else "None"
         # temp_str = f'age, `{age}`; gender, `{gender}`'
-        temp_str = f'age, `{age}`; gender, `{gender}`; race, `{race}`'
-        prsn.last_name = f'{prsn.last_name} ({temp_str})'
+        temp_demographic = f'age, `{age}`; sex, `{sex}`; race, `{race}`'
+        prsn.tmp_dmgrphc = temp_demographic
+        # prsn.last_name = f'{prsn.last_name} ({temp_str})'
         people.append( prsn )
         refs.append( rfrnt )
     p = people[1]
