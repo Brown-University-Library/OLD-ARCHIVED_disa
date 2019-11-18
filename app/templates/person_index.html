@@ -1,7 +1,17 @@
 {% extends "base.html" %}
+
 {% block header %}
 <link rel="stylesheet" href="{{ url_for('static', filename='lib/bootstrap-4.1.2-dist/css/bootstrap.min.css') }}">
+<style type="text/css">
+    p.demographic {
+        /*all: unset;*/
+        /*all: initial;*/
+        font-style: italic;
+        font-size: small;
+    }
+</style>
 {% endblock %}
+
 {% block content %}
 <div class="container-fluid">
   <h2>Comprehensive List of People</h2>
@@ -20,7 +30,9 @@
           {% for pers in people %}
           <tr>
             <td>{{ pers.id }}</td>
-            <td>{{ pers.display_name() }}<br/><p>(extra info here)</p></td>
+            <td>{{ pers.display_name() }}<br/>
+                <p class="demographic">({{ pers.tmp_dmgrphc }})</p>
+            </td>
             <td>{{ pers.display_attr('enslavements') }}</td>
             <td><a href="{{ url_for('get_person', persId=pers.id)}}">View</a></td>
           </tr>
