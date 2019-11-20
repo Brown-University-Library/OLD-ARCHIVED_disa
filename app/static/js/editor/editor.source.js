@@ -3,6 +3,11 @@ class DISASource {
   constructor(baseURL) {
     this._base = baseURL;
     this._apps = {};
+
+    var base_url_segment = document.getElementById( "base_url_segment" ).value;
+    console.log( "in DISASource constructor(); base_url_segment, ```" + base_url_segment + "```" );
+    this._base = base_url_segment;
+    console.log( "in DISASource constructor(); this._base, ```" + this._base + "```" );
   }
 
   registerApp( name, app ) {
@@ -10,7 +15,7 @@ class DISASource {
   }
 
   getREST( endpoint, callback ) {
-    console.log( "endpoint, ```" + endpoint + "```" );
+    console.log( "in getREST(); endpoint, ```" + endpoint + "```" );
     $.ajax({
       type: "GET",
       dataType: "json",
@@ -48,6 +53,7 @@ class DISASource {
   }
 
   getRelationships(sectionId) {
+    console.log( "in getRelationships(); this._base, ```" + this._base + "```" );
     let endpoint = this._base + `/data/sections/${sectionId}/relationships/`;
     let callback = this._apps['rel-mgmt'].setUp;
     this.getREST(endpoint, callback);

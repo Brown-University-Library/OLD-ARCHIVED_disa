@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <meta charset="utf-8"> 
+        <meta charset="utf-8">
         {% if title %}
         <title>{{ title }}</title>
         {% else %}
@@ -55,5 +55,7 @@
         {% endwith %}
         {% block content %}{% endblock %}
         {% block scripts %}{% endblock %}
+
+        <input type="hidden" id="base_url_segment" name="variable" value="{{ base_url_segment }}"/>
     </body>
 </html>

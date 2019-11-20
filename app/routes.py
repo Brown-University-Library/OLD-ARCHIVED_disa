@@ -720,8 +720,10 @@ def get_source(srcId):
 @login_required
 def edit_relationships(recId):
     log.debug( 'starting edit_relationships' )
+    log.debug( 'request.__dict__, ```%s```' % pprint.pformat(request.__dict__) )
     rec = models.Reference.query.get(recId)
-    return render_template('record_relationships.html', sec=rec)
+    # return render_template('record_relationships.html', sec=rec)
+    return render_template('record_relationships.html', sec=rec, base_url_segment='' )
 
 @app.route('/data/sections/<refId>/relationships/')
 @login_required
