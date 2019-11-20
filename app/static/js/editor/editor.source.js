@@ -10,6 +10,7 @@ class DISASource {
   }
 
   getREST( endpoint, callback ) {
+    console.log( "endpoint, ```" + endpoint + "```" );
     $.ajax({
       type: "GET",
       dataType: "json",
