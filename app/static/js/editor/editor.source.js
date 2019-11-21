@@ -3,10 +3,7 @@ class DISASource {
   constructor(baseURL) {
     this._base = baseURL;
     this._apps = {};
-
-    var base_url_segment = document.getElementById( "base_url_segment" ).value;
-    console.log( "in DISASource constructor(); base_url_segment, ```" + base_url_segment + "```" );
-    this._base = base_url_segment;
+    this._base = base_url_segment;  // `base_url_segment` prepared in '/record/relationships/<recId>' and passed to base.html <script/> header-element.
     console.log( "in DISASource constructor(); this._base, ```" + this._base + "```" );
   }
 
