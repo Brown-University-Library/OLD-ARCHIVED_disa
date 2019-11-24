@@ -666,31 +666,56 @@ def parse_person_descriptors(personObj, descField):
 #     log.debug( f'p.__dict__, ```{p.__dict__}```' )
 #     return render_template('person_index.html', people=people)
 
+# @app.route('/people/')
+# def person_index():
+#     log.debug( 'starting people' )
+#     people = []
+#     refs = []
+#     for (prsn, rfrnt) in db.session.query(models.Person, models.Referent).filter(models.Person.id==models.Referent.id).all():
+#         sex = rfrnt.sex if rfrnt.sex else "None"
+#         age = rfrnt.age if rfrnt.age else "None"
+#         race = None
+#         try:
+#             race = rfrnt.races[0].name
+#         except:
+#             log.exception( 'well, that did not work!' )
+#         race = race if race else "None"
+#         # temp_str = f'age, `{age}`; gender, `{gender}`'
+#         temp_demographic = f'age, `{age}`; sex, `{sex}`; race, `{race}`'
+#         prsn.tmp_dmgrphc = temp_demographic
+#         # prsn.last_name = f'{prsn.last_name} ({temp_str})'
+#         people.append( prsn )
+#         refs.append( rfrnt )
+#     p = people[1]
+#     log.debug( f'p.__dict__, ```{p.__dict__}```' )
+#     r = refs[1]
+#     log.debug( f'r.__dict__, ```{r.__dict__}```' )
+#     log.debug( f'race, r.races[0].__dict__, ```{r.races[0].__dict__}```' )
+#     return render_template('person_index.html', people=people)
+
+
 @app.route('/people/')
 def person_index():
     log.debug( 'starting people' )
     people = []
-    refs = []
-    for (prsn, rfrnt) in db.session.query(models.Person, models.Referent).filter(models.Person.id==models.Referent.id).all():
+    for (prsn, rfrnt) in db.session.query( models.Person, models.Referent ).filter( models.Person.id==models.Referent.id ).all():
         sex = rfrnt.sex if rfrnt.sex else "None"
         age = rfrnt.age if rfrnt.age else "None"
         race = None
         try:
             race = rfrnt.races[0].name
         except:
-            log.exception( 'well, that did not work!' )
+            log.debug( 'no race-name; races, ```{rfrnt.races}```' )
         race = race if race else "None"
-        # temp_str = f'age, `{age}`; gender, `{gender}`'
         temp_demographic = f'age, `{age}`; sex, `{sex}`; race, `{race}`'
-        prsn.tmp_dmgrphc = temp_demographic
+        # prsn.tmp_dmgrphc = temp_demographic
         # prsn.last_name = f'{prsn.last_name} ({temp_str})'
+        prsn.calc_sex = sex
+        prsn.calc_age = age
+        prsn.calc_race = race
         people.append( prsn )
-        refs.append( rfrnt )
     p = people[1]
     log.debug( f'p.__dict__, ```{p.__dict__}```' )
-    r = refs[1]
-    log.debug( f'r.__dict__, ```{r.__dict__}```' )
-    log.debug( f'race, r.races[0].__dict__, ```{r.races[0].__dict__}```' )
     return render_template('person_index.html', people=people)
 
 
