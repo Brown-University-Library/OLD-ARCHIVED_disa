@@ -699,14 +699,14 @@ def person_index():
     log.debug( 'starting people' )
     people = []
     for (prsn, rfrnt) in db.session.query( models.Person, models.Referent ).filter( models.Person.id==models.Referent.id ).all():
-        sex = rfrnt.sex if rfrnt.sex else "None"
-        age = rfrnt.age if rfrnt.age else "None"
+        sex = rfrnt.sex if rfrnt.sex else "Not Listed"
+        age = rfrnt.age if rfrnt.age else "Not Listed"
         race = None
         try:
             race = rfrnt.races[0].name
         except:
             log.debug( 'no race-name; races, ```{rfrnt.races}```' )
-        race = race if race else "None"
+        race = race if race else "Not Listed"
         temp_demographic = f'age, `{age}`; sex, `{sex}`; race, `{race}`'
         # prsn.tmp_dmgrphc = temp_demographic
         # prsn.last_name = f'{prsn.last_name} ({temp_str})'
