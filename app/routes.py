@@ -1,5 +1,7 @@
 import collections, datetime, json, logging, pprint
 
+import flask
+
 from flask import request, jsonify, render_template, redirect, url_for, flash
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
@@ -839,7 +841,9 @@ def version():
     resp_now = datetime.datetime.now()
     taken = resp_now - rq_now
     context_dct = version_helper.make_context( request, rq_now, info_txt, taken )
-    return jsonify( context_dct )
+    output = json.dumps( context_dct, sort_keys=True, indent=2 )
+    # return jsonify( context_dct )
+    return flask.current_app.response_class( output, mimetype='application/json' )
 
 
 @app.route( '/error_check' )
