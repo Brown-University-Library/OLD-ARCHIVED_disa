@@ -61,6 +61,8 @@ app.config['MAIL_USE_TLS'] = 1
 app.config['MAIL_USERNAME'] = None
 app.config['MAIL_PASSWORD'] = None
 app.config['ADMINS'] = json.loads( os.environ.get('DISA_FL__MAIL_ADMINS_JSON') )
+app.config['GIT_DIR'] = os.environ['DISA_FL__GIT_DIR']
+app.config['README_URL'] = os.environ['DISA_FL__README_URL']
 log.debug( f'app.config, ```{pprint.pformat(app.config)}```' )
 
 ## enable email-on-error (credit: <https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-vii-error-handling>)
