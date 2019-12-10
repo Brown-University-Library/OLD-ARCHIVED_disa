@@ -21,7 +21,9 @@ dictConfig({
     'disable_existing_loggers': True,
     'formatters': {
         'default': {
-            'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+            # 'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+            'format': "[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s",
+            'datefmt': "%d/%b/%Y %H:%M:%S"
             }
         },
     'handlers': {
