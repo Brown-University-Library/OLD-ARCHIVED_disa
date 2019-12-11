@@ -875,9 +875,10 @@ def error_check():
         - run, in another terminal window: `python -m smtpd -n -c DebuggingServer localhost:1026`,
         - (or substitue your own settings for localhost:1026)
     """
+    log.debug( '\n\nstarting editor_index' )
     log.debug( f'TEMP: flask.request, ```{pprint.pformat(request.__dict__)}```' )
     log.debug( f'flask.request.host, ```{pprint.pformat(request.host)}```' )
-    if request.host[0:9] == '127.0.0.1':
+    if request.host[0:9] == '127.0.0.1' or request.host[0:1] == 'd':
         1/0
     else:
         return '<div>404 / Not Found</div>'
