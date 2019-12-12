@@ -82,6 +82,7 @@ def merge_ref_roles(o,n):
                 o['roles'][k] + n['roles'][k]))
     return o
 
+
 def json_for_browse():
     persons = models.Person.query.all()
     owner_role = models.Role.query.filter_by(name='owner').first()
@@ -115,6 +116,10 @@ def json_for_browse():
         for ref in p.references:
             citation = ref.reference.citation.display
             new_date = ref.reference.date or first_date
+
+            if type( new_date ) == datetime.date:
+                new_date = datetime.datetime.combine( new_date, datetime.time() )  # creates a datetime obj with seconds at `0`
+
             if new_date < first_date:
                 first_date = new_date
             existing_ref_data = data['documents'][citation]
@@ -159,3 +164,82 @@ def json_for_browse():
         }
         out.append(data)
     return out
+
+
+# def json_for_browse():
+#     persons = models.Person.query.all()
+#     owner_role = models.Role.query.filter_by(name='owner').first()
+#     ensl = list({ p for p in persons
+#         for r in p.references if owner_role not in r.roles })
+#     out = []
+#     for p in ensl:
+#         data = {}
+#         data['id'] = p.id
+#         data['first_name'] = p.first_name
+#         data['last_name'] = p.last_name
+#         if data['first_name'] == '' and data['last_name'] == '':
+#             data['first_name'] = 'unrecorded'
+#         data['documents'] = collections.defaultdict(list)
+#         data['description'] = {
+#             'tribe': '',
+#             'sex': '',
+#             'origin': '',
+#             'vocation': '',
+#             'age': '',
+#             'race': '',
+#             'title': ''
+#         }
+#         data['status'] = 'enslaved'
+#         data['owner'] = ''
+#         data['has_mother'] = ''
+#         data['has_father'] = ''
+#         data['spouse'] = ''
+#         data['transcription'] = ''
+#         first_date = datetime.datetime(year=2018,day=1,month=1)
+#         for ref in p.references:
+#             citation = ref.reference.citation.display
+#             new_date = ref.reference.date or first_date
+#             if new_date < first_date:
+#                 first_date = new_date
+#             existing_ref_data = data['documents'][citation]
+#             new_ref_data = process_reference(ref)
+#             data['documents'][citation] = merge_ref_data(
+#                 existing_ref_data, new_ref_data)
+#             for d in data['documents'][citation]:
+#                 if d.get('description'):
+#                     ex_desc = data['description']
+#                     new_desc = d['description']
+#                     ex_desc['tribe'] = new_desc['tribe'] \
+#                         if new_desc['tribe'] else ex_desc['tribe']
+#                     ex_desc['sex'] = new_desc['sex'] \
+#                         if new_desc['sex'] else ex_desc['sex']
+#                     ex_desc['origin'] = new_desc['origin'] \
+#                         if new_desc['origin'] else ex_desc['origin']
+#                     ex_desc['vocation'] = new_desc['vocation'] \
+#                         if new_desc['vocation'] else ex_desc['vocation']
+#                     ex_desc['age'] = new_desc['age'] \
+#                         if new_desc['age'] else ex_desc['age']
+#                     ex_desc['race'] = new_desc['race'] \
+#                         if new_desc['race'] else ex_desc['race']
+#             for ref in data['documents'][citation]:
+#                 if 'enslaved' in ref['roles']:
+#                     if len(ref['roles']['enslaved']) > 0:
+#                         data['owner'] = ref['roles']['enslaved'][0]
+#                 if 'has_mother' in ref['roles']:
+#                     if len(ref['roles']['has_mother']) > 0:
+#                         data['has_mother'] = ref['roles']['has_mother'][0]
+#                 if 'has_father' in ref['roles']:
+#                     if len(ref['roles']['has_father']) > 0:
+#                         data['has_father'] = ref['roles']['has_father'][0]
+#                 if 'spouse' in ref['roles']:
+#                     if len(ref['roles']['spouse']) > 0:
+#                         data['spouse'] = ref['roles']['spouse'][0]
+#             for ref in data['documents'][citation]:
+#                 data['comments'] = ref['comments']
+#         data['date'] = {
+#             'year': first_date.year,
+#             'month': first_date.month,
+#             'day': first_date.day
+#         }
+#         out.append(data)
+#     return out
