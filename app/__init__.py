@@ -128,7 +128,9 @@ def rebuild():
 
 @app.cli.command()
 def browse_data():
-    with open('app/static/data/denormalized.json','w') as f:
+    """ Run from `stuff/disa/app/` """
+    # with open('app/static/data/denormalized.json','w') as f:
+    with open('static/data/denormalized.json','w') as f:
         data = denormalize.json_for_browse()
         json.dump(data, f)
 
