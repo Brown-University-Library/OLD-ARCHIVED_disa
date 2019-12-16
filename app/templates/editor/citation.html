@@ -4,78 +4,78 @@
 {{ super() }}
 <style>
 
-.hidden {
-  display: none;
-}
+  .hidden {
+    display: none;
+  }
 
-dl {
-  width: 100%;
-  margin-left: 3%;
-  overflow: hidden;
-  font-size: 90%;
-}
+  dl {
+    width: 100%;
+    margin-left: 3%;
+    overflow: hidden;
+    font-size: 90%;
+  }
 
-dt {
-  float:left;
-  width: 30%;
-}
+  dt {
+    float:left;
+    width: 30%;
+  }
 
-dt::after {
-  content: ": ";
-}
+  dt::after {
+    content: ": ";
+  }
 
-dd {
-  float: left;
-  width: 70%;
-}
+  dd {
+    float: left;
+    width: 70%;
+  }
 
-#citation_display_header {
-  font-size: 200%
-}
+  #citation_display_header {
+    font-size: 200%
+  }
 
-#citation_field_list {
+  #citation_field_list {
     display: flex;
     flex-flow: row wrap;
     list-style: none;
     padding-right: 20px;
-}
+  }
 
-#new_reference {
-  margin-left: auto;
-}
+  #new_reference {
+    margin-left: auto;
+  }
 
-.citation-commands {
-  margin-left: auto;
-}
+  .citation-commands {
+    margin-left: auto;
+  }
 
-.citation-field {
+  .citation-field {
     flex: 0 1 30%;
     margin: 2px 0 0 5px;
-}
+  }
 
-th.ref-id-col {
-  width: 20%;
-}
+  th.ref-id-col {
+    width: 20%;
+  }
 
-th.ref-label-col {
-  width: 25%;
-}
+  th.ref-label-col {
+    width: 25%;
+  }
 
-th.ref-date-col {
-  width: 25%;
-}
+  th.ref-date-col {
+    width: 25%;
+  }
 
-.deactivate-delete {
-  margin-right: 10%;
-}
+  .deactivate-delete {
+    margin-right: 10%;
+  }
 
-.disa-app {
-  display: block;
-}
+  .disa-app {
+    display: block;
+  }
 
-.control-hide {
-  display: none;
-}
+  .control-hide {
+    display: none;
+  }
 
 </style>
 <script type="text/javascript" src="{{ url_for('static', filename='js/editor/statectrl.js') }}"></script>
@@ -90,73 +90,73 @@ th.ref-date-col {
 {% block content %}
 <div class="container">
   <div id="citation_page" class="disa-app"
-      data-citation-id="{{ config['data']['citation']['id'] }}">
-    <div class="row">
-      <div class="col-md-11">
-        <div class="row">
-          <div class="col-md-12">
-            <div id="citation_display" class="hidden">
-              <div class="row">
-                <div id="citation_display_header">
-                  <div id="display_header_new">
-                    <h2>Add a citation</h2>
-                    <div class="alert alert-primary" style="font-size: 50%">
-                      <em>Fill out this form only when entering a citation for the first time. If your citation has been already entered, find your citation in the <a href="/editor">recent citation list</a> and add an item.</em>
-                    </div>
+  data-citation-id="{{ config['data']['citation']['id'] }}">
+  <div class="row">
+    <div class="col-md-11">
+      <div class="row">
+        <div class="col-md-12">
+          <div id="citation_display" class="hidden">
+            <div class="row">
+              <div id="citation_display_header">
+                <div id="display_header_new">
+                  <h2>Add a citation</h2>
+                  <div class="alert alert-primary" style="font-size: 50%">
+                    <em>Fill out this form only when entering a citation for the first time. If your citation has been already entered, find your citation in the <a href="/editor">recent citation list</a> and add an item.</em>
                   </div>
-                  <h2 id="display_header_existing"></h2>
                 </div>
+                <h2 id="display_header_existing"></h2>
               </div>
-              <div class="row">
-                <dl id="citation_display_data">
-                  <template>
-                    <div id="display_data" class="display-citation-data">
-                      <dt class="display-field-name"></dt>
-                      <dd class="display-field-value"></dd>
-                    </div>
-                  </template>
-                </dl>
-              </div>
+            </div>
+            <div class="row">
+              <dl id="citation_display_data">
+                <template>
+                  <div id="display_data" class="display-citation-data">
+                    <dt class="display-field-name"></dt>
+                    <dd class="display-field-value"></dd>
+                  </div>
+                </template>
+              </dl>
             </div>
           </div>
         </div>
-        <div class="row">
-          <form id="citation_form" action="" method="" class="hidden">
-            <div class='col-md-12'>
-              <div id="citation_field_mgmt">
-                <div class="form-group row">
-                  <label>Citation type<br />
-                    <em class="small text-muted">Select the citation type that most clearly describes the citation you're adding</em>
-                  </label>
-                  <select id="citation_type_selector" class="form-control">
-                    {% for ctype in config.citation_types %}
-                    <option value="{{ ctype.id }}">{{ ctype.name }}</option>
-                    {% endfor %}
-                  </select>
-                </div>
-                <div class="form-group row">
-                  <label for="citation_field_list">Citation information<br />
-                    <em class="small text-muted">Information related to the publication of the document (e.g. the date of publication of the newspaper, not a date listed within an article)</em>
-                  </label>
-                  <ul id="citation_field_list">
-                    <template>
-                      <li id="citation_field" class="citation-field" data-citation-field="">
-                        <input class="citation-field-input" type="text"/>
-                      </li>
-                    </template>
-                  </ul>
-                </div>
+      </div>
+      <div class="row">
+        <form id="citation_form" action="" method="" class="hidden">
+          <div class='col-md-12'>
+            <div id="citation_field_mgmt">
+              <div class="form-group row">
+                <label>Citation type<br />
+                  <em class="small text-muted">Select the citation type that most clearly describes the citation you're adding</em>
+                </label>
+                <select id="citation_type_selector" class="form-control">
+                  {% for ctype in config.citation_types %}
+                  <option value="{{ ctype.id }}">{{ ctype.name }}</option>
+                  {% endfor %}
+                </select>
               </div>
-              <div class="form-group row" hidden>
-                  <label for="zotero">Zotero ID</label>
-                  <input type="text" class="form-control" id="zotero" />
+              <div class="form-group row">
+                <label for="citation_field_list">Citation information<br />
+                  <em class="small text-muted">Information related to the publication of the document (e.g. the date of publication of the newspaper, not a date listed within an article)</em>
+                </label>
+                <ul id="citation_field_list">
+                  <template>
+                    <li id="citation_field" class="citation-field" data-citation-field="">
+                      <input class="citation-field-input" type="text"/>
+                    </li>
+                  </template>
+                </ul>
               </div>
-              <div class="form-group row" id="comments">
-                <label for="comments_input">Comments</label>
-                <textarea class="form-control" id="comments_input"></textarea>
-              </div>
-              <div class="form-group row" id="acknowledgements">
-                <label for="acknowledgements_input">Acknowledgements<br />
+            </div>
+            <div class="form-group row" hidden>
+              <label for="zotero">Zotero ID</label>
+              <input type="text" class="form-control" id="zotero" />
+            </div>
+            <div class="form-group row" id="comments">
+              <label for="comments_input">Comments</label>
+              <textarea class="form-control" id="comments_input"></textarea>
+            </div>
+            <div class="form-group row" id="acknowledgements">
+              <label for="acknowledgements_input">Acknowledgements<br />
                 <em class="small text-muted">If you've received the document from an individual or organization for the purposes of this project, please acknowledge their contribution (e.g. "Thank you to the Jennifer Shaw family")</em></label>
                 <textarea class="form-control" id="acknowledgements_input"></textarea>
               </div>
@@ -215,27 +215,27 @@ th.ref-date-col {
     </div>
     <div class="row">
       <a id="new_reference" class="btn btn-primary"
-        href="{{config['endpoints']['newReference']}}">Add an item</a>
+      href="{{config['endpoints']['newReference']}}">Add an item</a>
     </div>
   </div>
   <div id="config" hidden>
     <p id="csrf_token" data-csrf="{{ csrf_token() }}"></p>
     <ul id="citationtype_fields">
       {% for ctype in citationtype_fields %}
-        <li class="citationtype-data" data-name="{{ ctype['name'] }}">
-          <ul>
-            {% for field in ctype['values'] %}
-              <li class="citationtype-field-data"
-                data-display="{{ field['display'] }}"
-                data-name="{{ field['name'] }}"></li>
-            {% endfor %}
-          </ul>
-        </li>
+      <li class="citationtype-data" data-name="{{ ctype['name'] }}">
+        <ul>
+          {% for field in ctype['values'] %}
+          <li class="citationtype-field-data"
+          data-display="{{ field['display'] }}"
+          data-name="{{ field['name'] }}"></li>
+          {% endfor %}
+        </ul>
+      </li>
       {% endfor %}
     </ul>
     <ul id="data_endpoints">
       {% for ep, url in config['endpoints'].items() %}
-        <li class="endpoint" data-name="{{ ep }}" data-url="{{ url }}"></li>
+      <li class="endpoint" data-name="{{ ep }}" data-url="{{ url }}"></li>
       {% endfor %}
     </ul>
     <p id="config_data_json" data-json='{{ config|tojson|safe }}'></p>
@@ -256,7 +256,7 @@ th.ref-date-col {
   cform.configure(config);
 
   let capp = new CitationApp($('#citation_page'), config, source,
-                                  cdisplay, cform, refctrl);
+    cdisplay, cform, refctrl);
   source.setApp(capp);
   cdisplay.setApp(capp);
   cform.setApp(capp);
