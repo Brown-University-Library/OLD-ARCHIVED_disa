@@ -57,18 +57,48 @@ class ReferenceState extends State {
   }
 }
 
+class ReferentState extends State {
+
+  constructor() {
+    super();
+    this._slots = ['id', 'first_name',
+      'last_name', 'tags', 'referent_link'];
+  }
+
+  getId() {
+    return this.get('id');
+  }
+
+  getFirstName() {
+    return this.get('first_name');
+  }
+
+  getLastName() {
+    return this.get('last_name');
+  }
+
+  getTags() {
+    return this.get('tags');
+  }
+
+  getDetailsLink() {
+    return this.get('referent_link');
+  }
+}
+
 class ReferenceApp {
 
-  constructor($elem, config, source, refDisplay, refForm) {
+  constructor($elem, config, source, refDisplay, refForm, rntCtrl) {
     this._$root = $elem;
     this._source = source;
     this._configuration = config;
     this._reference_state = new ReferenceState();
+    this._referents_state = [];
     this._$edit_ref = $elem.find('#edit_reference');
-    // this._$new_rnt = $elem.find('#new_referent');
+    this._$new_rnt = $elem.find('#new_referent');
     this._ref_display = refDisplay;
     this._ref_form = refForm;
-    // this._rnt_ctrl = rntCtrl;
+    this._rnt_ctrl = rntCtrl;
 
     this.setEvents();
     this.load(config.get('data'));
@@ -80,16 +110,27 @@ class ReferenceApp {
 
   setReference(data) {
     this._reference_state.update(data);
-    // this._ref_display.load( this.getReference() );
-    // this._ref_form.load( this.getReference() );
+  }
+
+  getReferents() {
+    return this._referents_state;
+  }
+
+  setReferents(data) {
+    this._referents_state = [];
+    for (const ref_data of data) {
+      let ref = new ReferentState();
+      ref.update(ref_data);
+      this._referents_state.push(ref);
+    }
+    this._rnt_ctrl.load( this.getReferents() );
   }
 
   load(data) {
     this.setReference(data.reference);
-    // this._rnt_ctrl.load(this._data.referents);
+    this.setReferents(data.referents);
     if (this._reference_state.isNew()) {
       this.editReference();
-      // this._rnt_ctrl.hide();
     } else {
       this.displayReference();
     }
@@ -97,10 +138,10 @@ class ReferenceApp {
 
   editReference() {
     this._ref_display.hide();
-    this._ref_form.activate( this.getReference() );
-    // this._rnt_ctrl.hide();
+    this._rnt_ctrl.hide();
     this._$edit_ref.addClass('hidden');
-    // this._$new_rnt.addClass('hidden');
+    this._$new_rnt.addClass('hidden');
+    this._ref_form.activate( this.getReference() );
   }
 
   saveReference() {
@@ -121,13 +162,11 @@ class ReferenceApp {
   }
 
   displayReference() {
-    // this._ref_display.load( this.getReference() );
-    // this._ref_form.load( this.getReference() );
-    this._ref_display.show( this.getReference() );
     this._ref_form.deactivate();
     this._$edit_ref.removeClass('hidden');
-    // this._$new_rnt.removeClass('hidden');
-    // this._rnt_ctrl.show();
+    this._$new_rnt.removeClass('hidden');
+    this._ref_display.show( this.getReference() );
+    this._rnt_ctrl.show( this.getReferents().length );
   }
 
   // changeReferenceType(cType) {

@@ -137,7 +137,7 @@ def edit_reference(citeId, refId):
         'location_types': loc_types,
         'national_contexts': natl_ctxs,
         'date': { 'years': years, 'months': months, 'days': days },
-        'tags': roles,
+        'referent_tags': roles,
         'reference_types': ref_types,
         'colony_states': [ l.to_dict() for l in col_states ],
         'cities': [ l.to_dict() for l in cities ],
@@ -145,9 +145,10 @@ def edit_reference(citeId, refId):
     }
 
     if refId == 'new':
-        data = models.Reference.to_dict()
+        new_ref = models.Reference.to_dict()
         data['citation']['id'] = citeId
-        config['data']['reference'] = data
+        config['data']['reference'] = new_ref
+        config['data']['referents'] = []
     else:
         ref = models.Reference.query.get(refId)
         config['data']['reference'] = ref.to_dict()

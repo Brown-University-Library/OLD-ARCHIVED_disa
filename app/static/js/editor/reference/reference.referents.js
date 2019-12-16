@@ -1,41 +1,96 @@
-class Reference {
+class TagSelector {
 
-  constructor($elem, refData) {
+  constructor($select, settings) {
+    this._$select = $select;
+    this._$select.attr("multiple", true);
+    this._$select.select2(settings);
+  }
+
+  load(data) {
+    this._$select.val(data);
+    this._$select.trigger('change');
+  }
+
+  isEmpty() {
+    return this._$select.val === [];
+  }
+
+  read() {
+    return this._$select.val();
+  }
+
+  clear() {
+    this.load([]);
+  }
+}
+
+class ReferentRow {
+
+  constructor($elem, tagSettings) {
     this._$root = $elem;
-    this._$ref_id = $elem.find('.reference-id');
-    this._$ref_link = $elem.find('.reference-link');
-    this._$ref_edited = $elem.find('.reference-edited');
-    this._$ref_delete = $elem.find('.delete-reference');
-    this._$ref_cancel = $elem.find('.cancel-delete-reference');
-    this._$ref_confirm = $elem.find('.confirm-delete-reference');
-    
-    this._$ref_id.text(refData.id);
-    this._$ref_link.attr('href', refData.link)
-      .text(refData.reference_type);
-    this._$ref_edited.text(refData.last_edit);
-    this._$root.attr('data-reference-id', refData.id);
-    this.reset();
+    this._$rnt_id = $elem.find('.referent-id');
+    this._$rnt_first_ = $elem.find('.referent-first');
+    this._$rnt_last = $elem.find('.referent-last');
+    this._$rnt_tags = new TagSelector( $elem.find('.referent-tags'),
+      tagSettings );
+    this._$rnt_details = $elem.find('.referent-details');
+    this._$rnt_edit = $elem.find('.edit-referent');
+    this._$rnt_save = $elem.find('.save-referent');
+    this._$rnt_delete = $elem.find('.delete-referent');
+    this._$rnt_cancel = $elem.find('.cancel-edit-referent');
+    this._$rnt_confirm = $elem.find('.confirm-delete-referent');
+  }
+
+  load(rntState) {
+    this._$root.attr( 'data-referent-id', refState.getId() );
+    this._$rnt_id.text( rntState.getId() );
+    this._$rnt_first.val( rntState.getFirstName() );
+    this._$rnt_last.val( rntState.getLastName() );
+    this._$rnt_tags.load( rntState.getTags() );
+    this._$rnt_details.attr( 'href', rntState.getDetailsLink() );
   }
 
   enable() {
-    this._$ref_cancel.removeClass('control-hide');
-    this._$ref_confirm.removeClass('control-hide');
-    this._$ref_delete.prop('disabled', false);
-    this._$ref_delete.addClass('control-hide');
+    this._$rnt_first.prop('disabled', false);
+    this._$rnt_last.prop('disabled', false);
+    this._$rnt_tags.prop('disabled', false);
+    this._$rnt_cancel.removeClass('hidden');
+    this._$rnt_save.removeClass('hidden');
+    this._$rnt_delete.removeClass('hidden');
+    this._$rnt_edit.addClass('hidden');
+    this._$rnt_details.addClass('hidden');
+  }
+
+  confirmDelete() {
+    this._$rnt_first.prop('disabled', true);
+    this._$rnt_last.prop('disabled', true);
+    this._$rnt_tags.prop('disabled', true);
+    this._$rnt_cancel.removeClass('hidden');
+    this._$rnt_confirm.removeClass('hidden');
+    this._$rnt_edit.addClass('hidden');
+    this._$rnt_details.addClass('hidden');
   }
 
   disable() {
-    this._$ref_cancel.addClass('control-hide');
-    this._$ref_confirm.addClass('control-hide');
-    this._$ref_delete.prop('disabled', true);
-    this._$ref_delete.removeClass('control-hide');
+    this._$rnt_first.prop('disabled', true);
+    this._$rnt_last.prop('disabled', true);
+    this._$rnt_tags.prop('disabled', true);
+    this._$rnt_cancel.addClass('hidden');
+    this._$rnt_save.addClass('hidden');
+    this._$rnt_delete.addClass('hidden');
+    this._$rnt_confirm.addClass('hidden');
+    this._$rnt_edit.removeClass('hidden');
+    this._$rnt_details.removeClass('hidden');
   }
 
   reset() {
-    this._$ref_cancel.addClass('control-hide');
-    this._$ref_confirm.addClass('control-hide');
-    this._$ref_delete.prop('disabled', false);
-    this._$ref_delete.removeClass('control-hide');
+    this._$rnt_first.prop('disabled', true);
+    this._$rnt_last.prop('disabled', true);
+    this._$rnt_tags.prop('disabled', true);
+    this._$rnt_cancel.addClass('hidden');
+    this._$rnt_save.addClass('hidden');
+    this._$rnt_delete.addClass('hidden');
+    this._$rnt_confirm.addClass('hidden');
   }
 
   delete() {
@@ -43,68 +98,69 @@ class Reference {
   }
 }
 
-class ReferenceControl extends Control {
+class ReferentControl extends Control {
 
-  constructor($elem, urlBaseReference) {
+  constructor($elem) {
     super()
     this._$root = $elem;
-    this._$empty_display = this._$root.find('#empty_reference_display');
-    this._$ref_head = this._$root.find('#reference_list_header');
-    this._$ref_list = this._$root.find('#reference_list');
+    this._$empty_display = this._$root.find('#empty_referent_display');
+    this._$rnt_head = this._$root.find('#referent_list_header');
+    this._$rnt_list = this._$root.find('#referent_list');
     this._$templates = this.getTemplates(this._$root);
-    this._url_base = urlBaseReference;
-    this._data = [];
-    this._reference_map = {};
+    this._referent_map = {};
+    this._tag_options = [];
+    this._tag_settings = {};
 
     this.setEvents();
   }
 
-  load(data) {
-    this._data = data;
-    if (data.length === 0) {
-      this._$empty_display.prop('hidden', false);
-      this._$ref_list.prop('hidden', true);
-      this._$ref_head.prop('hidden', true);
-    } else {
-      this._$ref_list.empty();
-      this._$empty_display.prop('hidden', true);
-      this._$ref_list.prop('hidden', false);
-      this._$ref_head.prop('hidden', false);
-      for (const ref of data) {
-        this.addReference(ref);
-      }
+  configure(config, tagConfig) {
+    this._tag_options = config.referent_tags;
+    this._tag_settings = tagConfig;
+  }
+
+  load(rntStateArray) {
+    this._$rnt_list.empty();
+    this._referent_map = {};
+    for ( const rntState of rntStateArray ) {
+      let $rnt = this._$templates.referent_row.clone();
+      let rnt_row = new ReferentRow($rnt, this._tag_settings);
+      rnt_row.load( rntState );
+      rnt_row.reset();
+      this._referent_map[ rntState.getId() ] = rnt_row;
+      this._$rnt_list.append($rnt);
     }
   }
 
-  addReference(refData) {
-    let $ref = this._$templates.reference_row.clone();
-    let reference = new Reference($ref, refData);
-    this._reference_map[refData.id] = reference;
-    this._$ref_list.append($ref);
+  updateReferent(rntState) {
+    this._referent_map[ rntState.getId() ].load(rntState);
   }
 
-  removeReference(refId) {
-    this._reference_map[refId].delete();
-    delete this._reference_map[refId];
-    for (var i=0; i < this._data.length;i++) {
-      if (this.data[i].id === refId) {
-        this._data.splice(i, 1);
-        break;
-      }
-    }
+  removeReferent(refId) {
+    this._referent_map[ refId ].delete();
+    delete this._referent_map[ refId ];
   }
 
-  activateReference(refId) {
-    for (const ref in this._reference_map) {
-      if (ref === refId) {
-        this._reference_map[ref].enable();
+  activateReferent(rntId) {
+    for (const mapped_id in this._referent_map) {
+      if (mapped_id === rntId) {
+        this._referent_map[ mapped_id ].enable();
       } else {
-        this._reference_map[ref].disable();
+        this._referent_map[ mapped_id ].disable();
       }
     }
   }
 
-  show() {
+  show(numRnts) {
+    if ( numRnts < 1 ) {
+      this._$empty_display.prop('hidden', false);
+      this._$rnt_list.prop('hidden', true);
+      this._$rnt_head.prop('hidden', true);
+    } else {
+      this._$empty_display.prop('hidden', true);
+      this._$rnt_list.prop('hidden', false);
+      this._$rnt_head.prop('hidden', false);
+    }
     this._$root.prop('hidden',false);
   }
 
@@ -112,15 +168,15 @@ class ReferenceControl extends Control {
     this._$root.prop('hidden',true);
   }
 
-  activate() {
-    for (const ref in this._reference_map) {
-      this._reference_map[ref].reset();
+  resetReferents() {
+    for (const mapped_id in this._referent_map) {
+      this._referent_map[ mapped_id ].reset();
     }
   }
 
   deactivate() {
-    for (const ref in this._reference_map) {
-      this._reference_map[ref].disable();
+    for (const mapped_id in this._referent_map) {
+      this._referent_map[ mapped_id ].disable();
     }
   }
 
@@ -132,16 +188,16 @@ class ReferenceControl extends Control {
       let $btn = $( this );
 
       switch ( true ){
-        case $btn.hasClass('delete-reference'):
-          cmp._app.editReference($btn.closest('.reference')
-            .attr('data-reference-id'));
+        case $btn.hasClass('delete-referent'):
+          cmp._app.editReferent($btn.closest('.referent-row')
+            .attr('data-referent-id'));
           break;
-        case $btn.hasClass('confirm-delete-reference'):
-          cmp._app.deleteReference($btn.closest('.reference')
-            .attr('data-reference-id'));
+        case $btn.hasClass('confirm-delete-referent'):
+          cmp._app.deleteReferent($btn.closest('.referent-row')
+            .attr('data-referent-id'));
           break;
-        case $btn.hasClass('cancel-delete-reference'):
-          cmp._app.resetReferences();
+        case $btn.hasClass('cancel-delete-referent'):
+          cmp._app.resetReferents();
           break;
         default:
           return;
