@@ -32,6 +32,9 @@ def browse():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     log.debug( 'starting login()' )
+    log.debug( f'request.url, ```{request.url}```' )
+    log.debug( f'coming from, ```{request.environ.get( "QUERY_STRING", None )}```' )
+    # log.debug( f'request.__dict__, ```{pprint.pformat(request.__dict__)}```' )
     log.debug( f'current_user, ```{current_user.__dict__}```' )
     if current_user.is_authenticated:
         log.debug( 'user is authenticated' )
@@ -40,6 +43,7 @@ def login():
     if form.validate_on_submit():
         log.debug( 'form `form.validate_on_submit()` was True' )
         user = models.User.query.filter_by(email=form.email.data).first()
+        log.debug( f'user, ```{user.__dict__}```' )
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
             return redirect(url_for('login'))
@@ -51,7 +55,7 @@ def login():
         db.session.add(user)
         db.session.commit()
         return redirect(next_page)
-    log.debug( 'i guess form `form.validate_on_submit()` was False' )
+    log.debug( 'i guess form `form.validate_on_submit()` was False -- so showing form' )
     return render_template('login.html', title='Sign In', form=form)
 
 @app.route('/logout')
